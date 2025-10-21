@@ -11,6 +11,15 @@ export interface Product {
   imageUrl?: string;
 }
 
+export interface ActivityLog {
+  id: number;
+  productId: number;
+  productName: string;
+  action: 'created' | 'updated' | 'deleted';
+  details?: string;
+  timestamp: string; // ISO string format
+}
+
 export type Theme = 'light' | 'dark';
 
 export type Language = 'fr' | 'en' | 'ar';

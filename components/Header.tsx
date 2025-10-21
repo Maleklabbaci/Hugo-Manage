@@ -11,6 +11,8 @@ const getPageTitle = (pathname: string): string => {
       return 'Gestion des Produits';
     case '/statistics':
       return 'Statistiques';
+    case '/history':
+      return "Journal d'activité";
     case '/settings':
       return 'Paramètres';
     default:

@@ -22,7 +22,8 @@ import {
   TrendingUp,
   PackageX,
   Languages,
-  RefreshCw
+  RefreshCw,
+  History
 } from 'lucide-react';
 
 export {
@@ -48,5 +49,6 @@ export {
   TrendingUp as TrendingUpIcon,
   PackageX as PackageXIcon,
   Languages as LanguagesIcon,
-  RefreshCw as RefreshCwIcon
+  RefreshCw as RefreshCwIcon,
+  History as HistoryIcon
 };

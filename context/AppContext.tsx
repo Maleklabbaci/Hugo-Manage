@@ -1,12 +1,13 @@
 
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import type { Product, Theme, Language } from '../types';
+import type { Product, Theme, Language, ActivityLog } from '../types';
 import { storage } from '../services/storage';
 import { MOCK_PRODUCTS } from '../mock/products';
 
 
 interface AppContextType {
   products: Product[];
+  activityLog: ActivityLog[];
   theme: Theme;
   language: Language;
   addProduct: (product: Omit<Product, 'id' | 'status' | 'updatedAt'>) => void;
@@ -19,8 +20,19 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const keyToFrench: Record<string, string> = {
+    name: "Nom",
+    category: "Catégorie",
+    supplier: "Fournisseur",
+    buyPrice: "Prix d'achat",
+    sellPrice: "Prix de vente",
+    stock: "Stock",
+    imageUrl: "Image",
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>(storage.loadProducts());
+  const [activityLog, setActivityLog] = useState<ActivityLog[]>(storage.loadActivityLog());
   const [theme, setThemeState] = useState<Theme>(storage.getTheme());
   const [language, setLanguageState] = useState<Language>(storage.getLanguage());
 
@@ -34,9 +46,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     storage.setTheme(theme);
   }, [theme]);
   
+  const logActivity = useCallback((logData: Omit<ActivityLog, 'id' | 'timestamp'>) => {
+    setActivityLog(prevLog => {
+      const newLog: ActivityLog = {
+        ...logData,
+        id: prevLog.length > 0 ? Math.max(...prevLog.map(l => l.id)) + 1 : 1,
+        timestamp: new Date().toISOString(),
+      };
+      const updatedLog = [newLog, ...prevLog];
+      storage.saveActivityLog(updatedLog);
+      return updatedLog;
+    });
+  }, []);
+
   const addProduct = useCallback((productData: Omit<Product, 'id' | 'status' | 'updatedAt'>) => {
+    let newProduct: Product | null = null;
     setProducts(prevProducts => {
-      const newProduct: Product = {
+      newProduct = {
         ...productData,
         id: prevProducts.length > 0 ? Math.max(...prevProducts.map(p => p.id)) + 1 : 1,
         status: productData.stock > 0 ? 'actif' : 'rupture',
@@ -46,12 +72,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       storage.saveProducts(updatedProducts);
       return updatedProducts;
     });
-  }, []);
 
-  // FIX: Refactored to explicitly define the type of `status` to prevent TypeScript
-  // from widening the literal type to `string`, which caused type errors.
+    setTimeout(() => {
+        if (newProduct) {
+             logActivity({
+                action: 'created',
+                productId: newProduct.id,
+                productName: newProduct.name,
+            });
+        }
+    }, 0);
+  }, [logActivity]);
+
   const updateProduct = useCallback((updatedProduct: Product) => {
     setProducts(prevProducts => {
+      const originalProduct = prevProducts.find(p => p.id === updatedProduct.id);
+      
       const updatedProducts = prevProducts.map(p => {
         if (p.id === updatedProduct.id) {
           const status: Product['status'] = updatedProduct.stock > 0 ? 'actif' : 'rupture';
@@ -63,18 +99,50 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
         return p;
       });
+
+      if (originalProduct) {
+        const changes: string[] = [];
+        (Object.keys(updatedProduct) as Array<keyof Product>).forEach(key => {
+            if (key !== 'id' && key !== 'updatedAt' && key !== 'status' && originalProduct[key] !== updatedProduct[key]) {
+                if(key === 'imageUrl') {
+                     if((originalProduct.imageUrl || '') !== (updatedProduct.imageUrl || '')) {
+                       changes.push(`l'image a été modifiée`);
+                     }
+                } else {
+                     changes.push(`${keyToFrench[key] || key}: "${originalProduct[key]}" → "${updatedProduct[key]}"`);
+                }
+            }
+        });
+        if (changes.length > 0) {
+            logActivity({
+                action: 'updated',
+                productId: updatedProduct.id,
+                productName: updatedProduct.name,
+                details: changes.join('; '),
+            });
+        }
+      }
+      
       storage.saveProducts(updatedProducts);
       return updatedProducts;
     });
-  }, []);
+  }, [logActivity]);
 
   const deleteProduct = useCallback((productId: number) => {
     setProducts(prevProducts => {
+      const productToDelete = prevProducts.find(p => p.id === productId);
+      if (productToDelete) {
+        logActivity({
+          action: 'deleted',
+          productId: productToDelete.id,
+          productName: productToDelete.name,
+        });
+      }
       const updatedProducts = prevProducts.filter(p => p.id !== productId);
       storage.saveProducts(updatedProducts);
       return updatedProducts;
     });
-  }, []);
+  }, [logActivity]);
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
@@ -88,12 +156,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const resetData = useCallback(() => {
     storage.resetData();
     setProducts([...MOCK_PRODUCTS]);
+    setActivityLog([]);
     storage.saveProducts([...MOCK_PRODUCTS]);
   }, []);
 
 
   return (
-    <AppContext.Provider value={{ products, theme, language, addProduct, updateProduct, deleteProduct, setTheme, setLanguage, resetData }}>
+    <AppContext.Provider value={{ products, activityLog, theme, language, addProduct, updateProduct, deleteProduct, setTheme, setLanguage, resetData }}>
       {children}
     </AppContext.Provider>
   );

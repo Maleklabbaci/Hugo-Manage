@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Product } from '../types';
-import { motion, AnimatePresence } from 'framer-motion';
+// Fix: Import Variants type from framer-motion
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { XIcon } from './Icons';
 
 interface ProductFormProps {
@@ -78,12 +79,14 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
     }
   };
   
-  const backdropVariants = {
+  // Fix: Explicitly type variants with the Variants type to avoid type inference issues.
+  const backdropVariants: Variants = {
     visible: { opacity: 1 },
     hidden: { opacity: 0 },
   };
 
-  const modalVariants = {
+  // Fix: Explicitly type variants with the Variants type to avoid type inference issues.
+  const modalVariants: Variants = {
     hidden: { y: "-100vh", opacity: 0 },
     visible: { y: "0", opacity: 1, transition: { delay: 0.1, type: 'spring', stiffness: 120 } },
   };

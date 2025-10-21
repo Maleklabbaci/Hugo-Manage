@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Statistics from './pages/Statistics';
 import Settings from './pages/Settings';
+import History from './pages/History';
 import Layout from './components/Layout';
 
 const ProtectedRoute: React.FC = () => {
@@ -28,6 +29,7 @@ const AppRoutes: React.FC = () => {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/products" element={<Products />} />
                     <Route path="/statistics" element={<Statistics />} />
+                    <Route path="/history" element={<History />} />
                     <Route path="/settings" element={<Settings />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" />} />

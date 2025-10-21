@@ -1,0 +1,110 @@
+
+import React from 'react';
+import { useAppContext } from '../context/AppContext';
+import { AddIcon, EditIcon, DeleteIcon } from '../components/Icons';
+import { motion } from 'framer-motion';
+import type { ActivityLog } from '../types';
+
+const formatTimestamp = (isoString: string) => {
+  const date = new Date(isoString);
+  return date.toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+const getActionDetails = (log: ActivityLog) => {
+  switch (log.action) {
+    case 'created':
+      return {
+        Icon: AddIcon,
+        color: 'text-green-500',
+        title: `Produit "${log.productName}" créé`,
+      };
+    case 'updated':
+      return {
+        Icon: EditIcon,
+        color: 'text-blue-500',
+        title: `Produit "${log.productName}" mis à jour`,
+      };
+    case 'deleted':
+      return {
+        Icon: DeleteIcon,
+        color: 'text-red-500',
+        title: `Produit "${log.productName}" supprimé`,
+      };
+    default:
+      return {
+        Icon: EditIcon,
+        color: 'text-slate-500',
+        title: 'Action inconnue',
+      };
+  }
+};
+
+const History: React.FC = () => {
+  const { activityLog } = useAppContext();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 },
+  };
+  
+  if (activityLog.length === 0) {
+    return (
+        <div className="text-center py-10">
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">Journal d'activité</h2>
+            <p className="text-slate-500 dark:text-slate-400">Aucune activité enregistrée pour le moment.</p>
+        </div>
+    )
+  }
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">Journal d'activité</h2>
+      <motion.div 
+        className="space-y-4"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {activityLog.map(log => {
+          const { Icon, color, title } = getActionDetails(log);
+          return (
+            <motion.div 
+              key={log.id} 
+              className="bg-white dark:bg-secondary p-4 rounded-lg shadow-md flex items-start space-x-4"
+              variants={itemVariants}
+            >
+              <div className={`mt-1 p-2 bg-slate-100 dark:bg-dark rounded-full ${color}`}>
+                <Icon className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-slate-800 dark:text-white">{title}</p>
+                {log.details && (
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Détails : {log.details}</p>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">{formatTimestamp(log.timestamp)}</p>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+    </div>
+  );
+};
+
+export default History;

@@ -1,5 +1,5 @@
 
-import type { Product, Theme, Language } from '../types';
+import type { Product, Theme, Language, ActivityLog } from '../types';
 import { MOCK_PRODUCTS } from '../mock/products';
 
 const get = <T,>(key: string, fallback: T): T => {
@@ -31,6 +31,9 @@ export const storage = {
   },
   saveProducts: (products: Product[]) => set<Product[]>('products', products),
   
+  loadActivityLog: (): ActivityLog[] => get<ActivityLog[]>('activityLog', []),
+  saveActivityLog: (logs: ActivityLog[]) => set<ActivityLog[]>('activityLog', logs),
+
   getToken: (): string | null => get<string | null>('authToken', null),
   setToken: (token: string) => set<string>('authToken', token),
   removeToken: () => window.localStorage.removeItem('authToken'),
@@ -43,5 +46,6 @@ export const storage = {
 
   resetData: () => {
     window.localStorage.removeItem('products');
+    window.localStorage.removeItem('activityLog');
   }
 };
