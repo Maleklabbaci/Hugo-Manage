@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import type { Product } from '../types';
 import ProductForm from '../components/ProductForm';
 import SaleModal from '../components/SaleModal';
-import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon } from '../components/Icons';
+import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon } from '../components/Icons';
 
 const calculateMargin = (product: Product) => {
   if (product.sellPrice === 0) return 0;
@@ -11,13 +11,23 @@ const calculateMargin = (product: Product) => {
 };
 
 const Products: React.FC = () => {
-  const { products, addProduct, updateProduct, deleteProduct, addSale } = useAppContext();
+  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
   const [productToSell, setProductToSell] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 10;
+  const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  const productsPerPage = 30;
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * productsPerPage;
+    return products.slice(startIndex, startIndex + productsPerPage);
+  }, [products, currentPage]);
+
+  useEffect(() => {
+    setSelectedProducts([]);
+  }, [currentPage, products]);
 
   const handleOpenModal = (product?: Product) => {
     setProductToEdit(product || null);
@@ -59,12 +69,6 @@ const Products: React.FC = () => {
       handleCloseSaleModal();
   };
 
-
-  const paginatedProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * productsPerPage;
-    return products.slice(startIndex, startIndex + productsPerPage);
-  }, [products, currentPage]);
-
   const totalPages = Math.ceil(products.length / productsPerPage);
 
   const goToPage = (page: number) => {
@@ -72,6 +76,33 @@ const Products: React.FC = () => {
       setCurrentPage(page);
     }
   };
+
+  const handleSelectOne = (productId: number) => {
+    setSelectedProducts(prev => 
+        prev.includes(productId) 
+            ? prev.filter(id => id !== productId) 
+            : [...prev, productId]
+    );
+  };
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+        setSelectedProducts(paginatedProducts.map(p => p.id));
+    } else {
+        setSelectedProducts([]);
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer les ${selectedProducts.length} produits sélectionnés ?`)) {
+        deleteMultipleProducts(selectedProducts);
+        setSelectedProducts([]);
+    }
+  };
+
+  const numSelected = selectedProducts.length;
+  const numOnPage = paginatedProducts.length;
+  const isAllSelected = numSelected === numOnPage && numOnPage > 0;
 
   return (
     <>
@@ -86,11 +117,36 @@ const Products: React.FC = () => {
         </button>
       </div>
 
+      {numSelected > 0 && (
+        <div className="bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 p-3 rounded-lg mb-4 flex items-center justify-between shadow-md">
+            <span className="font-semibold">{numSelected} produit(s) sélectionné(s)</span>
+            <button
+                onClick={handleBulkDelete}
+                className="flex items-center bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg px-3 py-1.5 text-sm transition-colors"
+            >
+                <DeleteIcon className="w-4 h-4 mr-2" />
+                Supprimer
+            </button>
+        </div>
+      )}
+
       <div className="bg-white dark:bg-secondary rounded-2xl shadow-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
             <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-800 dark:text-slate-300">
               <tr>
+                <th scope="col" className="p-4">
+                    <div className="flex items-center">
+                        <input 
+                          id="checkbox-all-search" 
+                          type="checkbox" 
+                          className="w-4 h-4 text-accent bg-slate-100 border-slate-300 rounded focus:ring-accent dark:focus:ring-accent dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
+                          checked={isAllSelected}
+                          onChange={handleSelectAll}
+                        />
+                        <label htmlFor="checkbox-all-search" className="sr-only">checkbox</label>
+                    </div>
+                </th>
                 {["Image", "Nom", "Catégorie", "Prix achat", "Prix vente", "Stock", "Marge (%)", "Statut", "Actions"].map(header => (
                   <th key={header} scope="col" className="px-6 py-3">{header}</th>
                 ))}
@@ -98,7 +154,19 @@ const Products: React.FC = () => {
             </thead>
             <tbody>
               {paginatedProducts.map(product => (
-                <tr key={product.id} className="bg-white dark:bg-secondary border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <tr key={product.id} className={`bg-white dark:bg-secondary border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 ${selectedProducts.includes(product.id) ? 'bg-cyan-50 dark:bg-cyan-900/20' : ''}`}>
+                   <td className="w-4 p-4">
+                        <div className="flex items-center">
+                            <input 
+                              id={`checkbox-table-search-${product.id}`}
+                              type="checkbox"
+                              className="w-4 h-4 text-accent bg-slate-100 border-slate-300 rounded focus:ring-accent dark:focus:ring-accent dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
+                              checked={selectedProducts.includes(product.id)}
+                              onChange={() => handleSelectOne(product.id)}
+                            />
+                            <label htmlFor={`checkbox-table-search-${product.id}`} className="sr-only">checkbox</label>
+                        </div>
+                    </td>
                   <td className="px-6 py-4">
                     {product.imageUrl ? (
                       <img src={product.imageUrl} alt={product.name} className="w-12 h-12 object-cover rounded-md" />
@@ -119,17 +187,38 @@ const Products: React.FC = () => {
                       {product.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 flex space-x-2">
-                    <button 
-                        onClick={() => handleOpenSaleModal(product)} 
-                        className="text-green-500 hover:text-green-700 disabled:text-slate-600 disabled:cursor-not-allowed" 
-                        disabled={product.stock === 0}
-                        title="Vendre"
-                    >
-                        <ShoppingCartIcon className="w-5 h-5" />
-                    </button>
-                    <button onClick={() => handleOpenModal(product)} className="text-blue-500 hover:text-blue-700" title="Modifier"><EditIcon className="w-5 h-5" /></button>
-                    <button onClick={() => handleDelete(product.id)} className="text-red-500 hover:text-red-700" title="Supprimer"><DeleteIcon className="w-5 h-5" /></button>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center space-x-2">
+                        <button 
+                            onClick={() => handleOpenSaleModal(product)} 
+                            className="p-2 rounded-md transition-colors bg-green-500/10 hover:bg-green-500/20 text-green-500 disabled:bg-slate-500/10 disabled:text-slate-500 disabled:cursor-not-allowed"
+                            disabled={product.stock === 0}
+                            title="Vendre"
+                        >
+                            <ShoppingCartIcon className="w-5 h-5" />
+                        </button>
+                        <button 
+                            onClick={() => handleOpenModal(product)} 
+                            className="p-2 rounded-md transition-colors bg-blue-500/10 hover:bg-blue-500/20 text-blue-500" 
+                            title="Modifier"
+                        >
+                            <EditIcon className="w-5 h-5" />
+                        </button>
+                        <button 
+                            onClick={() => duplicateProduct(product.id)}
+                            className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500"
+                            title="Dupliquer"
+                        >
+                            <DuplicateIcon className="w-5 h-5" />
+                        </button>
+                        <button 
+                            onClick={() => handleDelete(product.id)} 
+                            className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" 
+                            title="Supprimer"
+                        >
+                            <DeleteIcon className="w-5 h-5" />
+                        </button>
+                    </div>
                   </td>
                 </tr>
               ))}

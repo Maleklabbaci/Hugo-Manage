@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
-import { AddIcon, EditIcon, DeleteIcon, ShoppingCartIcon } from '../components/Icons';
+import { AddIcon, EditIcon, DeleteIcon, ShoppingCartIcon, UndoIcon } from '../components/Icons';
 import { motion } from 'framer-motion';
 import type { ActivityLog } from '../types';
 
@@ -41,6 +40,12 @@ const getActionDetails = (log: ActivityLog) => {
         Icon: ShoppingCartIcon,
         color: 'text-green-500',
         title: `Vente: ${log.productName}`,
+      };
+    case 'sale_cancelled':
+      return {
+        Icon: UndoIcon,
+        color: 'text-amber-500',
+        title: `Vente annulée: ${log.productName}`,
       };
     default:
       return {

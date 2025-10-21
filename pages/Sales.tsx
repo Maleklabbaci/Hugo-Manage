@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ShoppingCartIcon } from '../components/Icons';
+import { ShoppingCartIcon, DeleteIcon } from '../components/Icons';
 
 const formatTimestamp = (isoString: string) => {
   const date = new Date(isoString);
@@ -8,7 +8,13 @@ const formatTimestamp = (isoString: string) => {
 };
 
 const Sales: React.FC = () => {
-    const { sales } = useAppContext();
+    const { sales, deleteSale } = useAppContext();
+
+    const handleDeleteSale = (saleId: number) => {
+        if (window.confirm("Êtes-vous sûr de vouloir annuler cette vente ? Le stock du produit sera restauré.")) {
+            deleteSale(saleId);
+        }
+    };
 
     if (sales.length === 0) {
         return (
@@ -28,7 +34,7 @@ const Sales: React.FC = () => {
                     <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
                         <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-800 dark:text-slate-300">
                             <tr>
-                                {["Produit", "Quantité", "Prix Unitaire", "Prix Total", "Date"].map(header => (
+                                {["Produit", "Quantité", "Prix Unitaire", "Prix Total", "Marge", "Date", "Actions"].map(header => (
                                     <th key={header} scope="col" className="px-6 py-3">{header}</th>
                                 ))}
                             </tr>
@@ -40,7 +46,18 @@ const Sales: React.FC = () => {
                                     <td className="px-6 py-4">{sale.quantity}</td>
                                     <td className="px-6 py-4">{sale.sellPrice.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}</td>
                                     <td className="px-6 py-4 font-semibold">{sale.totalPrice.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}</td>
+                                    <td className="px-6 py-4 text-green-500 font-semibold">
+                                        {(sale.totalMargin ?? 0).toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}
+                                    </td>
                                     <td className="px-6 py-4">{formatTimestamp(sale.timestamp)}</td>
+                                    <td className="px-6 py-4">
+                                        <button 
+                                            onClick={() => handleDeleteSale(sale.id)} 
+                                            className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" 
+                                            title="Supprimer la vente">
+                                            <DeleteIcon className="w-5 h-5" />
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

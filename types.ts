@@ -15,7 +15,7 @@ export interface ActivityLog {
   id: number;
   productId: number;
   productName: string;
-  action: 'created' | 'updated' | 'deleted' | 'sold';
+  action: 'created' | 'updated' | 'deleted' | 'sold' | 'sale_cancelled';
   details?: string;
   timestamp: string; // ISO string format
 }
@@ -27,6 +27,7 @@ export interface Sale {
   quantity: number;
   sellPrice: number;
   totalPrice: number;
+  totalMargin: number;
   timestamp: string; // ISO string format
 }
 

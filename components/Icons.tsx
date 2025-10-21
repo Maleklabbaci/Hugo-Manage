@@ -26,7 +26,10 @@ import {
   History,
   ShoppingCart,
   Archive,
-  CreditCard
+  CreditCard,
+  PiggyBank,
+  Undo2,
+  Copy
 } from 'lucide-react';
 
 export {
@@ -56,5 +59,8 @@ export {
   History as HistoryIcon,
   ShoppingCart as ShoppingCartIcon,
   Archive as ArchiveIcon,
-  CreditCard as CreditCardIcon
+  CreditCard as CreditCardIcon,
+  PiggyBank as PiggyBankIcon,
+  Undo2 as UndoIcon,
+  Copy as DuplicateIcon,
 };

@@ -11,6 +11,8 @@ interface ProductFormProps {
   productToEdit?: Product | null;
 }
 
+const categories = ["Lunettes", "Montres", "Sacoches & Porte feuille", "Casquette", "Bracelet"];
+
 const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, productToEdit }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -47,7 +49,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
     }
   }, [productToEdit, isOpen]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -120,7 +122,19 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                         
                         <div>
                             <label htmlFor="category" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">Catégorie</label>
-                            <input type="text" id="category" name="category" value={formData.category} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent" required />
+                            <select 
+                                id="category" 
+                                name="category" 
+                                value={formData.category} 
+                                onChange={handleChange} 
+                                className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent" 
+                                required
+                            >
+                                <option value="" disabled>Sélectionner une catégorie</option>
+                                {categories.map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
                         </div>
 
                         <div>
