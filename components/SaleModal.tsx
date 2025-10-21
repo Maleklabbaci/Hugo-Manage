@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Product } from '../types';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { XIcon } from './Icons';
+import { useAppContext } from '../context/AppContext';
 
 interface SaleModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface SaleModalProps {
 }
 
 const SaleModal: React.FC<SaleModalProps> = ({ isOpen, onClose, onConfirm, product }) => {
+    const { t } = useAppContext();
     const [quantity, setQuantity] = useState(1);
     const [error, setError] = useState('');
 
@@ -30,7 +32,7 @@ const SaleModal: React.FC<SaleModalProps> = ({ isOpen, onClose, onConfirm, produ
             setError('');
         } else if (value > product.stock) {
             setQuantity(product.stock);
-            setError(`Stock disponible: ${product.stock}`);
+            setError(t('sale_modal.error.not_enough_stock', { stock: product.stock }));
         } else {
             setQuantity(value);
             setError('');
@@ -42,7 +44,7 @@ const SaleModal: React.FC<SaleModalProps> = ({ isOpen, onClose, onConfirm, produ
             onConfirm(product.id, quantity);
             onClose();
         } else {
-            setError('Quantité invalide.');
+            setError(t('sale_modal.error.invalid_quantity'));
         }
     };
 
@@ -66,13 +68,13 @@ const SaleModal: React.FC<SaleModalProps> = ({ isOpen, onClose, onConfirm, produ
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-white"><XIcon /></button>
-                        <h2 className="text-2xl font-bold mb-4 text-slate-800 dark:text-white">Vendre un produit</h2>
-                        <p className="text-slate-600 dark:text-slate-300">Produit: <span className="font-semibold">{product.name}</span></p>
-                        <p className="text-slate-600 dark:text-slate-300 mb-6">Stock disponible: <span className="font-semibold">{product.stock}</span></p>
+                        <h2 className="text-2xl font-bold mb-4 text-slate-800 dark:text-white">{t('sale_modal.title')}</h2>
+                        <p className="text-slate-600 dark:text-slate-300">{t('sale_modal.product')}: <span className="font-semibold">{product.name}</span></p>
+                        <p className="text-slate-600 dark:text-slate-300 mb-6">{t('sale_modal.available_stock')}: <span className="font-semibold">{product.stock}</span></p>
 
                         <div className="space-y-4">
                              <div>
-                                <label htmlFor="quantity" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">Quantité à vendre</label>
+                                <label htmlFor="quantity" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('sale_modal.quantity_label')}</label>
                                 <input 
                                     type="number" id="quantity" name="quantity" 
                                     value={quantity}
@@ -85,8 +87,8 @@ const SaleModal: React.FC<SaleModalProps> = ({ isOpen, onClose, onConfirm, produ
                         </div>
 
                         <div className="flex justify-end pt-6 space-x-3">
-                            <button type="button" onClick={onClose} className="bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-white rounded-lg px-4 py-2 hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors">Annuler</button>
-                            <button onClick={handleSubmit} className="bg-accent hover:bg-accent-hover text-dark font-semibold rounded-lg px-4 py-2 transition-colors">Confirmer la vente</button>
+                            <button type="button" onClick={onClose} className="bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-white rounded-lg px-4 py-2 hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors">{t('cancel')}</button>
+                            <button onClick={handleSubmit} className="bg-accent hover:bg-accent-hover text-dark font-semibold rounded-lg px-4 py-2 transition-colors">{t('sale_modal.confirm_button')}</button>
                         </div>
                     </motion.div>
                 </motion.div>

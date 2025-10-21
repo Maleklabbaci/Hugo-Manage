@@ -10,19 +10,8 @@ const calculateMargin = (product: Product) => {
   return (((product.sellPrice - product.buyPrice) / product.sellPrice) * 100).toFixed(1);
 };
 
-const timeAgo = (isoDate: string): string => {
-    const seconds = Math.floor((new Date().getTime() - new Date(isoDate).getTime()) / 1000);
-    if (seconds < 60) return `à l'instant`;
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `Il y a ${minutes} min`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `Il y a ${hours} h`;
-    const days = Math.floor(hours / 24);
-    return `Il y a ${days} j`;
-};
-
 const Products: React.FC = () => {
-  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale } = useAppContext();
+  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
@@ -30,6 +19,17 @@ const Products: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const productsPerPage = 30;
+  
+  const timeAgo = (isoDate: string): string => {
+    const seconds = Math.floor((new Date().getTime() - new Date(isoDate).getTime()) / 1000);
+    if (seconds < 60) return t('products.time_ago.now');
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return t('products.time_ago.minutes', { count: minutes });
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return t('products.time_ago.hours', { count: hours });
+    const days = Math.floor(hours / 24);
+    return t('products.time_ago.days', { count: days });
+  };
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * productsPerPage;
@@ -60,7 +60,7 @@ const Products: React.FC = () => {
   };
   
   const handleDelete = (productId: number) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
+    if (window.confirm(t('products.confirm_delete'))) {
         deleteProduct(productId);
     }
   }
@@ -105,7 +105,7 @@ const Products: React.FC = () => {
   };
 
   const handleBulkDelete = () => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer les ${selectedProducts.length} produits sélectionnés ?`)) {
+    if (window.confirm(t('products.confirm_delete_multiple', { count: selectedProducts.length }))) {
         deleteMultipleProducts(selectedProducts);
         setSelectedProducts([]);
     }
@@ -115,35 +115,38 @@ const Products: React.FC = () => {
   const numOnPage = paginatedProducts.length;
   const isAllSelected = numSelected === numOnPage && numOnPage > 0;
 
+  const tableHeaders = ["Image", "Nom", "Catégorie", "Prix achat", "Prix vente", "Stock", "Marge (%)", "Statut", "Dernière modif.", "Actions"];
+  const tableHeaderKeys = ["image", "name", "category", "buy_price", "sell_price", "stock", "margin", "status", "last_updated", "actions"];
+
   return (
     <>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Liste des produits</h2>
+        <h2 className="text-2xl font-bold text-slate-800 dark:text-white">{t('products.title')}</h2>
         <button
           onClick={() => handleOpenModal()}
           className="flex items-center bg-accent hover:bg-accent-hover text-dark font-semibold rounded-lg px-4 py-2 transition-colors"
         >
-          <AddIcon className="w-5 h-5 mr-2" />
-          Ajouter produit
+          <AddIcon className="w-5 h-5 me-2" />
+          {t('products.add_product')}
         </button>
       </div>
 
       {numSelected > 0 && (
         <div className="bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 p-3 rounded-lg mb-4 flex items-center justify-between shadow-md">
-            <span className="font-semibold">{numSelected} produit(s) sélectionné(s)</span>
+            <span className="font-semibold">{t('products.selected_text', { count: numSelected })}</span>
             <button
                 onClick={handleBulkDelete}
                 className="flex items-center bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg px-3 py-1.5 text-sm transition-colors"
             >
-                <DeleteIcon className="w-4 h-4 mr-2" />
-                Supprimer
+                <DeleteIcon className="w-4 h-4 me-2" />
+                {t('products.delete_selected')}
             </button>
         </div>
       )}
 
       <div className="bg-white dark:bg-secondary rounded-2xl shadow-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
+          <table className="w-full text-sm text-left rtl:text-right text-slate-500 dark:text-slate-400">
             <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-800 dark:text-slate-300">
               <tr>
                 <th scope="col" className="p-4">
@@ -158,8 +161,8 @@ const Products: React.FC = () => {
                         <label htmlFor="checkbox-all-search" className="sr-only">checkbox</label>
                     </div>
                 </th>
-                {["Image", "Nom", "Catégorie", "Prix achat", "Prix vente", "Stock", "Marge (%)", "Statut", "Dernière modif.", "Actions"].map(header => (
-                  <th key={header} scope="col" className="px-6 py-3">{header}</th>
+                {tableHeaderKeys.map(key => (
+                  <th key={key} scope="col" className="px-6 py-3">{t(`products.table.${key}`)}</th>
                 ))}
               </tr>
             </thead>
@@ -195,7 +198,7 @@ const Products: React.FC = () => {
                   <td className="px-6 py-4">{calculateMargin(product)}%</td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'}`}>
-                      {product.status}
+                      {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-xs whitespace-nowrap">{timeAgo(product.updatedAt)}</td>
@@ -205,28 +208,28 @@ const Products: React.FC = () => {
                             onClick={() => handleOpenSaleModal(product)} 
                             className="p-2 rounded-md transition-colors bg-green-500/10 hover:bg-green-500/20 text-green-500 disabled:bg-slate-500/10 disabled:text-slate-500 disabled:cursor-not-allowed"
                             disabled={product.stock === 0}
-                            title="Vendre"
+                            title={t('sell')}
                         >
                             <ShoppingCartIcon className="w-5 h-5" />
                         </button>
                         <button 
                             onClick={() => handleOpenModal(product)} 
                             className="p-2 rounded-md transition-colors bg-blue-500/10 hover:bg-blue-500/20 text-blue-500" 
-                            title="Modifier"
+                            title={t('edit')}
                         >
                             <EditIcon className="w-5 h-5" />
                         </button>
                         <button 
                             onClick={() => duplicateProduct(product.id)}
                             className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500"
-                            title="Dupliquer"
+                            title={t('duplicate')}
                         >
                             <DuplicateIcon className="w-5 h-5" />
                         </button>
                         <button 
                             onClick={() => handleDelete(product.id)} 
                             className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" 
-                            title="Supprimer"
+                            title={t('delete')}
                         >
                             <DeleteIcon className="w-5 h-5" />
                         </button>
@@ -244,7 +247,7 @@ const Products: React.FC = () => {
             <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-secondary">
                 <ChevronLeftIcon className="w-5 h-5 text-slate-500 dark:text-slate-300"/>
             </button>
-            <span className="mx-4 text-slate-700 dark:text-slate-200">Page {currentPage} sur {totalPages}</span>
+            <span className="mx-4 text-slate-700 dark:text-slate-200">{t('products.pagination', { currentPage, totalPages })}</span>
             <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-secondary">
                 <ChevronRightIcon className="w-5 h-5 text-slate-500 dark:text-slate-300"/>
             </button>

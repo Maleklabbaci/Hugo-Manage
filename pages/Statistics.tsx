@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import type { Product } from '../types';
+import type { Product, Language } from '../types';
 import StatCard from '../components/StatCard';
 import { TrendingUpIcon, PackageXIcon } from '../components/Icons';
 
@@ -12,15 +12,21 @@ const calculateMargin = (product: Product) => {
 };
 
 const COLORS = ['#22D3EE', '#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
+const localeMap: Record<Language, string> = {
+    fr: 'fr-FR',
+    en: 'en-GB',
+    ar: 'ar-SA',
+};
 
 const Statistics: React.FC = () => {
-  const { products, sales } = useAppContext();
+  const { products, sales, t, language } = useAppContext();
+  const locale = localeMap[language];
 
   const monthlyProfitData = useMemo(() => {
     const profitByMonth: { [key: string]: number } = {};
     products.forEach(p => {
       const date = new Date(p.updatedAt);
-      const month = date.toLocaleString('fr-FR', { month: 'short', year: '2-digit' });
+      const month = date.toLocaleString(locale, { month: 'short', year: '2-digit' });
       const profit = (p.sellPrice - p.buyPrice) * p.stock;
       profitByMonth[month] = (profitByMonth[month] || 0) + profit;
     });
@@ -28,13 +34,13 @@ const Statistics: React.FC = () => {
     return Object.entries(profitByMonth)
       .map(([name, profit]) => ({ name, profit }))
       .slice(-12);
-  }, [products]);
+  }, [products, locale]);
 
   const monthlySalesData = useMemo(() => {
     const salesByMonth: { [key: string]: number } = {};
     sales.forEach(s => {
       const date = new Date(s.timestamp);
-      const month = date.toLocaleString('fr-FR', { month: 'short', year: '2-digit' });
+      const month = date.toLocaleString(locale, { month: 'short', year: '2-digit' });
       salesByMonth[month] = (salesByMonth[month] || 0) + s.totalPrice;
     });
     
@@ -42,7 +48,7 @@ const Statistics: React.FC = () => {
     for (let i = 11; i >= 0; i--) {
         const d = new Date();
         d.setMonth(d.getMonth() - i);
-        const monthKey = d.toLocaleString('fr-FR', { month: 'short', year: '2-digit' });
+        const monthKey = d.toLocaleString(locale, { month: 'short', year: '2-digit' });
         last12Months[monthKey] = 0;
     }
 
@@ -50,7 +56,7 @@ const Statistics: React.FC = () => {
 
     return Object.entries(mergedData)
       .map(([name, revenue]) => ({ name, revenue }));
-  }, [sales]);
+  }, [sales, locale]);
 
 
   const categoryDistribution = useMemo(() => {
@@ -73,7 +79,7 @@ const Statistics: React.FC = () => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-secondary p-2 border border-slate-700 rounded-md shadow-lg">
-          <p className="label text-white">{`${label} : ${payload[0].value.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}`}</p>
+          <p className="label text-white">{`${label} : ${payload[0].value.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`}</p>
         </div>
       );
     }
@@ -83,11 +89,11 @@ const Statistics: React.FC = () => {
   return (
     <div className="space-y-8 text-slate-800 dark:text-white">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <StatCard icon={TrendingUpIcon} title="Marge moyenne" value={`${indicators.avgMargin.toFixed(1)}%`} />
-            <StatCard icon={PackageXIcon} title="Taux de rupture" value={`${indicators.ruptureRate.toFixed(1)}%`} />
+            <StatCard icon={TrendingUpIcon} title={t('statistics.avg_margin')} value={`${indicators.avgMargin.toFixed(1)}%`} />
+            <StatCard icon={PackageXIcon} title={t('statistics.out_of_stock_rate')} value={`${indicators.ruptureRate.toFixed(1)}%`} />
         </div>
         <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
-            <h3 className="text-lg font-semibold mb-4">Chiffre d'affaires mensuel</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('statistics.monthly_revenue_chart_title')}</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={monthlySalesData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
@@ -95,15 +101,15 @@ const Statistics: React.FC = () => {
                     <YAxis tick={{ fill: '#94a3b8' }} tickFormatter={(value) => `${(value/1000)}k`} />
                     <Tooltip
                         contentStyle={{ backgroundColor: '#1E293B', border: '1px solid #334155', color: '#fff' }}
-                        formatter={(value: number) => [value.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' }), "Revenu"]}
+                        formatter={(value: number) => [value.toLocaleString(locale, { style: 'currency', currency: 'DZD' }), t('statistics.chart.revenue')]}
                     />
                     <Legend />
-                    <Bar dataKey="revenue" name="Revenu" fill="#8884d8" />
+                    <Bar dataKey="revenue" name={t('statistics.chart.revenue')} fill="#8884d8" />
                 </BarChart>
             </ResponsiveContainer>
         </div>
         <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
-            <h3 className="text-lg font-semibold mb-4">Évolution du bénéfice potentiel par mois</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('statistics.potential_profit_chart_title')}</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={monthlyProfitData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
@@ -111,12 +117,12 @@ const Statistics: React.FC = () => {
                     <YAxis tick={{ fill: '#94a3b8' }} tickFormatter={(value) => `${(value/1000)}k DA`} />
                     <Tooltip content={<CustomTooltip/>}/>
                     <Legend />
-                    <Line type="monotone" dataKey="profit" name="Bénéfice Potentiel" stroke="#22D3EE" strokeWidth={2} activeDot={{ r: 8 }} />
+                    <Line type="monotone" dataKey="profit" name={t('statistics.chart.potential_profit')} stroke="#22D3EE" strokeWidth={2} activeDot={{ r: 8 }} />
                 </LineChart>
             </ResponsiveContainer>
         </div>
         <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
-            <h3 className="text-lg font-semibold mb-4">Répartition des produits par catégorie</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('statistics.category_distribution_chart_title')}</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                     <Pie data={categoryDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} label>
@@ -124,7 +130,7 @@ const Statistics: React.FC = () => {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                     </Pie>
-                    <Tooltip formatter={(value) => `${value} produits`}/>
+                    <Tooltip formatter={(value) => `${value} ${t('statistics.chart.products')}`}/>
                     <Legend />
                 </PieChart>
             </ResponsiveContainer>

@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { storage } from '../services/storage';
 
@@ -27,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsAuthenticated(true);
           resolve();
         } else {
-          reject(new Error("Identifiants incorrects"));
+          reject(new Error("login.error.incorrect_credentials"));
         }
       }, 500);
     });

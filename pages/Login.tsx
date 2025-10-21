@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AlertCircleIcon, LoaderIcon } from '../components/Icons';
+import { useAppContext } from '../context/AppContext';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('admin@chezhugo.com');
@@ -11,6 +11,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, isAuthenticated } = useAuth();
+  const { t } = useAppContext();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +20,7 @@ const Login: React.FC = () => {
     try {
       await login(email, password);
     } catch (err) {
-      setError((err as Error).message);
+      setError(t((err as Error).message));
     } finally {
       setLoading(false);
     }
@@ -45,14 +46,14 @@ const Login: React.FC = () => {
                 <path d="M22 7L12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M17 4.5L7 9.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-          <h1 className="mt-4 text-3xl font-bold text-slate-800 dark:text-white">Chez Hugo Manager</h1>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Connectez-vous à votre espace</p>
+          <h1 className="mt-4 text-3xl font-bold text-slate-800 dark:text-white">{t('login.title')}</h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t('login.subtitle')}</p>
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email-address" className="sr-only">Email address</label>
+              <label htmlFor="email-address" className="sr-only">{t('login.email_placeholder')}</label>
               <input
                 id="email-address"
                 name="email"
@@ -60,13 +61,13 @@ const Login: React.FC = () => {
                 autoComplete="email"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-transparent placeholder-slate-500 text-slate-900 dark:text-white rounded-t-md focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm"
-                placeholder="Email"
+                placeholder={t('login.email_placeholder')}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">Password</label>
+              <label htmlFor="password" className="sr-only">{t('login.password_placeholder')}</label>
               <input
                 id="password"
                 name="password"
@@ -74,7 +75,7 @@ const Login: React.FC = () => {
                 autoComplete="current-password"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-transparent placeholder-slate-500 text-slate-900 dark:text-white rounded-b-md focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm"
-                placeholder="Mot de passe"
+                placeholder={t('login.password_placeholder')}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
               />
@@ -87,7 +88,7 @@ const Login: React.FC = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <AlertCircleIcon className="w-5 h-5 mr-2" />
+              <AlertCircleIcon className="w-5 h-5 me-2" />
               {error}
             </motion.div>
           )}
@@ -98,8 +99,8 @@ const Login: React.FC = () => {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-dark bg-accent hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-hover disabled:opacity-50"
             >
-                {loading && <LoaderIcon className="animate-spin w-5 h-5 mr-2" />}
-              Connexion
+                {loading && <LoaderIcon className="animate-spin w-5 h-5 me-2" />}
+              {t('login.submit_button')}
             </button>
           </div>
         </form>

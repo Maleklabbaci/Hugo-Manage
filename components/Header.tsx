@@ -1,29 +1,25 @@
-
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { MenuIcon } from './Icons';
-
-const getPageTitle = (pathname: string): string => {
-  switch (pathname) {
-    case '/dashboard':
-      return 'Dashboard';
-    case '/products':
-      return 'Gestion des Produits';
-    case '/sales':
-      return 'Historique des Ventes';
-    case '/statistics':
-      return 'Statistiques';
-    case '/history':
-      return "Journal d'activité";
-    case '/settings':
-      return 'Paramètres';
-    default:
-      return 'Chez Hugo';
-  }
-};
+import { useAppContext } from '../context/AppContext';
 
 const Header: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }) => {
   const location = useLocation();
+  const { t } = useAppContext();
+
+  const getPageTitle = (pathname: string): string => {
+    const key = 'header' + pathname.replace('/', '.');
+    const title = t(key);
+    // fallback for paths like /products/1
+    if (title === key) {
+        const baseKey = 'header.'+pathname.split('/')[1];
+        const baseTitle = t(baseKey);
+        if (baseTitle !== baseKey) return baseTitle;
+        return t('header.default');
+    }
+    return title;
+  };
+
   const title = getPageTitle(location.pathname);
 
   return (

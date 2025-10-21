@@ -2,7 +2,7 @@ import React, { createContext, useState, useContext, useEffect, useCallback } fr
 import type { Product, Theme, Language, ActivityLog, Sale } from '../types';
 import { storage } from '../services/storage';
 import { MOCK_PRODUCTS } from '../mock/products';
-
+import { translations } from '../translations';
 
 interface AppContextType {
   products: Product[];
@@ -10,6 +10,7 @@ interface AppContextType {
   sales: Sale[];
   theme: Theme;
   language: Language;
+  t: (key: string, options?: { [key: string]: string | number }) => string;
   addProduct: (product: Omit<Product, 'id' | 'status' | 'updatedAt'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: number) => void;
@@ -24,22 +25,22 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const keyToFrench: Record<string, string> = {
-    name: "Nom",
-    category: "Catégorie",
-    supplier: "Fournisseur",
-    buyPrice: "Prix d'achat",
-    sellPrice: "Prix de vente",
-    stock: "Stock",
-    imageUrl: "Image",
-};
-
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>(storage.loadProducts());
   const [activityLog, setActivityLog] = useState<ActivityLog[]>(storage.loadActivityLog());
   const [sales, setSales] = useState<Sale[]>(storage.loadSales());
   const [theme, setThemeState] = useState<Theme>(storage.getTheme());
   const [language, setLanguageState] = useState<Language>(storage.getLanguage());
+
+  const t = useCallback((key: string, options?: { [key: string]: string | number }) => {
+    let translation = translations[language]?.[key] || key;
+    if (options) {
+        Object.keys(options).forEach(optionKey => {
+            translation = translation.replace(`{${optionKey}}`, String(options[optionKey]));
+        });
+    }
+    return translation;
+  }, [language]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -50,6 +51,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     storage.setTheme(theme);
   }, [theme]);
+  
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.lang = language;
+    root.dir = language === 'ar' ? 'rtl' : 'ltr';
+  }, [language]);
   
   const logActivity = useCallback((logData: Omit<ActivityLog, 'id' | 'timestamp'>) => {
     setActivityLog(prevLog => {
@@ -111,10 +118,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             if (key !== 'id' && key !== 'updatedAt' && key !== 'status' && originalProduct[key] !== updatedProduct[key]) {
                 if(key === 'imageUrl') {
                      if((originalProduct.imageUrl || '') !== (updatedProduct.imageUrl || '')) {
-                       changes.push(`l'image a été modifiée`);
+                       changes.push(t('history.log.image_updated'));
                      }
                 } else {
-                     changes.push(`${keyToFrench[key] || key}: "${originalProduct[key]}" → "${updatedProduct[key]}"`);
+                     changes.push(`${t('log.'+key) || key}: "${originalProduct[key]}" → "${updatedProduct[key]}"`);
                 }
             }
         });
@@ -131,7 +138,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       storage.saveProducts(updatedProducts);
       return updatedProducts;
     });
-  }, [logActivity]);
+  }, [logActivity, t]);
 
   const deleteProduct = useCallback((productId: number) => {
     setProducts(prevProducts => {
@@ -158,7 +165,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 action: 'deleted',
                 productId: product.id,
                 productName: product.name,
-                details: 'Supprimé via action groupée',
+                details: t('history.log.bulk_delete'),
             });
         });
 
@@ -166,7 +173,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         storage.saveProducts(updatedProducts);
         return updatedProducts;
     });
-  }, [logActivity]);
+  }, [logActivity, t]);
 
   const duplicateProduct = useCallback((productId: number) => {
     const productToDuplicate = products.find(p => p.id === productId);
@@ -196,11 +203,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 action: 'created',
                 productId: newProduct.id,
                 productName: newProduct.name,
-                details: `Dupliqué depuis "${productToDuplicate.name}"`,
+                details: t('history.log.duplicated', {productName: productToDuplicate.name}),
             });
         }
     }, 0);
-  }, [products, logActivity]);
+  }, [products, logActivity, t]);
 
   const addSale = useCallback((productId: number, quantity: number) => {
     const productToSell = products.find(p => p.id === productId);
@@ -248,9 +255,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         action: 'sold',
         productId: productToSell.id,
         productName: productToSell.name,
-        details: `${quantity} unité(s) vendue(s)`,
+        details: t('history.log.units_sold', { quantity }),
     });
-  }, [products, sales, logActivity]);
+  }, [products, sales, logActivity, t]);
 
   const deleteSale = useCallback((saleId: number) => {
     let saleToDelete: Sale | undefined;
@@ -294,11 +301,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             action: 'sale_cancelled',
             productId: saleInfo.productId,
             productName: saleInfo.productName,
-            details: `Vente de ${saleInfo.quantity} unité(s) annulée.`,
+            details: t('history.log.sale_cancelled', { quantity: saleInfo.quantity }),
         });
     }, 0);
 
-  }, [logActivity]);
+  }, [logActivity, t]);
 
 
   const setTheme = useCallback((newTheme: Theme) => {
@@ -320,7 +327,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
 
   return (
-    <AppContext.Provider value={{ products, activityLog, sales, theme, language, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, deleteSale, setTheme, setLanguage, resetData }}>
+    <AppContext.Provider value={{ products, activityLog, sales, theme, language, t, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, deleteSale, setTheme, setLanguage, resetData }}>
       {children}
     </AppContext.Provider>
   );

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import StatCard from '../components/StatCard';
 import { useAppContext } from '../context/AppContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import type { Product } from '../types';
+import type { Product, Language } from '../types';
 import { ShoppingBagIcon, DollarSignIcon, TrendingUpIcon, PackageXIcon, ShoppingCartIcon, ArchiveIcon, CreditCardIcon, PiggyBankIcon } from '../components/Icons';
 
 const COLORS = ['#22D3EE', '#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
@@ -16,9 +16,15 @@ const getWeekStart = (date: Date): Date => {
   return monday;
 };
 
+const localeMap: Record<Language, string> = {
+    fr: 'fr-FR',
+    en: 'en-GB',
+    ar: 'ar-SA',
+};
 
 const Dashboard: React.FC = () => {
-  const { products, sales } = useAppContext();
+  const { products, sales, t, language } = useAppContext();
+  const locale = localeMap[language];
 
   const stats = useMemo(() => {
     const totalProducts = products.length;
@@ -56,10 +62,10 @@ const Dashboard: React.FC = () => {
     return Object.entries(profitByWeek)
       .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
       .map(([date, profit]) => ({
-        name: `Sem. du ${new Date(date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}`,
+        name: new Date(date).toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
         profit: parseFloat(profit.toFixed(2)),
       }));
-  }, [sales]);
+  }, [sales, locale]);
 
   const stockByCategoryData = useMemo(() => {
     const categoryMap = products.reduce<Record<string, number>>((acc, p) => {
@@ -74,7 +80,7 @@ const Dashboard: React.FC = () => {
       return (
         <div className="bg-secondary p-2 border border-slate-700 rounded-md shadow-lg">
           <p className="label text-white">{`${label}`}</p>
-          <p className="text-accent">{`Profit: ${payload[0].value.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}`}</p>
+          <p className="text-accent">{`${t('dashboard.chart.profit')}: ${payload[0].value.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`}</p>
         </div>
       );
     }
@@ -85,32 +91,32 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-8 text-slate-800 dark:text-white">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <StatCard icon={CreditCardIcon} title="Revenu des Ventes" value={`${stats.salesRevenue.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}`} />
-        <StatCard icon={PiggyBankIcon} title="Bénéfice des Ventes" value={`${stats.salesProfit.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}`} />
-        <StatCard icon={ShoppingCartIcon} title="Unités Vendues" value={stats.unitsSold} />
-        <StatCard icon={TrendingUpIcon} title="Bénéfice potentiel" value={`${stats.totalProfit.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}`} />
-        <StatCard icon={ArchiveIcon} title="Valeur du stock" value={`${stats.stockValue.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}`} />
-        <StatCard icon={ShoppingBagIcon} title="Total produits" value={stats.totalProducts} />
-        <StatCard icon={PackageXIcon} title="Produits en rupture" value={stats.outOfStock} />
+        <StatCard icon={CreditCardIcon} title={t('dashboard.sales_revenue')} value={`${stats.salesRevenue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
+        <StatCard icon={PiggyBankIcon} title={t('dashboard.sales_profit')} value={`${stats.salesProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
+        <StatCard icon={ShoppingCartIcon} title={t('dashboard.units_sold')} value={stats.unitsSold} />
+        <StatCard icon={TrendingUpIcon} title={t('dashboard.potential_profit')} value={`${stats.totalProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
+        <StatCard icon={ArchiveIcon} title={t('dashboard.stock_value')} value={`${stats.stockValue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
+        <StatCard icon={ShoppingBagIcon} title={t('dashboard.total_products')} value={stats.totalProducts} />
+        <StatCard icon={PackageXIcon} title={t('dashboard.out_of_stock')} value={stats.outOfStock} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
-          <h3 className="text-lg font-semibold mb-4">Profit semaine (DA)</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('dashboard.weekly_profit_chart_title')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={weeklyProfitData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
               <XAxis dataKey="name" tick={{ fill: '#94a3b8' }} fontSize={12} />
-              <YAxis tick={{ fill: '#94a3b8' }} tickFormatter={(value) => `${value.toLocaleString('fr-FR')} DA`} />
+              <YAxis tick={{ fill: '#94a3b8' }} tickFormatter={(value) => `${value.toLocaleString(locale)} DA`} />
               <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(34,211,238,0.1)'}}/>
               <Legend />
-              <Line type="monotone" dataKey="profit" name="Profit" stroke="#22D3EE" strokeWidth={2} activeDot={{ r: 8 }} />
+              <Line type="monotone" dataKey="profit" name={t('dashboard.chart.profit')} stroke="#22D3EE" strokeWidth={2} activeDot={{ r: 8 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
-          <h3 className="text-lg font-semibold mb-4">Stock par catégorie</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('dashboard.stock_by_category_chart_title')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie data={stockByCategoryData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} fill="#8884d8">
@@ -118,7 +124,7 @@ const Dashboard: React.FC = () => {
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => `${value} unités`} />
+              <Tooltip formatter={(value) => `${value} ${t('dashboard.chart.units')}`} />
               <Legend />
             </PieChart>
           </ResponsiveContainer>

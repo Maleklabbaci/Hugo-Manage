@@ -2,62 +2,70 @@ import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import { AddIcon, EditIcon, DeleteIcon, ShoppingCartIcon, UndoIcon } from '../components/Icons';
 import { motion } from 'framer-motion';
-import type { ActivityLog } from '../types';
+import type { ActivityLog, Language } from '../types';
 
-const formatTimestamp = (isoString: string) => {
-  const date = new Date(isoString);
-  return date.toLocaleString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
-
-const getActionDetails = (log: ActivityLog) => {
-  switch (log.action) {
-    case 'created':
-      return {
-        Icon: AddIcon,
-        color: 'text-green-500',
-        title: `Produit "${log.productName}" créé`,
-      };
-    case 'updated':
-      return {
-        Icon: EditIcon,
-        color: 'text-blue-500',
-        title: `Produit "${log.productName}" mis à jour`,
-      };
-    case 'deleted':
-      return {
-        Icon: DeleteIcon,
-        color: 'text-red-500',
-        title: `Produit "${log.productName}" supprimé`,
-      };
-    case 'sold':
-      return {
-        Icon: ShoppingCartIcon,
-        color: 'text-green-500',
-        title: `Vente: ${log.productName}`,
-      };
-    case 'sale_cancelled':
-      return {
-        Icon: UndoIcon,
-        color: 'text-amber-500',
-        title: `Vente annulée: ${log.productName}`,
-      };
-    default:
-      return {
-        Icon: EditIcon,
-        color: 'text-slate-500',
-        title: 'Action inconnue',
-      };
-  }
+const localeMap: Record<Language, string> = {
+    fr: 'fr-FR',
+    en: 'en-GB',
+    ar: 'ar-SA',
 };
 
 const History: React.FC = () => {
-  const { activityLog } = useAppContext();
+  const { activityLog, t, language } = useAppContext();
+  const locale = localeMap[language];
+
+  const formatTimestamp = (isoString: string) => {
+    const date = new Date(isoString);
+    return date.toLocaleString(locale, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getActionDetails = (log: ActivityLog) => {
+    switch (log.action) {
+      case 'created':
+        return {
+          Icon: AddIcon,
+          color: 'text-green-500',
+          title: t('history.action.created', { productName: log.productName }),
+        };
+      case 'updated':
+        return {
+          Icon: EditIcon,
+          color: 'text-blue-500',
+          title: t('history.action.updated', { productName: log.productName }),
+        };
+      case 'deleted':
+        return {
+          Icon: DeleteIcon,
+          color: 'text-red-500',
+          title: t('history.action.deleted', { productName: log.productName }),
+        };
+      case 'sold':
+        return {
+          Icon: ShoppingCartIcon,
+          color: 'text-green-500',
+          title: t('history.action.sold', { productName: log.productName }),
+        };
+      case 'sale_cancelled':
+        return {
+          Icon: UndoIcon,
+          color: 'text-amber-500',
+          title: t('history.action.sale_cancelled', { productName: log.productName }),
+        };
+      default:
+        return {
+          Icon: EditIcon,
+          color: 'text-slate-500',
+          title: t('history.action.unknown'),
+        };
+    }
+  };
+
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -77,15 +85,15 @@ const History: React.FC = () => {
   if (activityLog.length === 0) {
     return (
         <div className="text-center py-10">
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">Journal d'activité</h2>
-            <p className="text-slate-500 dark:text-slate-400">Aucune activité enregistrée pour le moment.</p>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">{t('history.empty.title')}</h2>
+            <p className="text-slate-500 dark:text-slate-400">{t('history.empty.subtitle')}</p>
         </div>
     )
   }
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">Journal d'activité</h2>
+      <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">{t('history.title')}</h2>
       <motion.div 
         className="space-y-4"
         variants={containerVariants}
@@ -106,7 +114,7 @@ const History: React.FC = () => {
               <div className="flex-1">
                 <p className="font-semibold text-slate-800 dark:text-white">{title}</p>
                 {log.details && (
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Détails : {log.details}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('history.details')} : {log.details}</p>
                 )}
               </div>
               <p className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">{formatTimestamp(log.timestamp)}</p>
