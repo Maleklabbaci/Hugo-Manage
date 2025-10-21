@@ -10,6 +10,17 @@ const calculateMargin = (product: Product) => {
   return (((product.sellPrice - product.buyPrice) / product.sellPrice) * 100).toFixed(1);
 };
 
+const timeAgo = (isoDate: string): string => {
+    const seconds = Math.floor((new Date().getTime() - new Date(isoDate).getTime()) / 1000);
+    if (seconds < 60) return `à l'instant`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `Il y a ${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `Il y a ${hours} h`;
+    const days = Math.floor(hours / 24);
+    return `Il y a ${days} j`;
+};
+
 const Products: React.FC = () => {
   const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -147,7 +158,7 @@ const Products: React.FC = () => {
                         <label htmlFor="checkbox-all-search" className="sr-only">checkbox</label>
                     </div>
                 </th>
-                {["Image", "Nom", "Catégorie", "Prix achat", "Prix vente", "Stock", "Marge (%)", "Statut", "Actions"].map(header => (
+                {["Image", "Nom", "Catégorie", "Prix achat", "Prix vente", "Stock", "Marge (%)", "Statut", "Dernière modif.", "Actions"].map(header => (
                   <th key={header} scope="col" className="px-6 py-3">{header}</th>
                 ))}
               </tr>
@@ -187,6 +198,7 @@ const Products: React.FC = () => {
                       {product.status}
                     </span>
                   </td>
+                  <td className="px-6 py-4 text-xs whitespace-nowrap">{timeAgo(product.updatedAt)}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                         <button 
