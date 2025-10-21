@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import StatCard from '../components/StatCard';
 import { useAppContext } from '../context/AppContext';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Sector } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import type { Product } from '../types';
-import { ShoppingBagIcon, DollarSignIcon, TrendingUpIcon, PackageXIcon } from '../components/Icons';
+import { ShoppingBagIcon, DollarSignIcon, TrendingUpIcon, PackageXIcon, ShoppingCartIcon, ArchiveIcon, CreditCardIcon } from '../components/Icons';
 
 const COLORS = ['#22D3EE', '#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
 
@@ -13,7 +13,7 @@ const calculateMargin = (product: Product) => {
 };
 
 const Dashboard: React.FC = () => {
-  const { products } = useAppContext();
+  const { products, sales } = useAppContext();
 
   const stats = useMemo(() => {
     const totalProducts = products.length;
@@ -21,8 +21,13 @@ const Dashboard: React.FC = () => {
     const potentialRevenue = products.reduce((acc, p) => acc + p.sellPrice * p.stock, 0);
     const totalProfit = potentialRevenue - stockValue;
     const outOfStock = products.filter(p => p.stock === 0).length;
-    return { totalProducts, stockValue, totalProfit, outOfStock };
-  }, [products]);
+    
+    const salesRevenue = sales.reduce((acc, s) => acc + s.totalPrice, 0);
+    const unitsSold = sales.reduce((acc, s) => acc + s.quantity, 0);
+
+    return { totalProducts, stockValue, totalProfit, outOfStock, salesRevenue, unitsSold };
+  }, [products, sales]);
+
 
   const marginData = useMemo(() => {
     return products
@@ -56,10 +61,12 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 text-slate-800 dark:text-white">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard icon={ShoppingBagIcon} title="Total produits" value={stats.totalProducts} />
-        <StatCard icon={DollarSignIcon} title="Valeur du stock" value={`${stats.stockValue.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}`} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StatCard icon={CreditCardIcon} title="Revenu des Ventes" value={`${stats.salesRevenue.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}`} />
+        <StatCard icon={ShoppingCartIcon} title="Unités Vendues" value={stats.unitsSold} />
         <StatCard icon={TrendingUpIcon} title="Bénéfice potentiel" value={`${stats.totalProfit.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}`} />
+        <StatCard icon={ShoppingBagIcon} title="Total produits" value={stats.totalProducts} />
+        <StatCard icon={ArchiveIcon} title="Valeur du stock" value={`${stats.stockValue.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={PackageXIcon} title="Produits en rupture" value={stats.outOfStock} />
       </div>
 

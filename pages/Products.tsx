@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import type { Product } from '../types';
 import ProductForm from '../components/ProductForm';
-import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon } from '../components/Icons';
+import SaleModal from '../components/SaleModal';
+import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon } from '../components/Icons';
 
 const calculateMargin = (product: Product) => {
   if (product.sellPrice === 0) return 0;
@@ -10,9 +11,11 @@ const calculateMargin = (product: Product) => {
 };
 
 const Products: React.FC = () => {
-  const { products, addProduct, updateProduct, deleteProduct } = useAppContext();
+  const { products, addProduct, updateProduct, deleteProduct, addSale } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+  const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
+  const [productToSell, setProductToSell] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 10;
 
@@ -40,6 +43,22 @@ const Products: React.FC = () => {
         deleteProduct(productId);
     }
   }
+
+  const handleOpenSaleModal = (product: Product) => {
+    setProductToSell(product);
+    setIsSaleModalOpen(true);
+  };
+
+  const handleCloseSaleModal = () => {
+      setIsSaleModalOpen(false);
+      setProductToSell(null);
+  };
+
+  const handleConfirmSale = (productId: number, quantity: number) => {
+      addSale(productId, quantity);
+      handleCloseSaleModal();
+  };
+
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * productsPerPage;
@@ -101,8 +120,16 @@ const Products: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 flex space-x-2">
-                    <button onClick={() => handleOpenModal(product)} className="text-blue-500 hover:text-blue-700"><EditIcon className="w-5 h-5" /></button>
-                    <button onClick={() => handleDelete(product.id)} className="text-red-500 hover:text-red-700"><DeleteIcon className="w-5 h-5" /></button>
+                    <button 
+                        onClick={() => handleOpenSaleModal(product)} 
+                        className="text-green-500 hover:text-green-700 disabled:text-slate-600 disabled:cursor-not-allowed" 
+                        disabled={product.stock === 0}
+                        title="Vendre"
+                    >
+                        <ShoppingCartIcon className="w-5 h-5" />
+                    </button>
+                    <button onClick={() => handleOpenModal(product)} className="text-blue-500 hover:text-blue-700" title="Modifier"><EditIcon className="w-5 h-5" /></button>
+                    <button onClick={() => handleDelete(product.id)} className="text-red-500 hover:text-red-700" title="Supprimer"><DeleteIcon className="w-5 h-5" /></button>
                   </td>
                 </tr>
               ))}
@@ -124,6 +151,7 @@ const Products: React.FC = () => {
       )}
 
       <ProductForm isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveProduct} productToEdit={productToEdit} />
+      <SaleModal isOpen={isSaleModalOpen} onClose={handleCloseSaleModal} onConfirm={handleConfirmSale} product={productToSell} />
     </>
   );
 };

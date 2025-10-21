@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
-import { AddIcon, EditIcon, DeleteIcon } from '../components/Icons';
+import { AddIcon, EditIcon, DeleteIcon, ShoppingCartIcon } from '../components/Icons';
 import { motion } from 'framer-motion';
 import type { ActivityLog } from '../types';
 
@@ -35,6 +35,12 @@ const getActionDetails = (log: ActivityLog) => {
         Icon: DeleteIcon,
         color: 'text-red-500',
         title: `Produit "${log.productName}" supprimé`,
+      };
+    case 'sold':
+      return {
+        Icon: ShoppingCartIcon,
+        color: 'text-green-500',
+        title: `Vente: ${log.productName}`,
       };
     default:
       return {

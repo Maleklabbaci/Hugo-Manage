@@ -14,7 +14,7 @@ const calculateMargin = (product: Product) => {
 const COLORS = ['#22D3EE', '#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
 
 const Statistics: React.FC = () => {
-  const { products } = useAppContext();
+  const { products, sales } = useAppContext();
 
   const monthlyProfitData = useMemo(() => {
     const profitByMonth: { [key: string]: number } = {};
@@ -25,11 +25,33 @@ const Statistics: React.FC = () => {
       profitByMonth[month] = (profitByMonth[month] || 0) + profit;
     });
     
-    // This part is for demonstration. A real app would need a proper date sorting logic.
     return Object.entries(profitByMonth)
       .map(([name, profit]) => ({ name, profit }))
-      .slice(-6); // show last 6 months for clarity
+      .slice(-12);
   }, [products]);
+
+  const monthlySalesData = useMemo(() => {
+    const salesByMonth: { [key: string]: number } = {};
+    sales.forEach(s => {
+      const date = new Date(s.timestamp);
+      const month = date.toLocaleString('fr-FR', { month: 'short', year: '2-digit' });
+      salesByMonth[month] = (salesByMonth[month] || 0) + s.totalPrice;
+    });
+    
+    const last12Months: { [key: string]: number } = {};
+    for (let i = 11; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const monthKey = d.toLocaleString('fr-FR', { month: 'short', year: '2-digit' });
+        last12Months[monthKey] = 0;
+    }
+
+    const mergedData = {...last12Months, ...salesByMonth };
+
+    return Object.entries(mergedData)
+      .map(([name, revenue]) => ({ name, revenue }));
+  }, [sales]);
+
 
   const categoryDistribution = useMemo(() => {
     const countByCategory = products.reduce<Record<string, number>>((acc, p) => {
@@ -41,9 +63,9 @@ const Statistics: React.FC = () => {
 
   const indicators = useMemo(() => {
     const totalMargin = products.reduce((acc, p) => acc + calculateMargin(p), 0);
-    const avgMargin = totalMargin / products.length || 0;
+    const avgMargin = products.length > 0 ? totalMargin / products.length : 0;
     const outOfStockCount = products.filter(p => p.stock === 0).length;
-    const ruptureRate = (outOfStockCount / products.length) * 100 || 0;
+    const ruptureRate = products.length > 0 ? (outOfStockCount / products.length) * 100 : 0;
     return { avgMargin, ruptureRate };
   }, [products]);
   
@@ -65,6 +87,22 @@ const Statistics: React.FC = () => {
             <StatCard icon={PackageXIcon} title="Taux de rupture" value={`${indicators.ruptureRate.toFixed(1)}%`} />
         </div>
         <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
+            <h3 className="text-lg font-semibold mb-4">Chiffre d'affaires mensuel</h3>
+            <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={monthlySalesData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
+                    <XAxis dataKey="name" tick={{ fill: '#94a3b8' }} fontSize={12} />
+                    <YAxis tick={{ fill: '#94a3b8' }} tickFormatter={(value) => `${(value/1000)}k`} />
+                    <Tooltip
+                        contentStyle={{ backgroundColor: '#1E293B', border: '1px solid #334155', color: '#fff' }}
+                        formatter={(value: number) => [value.toLocaleString('fr-FR', { style: 'currency', currency: 'DZD' }), "Revenu"]}
+                    />
+                    <Legend />
+                    <Bar dataKey="revenue" name="Revenu" fill="#8884d8" />
+                </BarChart>
+            </ResponsiveContainer>
+        </div>
+        <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
             <h3 className="text-lg font-semibold mb-4">Évolution du bénéfice potentiel par mois</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={monthlyProfitData}>
@@ -73,7 +111,7 @@ const Statistics: React.FC = () => {
                     <YAxis tick={{ fill: '#94a3b8' }} tickFormatter={(value) => `${(value/1000)}k DA`} />
                     <Tooltip content={<CustomTooltip/>}/>
                     <Legend />
-                    <Line type="monotone" dataKey="profit" name="Bénéfice" stroke="#22D3EE" strokeWidth={2} activeDot={{ r: 8 }} />
+                    <Line type="monotone" dataKey="profit" name="Bénéfice Potentiel" stroke="#22D3EE" strokeWidth={2} activeDot={{ r: 8 }} />
                 </LineChart>
             </ResponsiveContainer>
         </div>

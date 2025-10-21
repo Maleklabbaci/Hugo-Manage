@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import type { Product, Theme, Language, ActivityLog } from '../types';
+import type { Product, Theme, Language, ActivityLog, Sale } from '../types';
 import { storage } from '../services/storage';
 import { MOCK_PRODUCTS } from '../mock/products';
 
@@ -8,11 +8,13 @@ import { MOCK_PRODUCTS } from '../mock/products';
 interface AppContextType {
   products: Product[];
   activityLog: ActivityLog[];
+  sales: Sale[];
   theme: Theme;
   language: Language;
   addProduct: (product: Omit<Product, 'id' | 'status' | 'updatedAt'>) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (productId: number) => void;
+  addSale: (productId: number, quantity: number) => void;
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   resetData: () => void;
@@ -33,6 +35,7 @@ const keyToFrench: Record<string, string> = {
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>(storage.loadProducts());
   const [activityLog, setActivityLog] = useState<ActivityLog[]>(storage.loadActivityLog());
+  const [sales, setSales] = useState<Sale[]>(storage.loadSales());
   const [theme, setThemeState] = useState<Theme>(storage.getTheme());
   const [language, setLanguageState] = useState<Language>(storage.getLanguage());
 
@@ -144,6 +147,58 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   }, [logActivity]);
 
+  const addSale = useCallback((productId: number, quantity: number) => {
+    const productToSell = products.find(p => p.id === productId);
+    if (!productToSell || productToSell.stock < quantity) {
+        console.error("Stock insuffisant ou produit non trouvé");
+        return;
+    }
+
+    const newSale: Sale = {
+        id: sales.length > 0 ? Math.max(...sales.map(s => s.id)) + 1 : 1,
+        productId: productToSell.id,
+        productName: productToSell.name,
+        quantity,
+        sellPrice: productToSell.sellPrice,
+        totalPrice: productToSell.sellPrice * quantity,
+        timestamp: new Date().toISOString(),
+    };
+
+    setSales(prevSales => {
+        const updatedSales = [newSale, ...prevSales];
+        storage.saveSales(updatedSales);
+        return updatedSales;
+    });
+
+    setProducts(prevProducts => {
+        const updatedProducts = prevProducts.map(p => {
+            if (p.id === productId) {
+                const newStock = p.stock - quantity;
+                // FIX: Explicitly typed the `status` to prevent type widening to `string`.
+                // This ensures the returned object conforms to the `Product` interface.
+                const status: Product['status'] = newStock > 0 ? 'actif' : 'rupture';
+                return {
+                    ...p,
+                    stock: newStock,
+                    status,
+                    updatedAt: new Date().toISOString(),
+                };
+            }
+            return p;
+        });
+        storage.saveProducts(updatedProducts);
+        return updatedProducts;
+    });
+
+    logActivity({
+        action: 'sold',
+        productId: productToSell.id,
+        productName: productToSell.name,
+        details: `${quantity} unité(s) vendue(s)`,
+    });
+  }, [products, sales, logActivity]);
+
+
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
   }, []);
@@ -157,12 +212,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     storage.resetData();
     setProducts([...MOCK_PRODUCTS]);
     setActivityLog([]);
+    setSales([]);
     storage.saveProducts([...MOCK_PRODUCTS]);
   }, []);
 
 
   return (
-    <AppContext.Provider value={{ products, activityLog, theme, language, addProduct, updateProduct, deleteProduct, setTheme, setLanguage, resetData }}>
+    <AppContext.Provider value={{ products, activityLog, sales, theme, language, addProduct, updateProduct, deleteProduct, addSale, setTheme, setLanguage, resetData }}>
       {children}
     </AppContext.Provider>
   );

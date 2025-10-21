@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { DashboardIcon, ProductsIcon, StatsIcon, SettingsIcon, HistoryIcon } from './Icons';
+import { DashboardIcon, ProductsIcon, StatsIcon, SettingsIcon, HistoryIcon, ShoppingCartIcon } from './Icons';
 
 const NavItem: React.FC<{ to: string; icon: React.ElementType; label: string; onClick?: () => void }> = ({ to, icon: Icon, label, onClick }) => (
     <NavLink
@@ -36,6 +36,7 @@ const Sidebar: React.FC<{ isOpen: boolean; toggle: () => void }> = ({ isOpen, to
         <nav className="flex flex-col space-y-2">
             <NavItem to="/dashboard" icon={DashboardIcon} label="Dashboard" onClick={window.innerWidth < 768 ? toggle : undefined} />
             <NavItem to="/products" icon={ProductsIcon} label="Produits" onClick={window.innerWidth < 768 ? toggle : undefined} />
+            <NavItem to="/sales" icon={ShoppingCartIcon} label="Ventes" onClick={window.innerWidth < 768 ? toggle : undefined} />
             <NavItem to="/statistics" icon={StatsIcon} label="Statistiques" onClick={window.innerWidth < 768 ? toggle : undefined} />
             <NavItem to="/history" icon={HistoryIcon} label="Journal" onClick={window.innerWidth < 768 ? toggle : undefined} />
             <NavItem to="/settings" icon={SettingsIcon} label="Paramètres" onClick={window.innerWidth < 768 ? toggle : undefined} />

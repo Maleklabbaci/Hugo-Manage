@@ -23,7 +23,10 @@ import {
   PackageX,
   Languages,
   RefreshCw,
-  History
+  History,
+  ShoppingCart,
+  Archive,
+  CreditCard
 } from 'lucide-react';
 
 export {
@@ -50,5 +53,8 @@ export {
   PackageX as PackageXIcon,
   Languages as LanguagesIcon,
   RefreshCw as RefreshCwIcon,
-  History as HistoryIcon
+  History as HistoryIcon,
+  ShoppingCart as ShoppingCartIcon,
+  Archive as ArchiveIcon,
+  CreditCard as CreditCardIcon
 };
