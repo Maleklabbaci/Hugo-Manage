@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -15,7 +16,7 @@ const COLORS = ['#22D3EE', '#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
 const localeMap: Record<Language, string> = {
     fr: 'fr-FR',
     en: 'en-GB',
-    ar: 'ar-SA',
+    ar: 'ar-SA-u-nu-latn',
 };
 
 const Statistics: React.FC = () => {

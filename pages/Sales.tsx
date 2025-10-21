@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import { ShoppingCartIcon, DeleteIcon } from '../components/Icons';
@@ -6,7 +7,7 @@ import type { Language } from '../types';
 const localeMap: Record<Language, string> = {
     fr: 'fr-FR',
     en: 'en-GB',
-    ar: 'ar-SA',
+    ar: 'ar-SA-u-nu-latn',
 };
 
 const Sales: React.FC = () => {

@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import StatCard from '../components/StatCard';
 import { useAppContext } from '../context/AppContext';
@@ -19,7 +20,7 @@ const getWeekStart = (date: Date): Date => {
 const localeMap: Record<Language, string> = {
     fr: 'fr-FR',
     en: 'en-GB',
-    ar: 'ar-SA',
+    ar: 'ar-SA-u-nu-latn',
 };
 
 const Dashboard: React.FC = () => {
