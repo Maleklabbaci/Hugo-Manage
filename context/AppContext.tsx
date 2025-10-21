@@ -17,7 +17,7 @@ interface AppContextType {
   deleteMultipleProducts: (productIds: number[]) => void;
   duplicateProduct: (productId: number) => void;
   addSale: (productId: number, quantity: number) => void;
-  deleteSale: (saleId: number) => void;
+  cancelSale: (saleId: number) => void;
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   resetData: () => void;
@@ -259,24 +259,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   }, [products, sales, logActivity, t]);
 
-  const deleteSale = useCallback((saleId: number) => {
-    let saleToDelete: Sale | undefined;
+  const cancelSale = useCallback((saleId: number) => {
+    let saleToCancel: Sale | undefined;
 
     setSales(prevSales => {
-        saleToDelete = prevSales.find(s => s.id === saleId);
-        if (!saleToDelete) return prevSales;
+        saleToCancel = prevSales.find(s => s.id === saleId);
+        if (!saleToCancel) return prevSales;
         
         const updatedSales = prevSales.filter(s => s.id !== saleId);
         storage.saveSales(updatedSales);
         return updatedSales;
     });
 
-    if (!saleToDelete) {
+    if (!saleToCancel) {
         console.error("Vente non trouvée");
         return;
     }
     
-    const saleInfo = saleToDelete;
+    const saleInfo = saleToCancel;
 
     setProducts(prevProducts => {
         const updatedProducts = prevProducts.map(p => {
@@ -327,7 +327,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
 
   return (
-    <AppContext.Provider value={{ products, activityLog, sales, theme, language, t, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, deleteSale, setTheme, setLanguage, resetData }}>
+    <AppContext.Provider value={{ products, activityLog, sales, theme, language, t, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, cancelSale, setTheme, setLanguage, resetData }}>
       {children}
     </AppContext.Provider>
   );

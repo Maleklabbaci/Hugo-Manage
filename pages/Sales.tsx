@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ShoppingCartIcon, DeleteIcon } from '../components/Icons';
+import { ShoppingCartIcon, UndoIcon } from '../components/Icons';
 import type { Language } from '../types';
 
 const localeMap: Record<Language, string> = {
@@ -11,7 +11,7 @@ const localeMap: Record<Language, string> = {
 };
 
 const Sales: React.FC = () => {
-    const { sales, deleteSale, t, language } = useAppContext();
+    const { sales, cancelSale, t, language } = useAppContext();
     const locale = localeMap[language];
 
     const formatTimestamp = (isoString: string) => {
@@ -19,9 +19,9 @@ const Sales: React.FC = () => {
       return date.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
     };
 
-    const handleDeleteSale = (saleId: number) => {
+    const handleCancelSale = (saleId: number) => {
         if (window.confirm(t('sales.confirm_delete'))) {
-            deleteSale(saleId);
+            cancelSale(saleId);
         }
     };
 
@@ -63,10 +63,10 @@ const Sales: React.FC = () => {
                                     <td className="px-6 py-4">{formatTimestamp(sale.timestamp)}</td>
                                     <td className="px-6 py-4">
                                         <button 
-                                            onClick={() => handleDeleteSale(sale.id)} 
-                                            className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" 
-                                            title={t('delete')}>
-                                            <DeleteIcon className="w-5 h-5" />
+                                            onClick={() => handleCancelSale(sale.id)} 
+                                            className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500" 
+                                            title={t('sales.cancel_sale')}>
+                                            <UndoIcon className="w-5 h-5" />
                                         </button>
                                     </td>
                                 </tr>
