@@ -1,10 +1,12 @@
 
-import React, { useMemo } from 'react';
+
+import React, { useMemo, useState } from 'react';
 import StatCard from '../components/StatCard';
 import { useAppContext } from '../context/AppContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import type { Product, Language } from '../types';
-import { ShoppingBagIcon, DollarSignIcon, TrendingUpIcon, PackageXIcon, ShoppingCartIcon, ArchiveIcon, CreditCardIcon, PiggyBankIcon } from '../components/Icons';
+import { ShoppingBagIcon, DollarSignIcon, TrendingUpIcon, PackageXIcon, ShoppingCartIcon, ArchiveIcon, CreditCardIcon, PiggyBankIcon, AlertCircleIcon, XIcon } from '../components/Icons';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const COLORS = ['#22D3EE', '#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
 
@@ -26,6 +28,31 @@ const localeMap: Record<Language, string> = {
 const Dashboard: React.FC = () => {
   const { products, sales, t, language } = useAppContext();
   const locale = localeMap[language];
+  const [dismissedNotifications, setDismissedNotifications] = useState<number[]>([]);
+
+  const notifications = useMemo(() => {
+    const lowStockAlerts = products
+      .filter(p => p.stock > 0 && p.stock <= 5 && !dismissedNotifications.includes(p.id))
+      .map(p => ({
+        id: p.id,
+        type: 'warning',
+        message: t('dashboard.notifications.low_stock', { productName: p.name, count: p.stock }),
+      }));
+
+    const outOfStockAlerts = products
+      .filter(p => p.stock === 0 && !dismissedNotifications.includes(p.id))
+      .map(p => ({
+        id: p.id,
+        type: 'error',
+        message: t('dashboard.notifications.out_of_stock', { productName: p.name }),
+      }));
+
+    return [...outOfStockAlerts, ...lowStockAlerts];
+  }, [products, dismissedNotifications, t]);
+
+  const handleDismissNotification = (productId: number) => {
+    setDismissedNotifications(prev => [...prev, productId]);
+  };
 
   const stats = useMemo(() => {
     const totalProducts = products.length;
@@ -91,6 +118,43 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 text-slate-800 dark:text-white">
+        {notifications.length > 0 && (
+            <div className="space-y-3">
+                 <h3 className="text-xl font-semibold text-slate-800 dark:text-white">{t('dashboard.notifications.title')}</h3>
+                 <AnimatePresence>
+                    {notifications.map(notification => (
+                         <motion.div
+                            key={notification.id}
+                            layout
+                            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -20, scale: 0.95, transition: { duration: 0.2 } }}
+                            className={`flex items-center justify-between p-4 rounded-lg shadow ${
+                                notification.type === 'error'
+                                ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
+                                : 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300'
+                            }`}
+                         >
+                             <div className="flex items-center">
+                                {notification.type === 'error' ? (
+                                    <PackageXIcon className="w-5 h-5 me-3 flex-shrink-0" />
+                                ) : (
+                                    <AlertCircleIcon className="w-5 h-5 me-3 flex-shrink-0" />
+                                )}
+                                <span className="text-sm font-medium">{notification.message}</span>
+                             </div>
+                             <button 
+                                onClick={() => handleDismissNotification(notification.id)} 
+                                className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 ms-4"
+                                aria-label="Dismiss notification"
+                            >
+                                 <XIcon className="w-4 h-4" />
+                             </button>
+                         </motion.div>
+                    ))}
+                </AnimatePresence>
+            </div>
+        )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <StatCard icon={CreditCardIcon} title={t('dashboard.sales_revenue')} value={`${stats.salesRevenue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={PiggyBankIcon} title={t('dashboard.sales_profit')} value={`${stats.salesProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />

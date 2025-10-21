@@ -3,7 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import type { Product } from '../types';
 import ProductForm from '../components/ProductForm';
 import SaleModal from '../components/SaleModal';
-import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon } from '../components/Icons';
+import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon } from '../components/Icons';
 
 const calculateMargin = (product: Product) => {
   if (product.sellPrice === 0) return 0;
@@ -18,6 +18,7 @@ const Products: React.FC = () => {
   const [productToSell, setProductToSell] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const productsPerPage = 30;
   
   const timeAgo = (isoDate: string): string => {
@@ -31,14 +32,29 @@ const Products: React.FC = () => {
     return t('products.time_ago.days', { count: days });
   };
 
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery) {
+        return products;
+    }
+    return products.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.supplier.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [products, searchQuery]);
+
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * productsPerPage;
-    return products.slice(startIndex, startIndex + productsPerPage);
-  }, [products, currentPage]);
+    return filteredProducts.slice(startIndex, startIndex + productsPerPage);
+  }, [filteredProducts, currentPage]);
+  
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   useEffect(() => {
     setSelectedProducts([]);
-  }, [currentPage, products]);
+  }, [currentPage, products, searchQuery]);
 
   const handleOpenModal = (product?: Product) => {
     setProductToEdit(product || null);
@@ -80,7 +96,7 @@ const Products: React.FC = () => {
       handleCloseSaleModal();
   };
 
-  const totalPages = Math.ceil(products.length / productsPerPage);
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
   const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -131,6 +147,19 @@ const Products: React.FC = () => {
         </button>
       </div>
 
+      <div className="mb-4 relative">
+        <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
+            <SearchIcon className="w-5 h-5 text-slate-400" />
+        </div>
+        <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t('products.search_placeholder')}
+            className="w-full ps-10 pr-4 py-2 bg-white dark:bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
+        />
+      </div>
+
       {numSelected > 0 && (
         <div className="bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 p-3 rounded-lg mb-4 flex items-center justify-between shadow-md">
             <span className="font-semibold">{t('products.selected_text', { count: numSelected })}</span>
@@ -167,7 +196,7 @@ const Products: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {paginatedProducts.map(product => (
+              {paginatedProducts.length > 0 ? paginatedProducts.map(product => (
                 <tr key={product.id} className={`bg-white dark:bg-secondary border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 ${selectedProducts.includes(product.id) ? 'bg-cyan-50 dark:bg-cyan-900/20' : ''}`}>
                    <td className="w-4 p-4">
                         <div className="flex items-center">
@@ -236,7 +265,14 @@ const Products: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )) : (
+                <tr>
+                    <td colSpan={tableHeaderKeys.length + 2} className="text-center py-10">
+                        <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">{t('products.no_results_title')}</h3>
+                        <p className="text-slate-500 dark:text-slate-400">{t('products.no_results_subtitle')}</p>
+                    </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

@@ -29,7 +29,8 @@ import {
   CreditCard,
   PiggyBank,
   Undo2,
-  Copy
+  Copy,
+  Search
 } from 'lucide-react';
 
 export {
@@ -63,4 +64,5 @@ export {
   PiggyBank as PiggyBankIcon,
   Undo2 as UndoIcon,
   Copy as DuplicateIcon,
+  Search as SearchIcon,
 };
