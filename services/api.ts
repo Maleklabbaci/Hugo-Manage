@@ -43,9 +43,18 @@ export const api = {
     deleteSale: (id) => xanoRequest(`/sales/${id}`, 'DELETE'),
 
     // --- Activity Log ---
-    getActivityLog: (): Promise<ActivityLog[]> => xanoRequest('/activity_logs', 'GET'),
-    addActivityLog: (logData) => xanoRequest('/activity_logs', 'POST', logData),
+    getActivityLog: (): Promise<ActivityLog[]> => xanoRequest('/activity_log', 'GET'),
+    addActivityLog: (logData) => xanoRequest('/activity_log', 'POST', logData),
 
+    // --- Image Upload ---
+    uploadImage: (file: File): Promise<{ path: string, url: string }> => {
+        const formData = new FormData();
+        formData.append('content', file);
+        // This endpoint assumes a Xano API endpoint at '/upload/attachment' for file uploads.
+        // It might need to be adjusted based on the actual Xano setup.
+        return xanoRequest('/upload/attachment', 'POST', formData);
+    },
+    
     // --- Data Management ---
     exportData: async (): Promise<UserData> => {
         const [products, sales, activityLog] = await Promise.all([

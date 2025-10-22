@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Product } from '../types';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { XIcon } from './Icons';
+import { XIcon, UploadIcon, DeleteIcon, LoaderIcon } from './Icons';
 import { useAppContext } from '../context/AppContext';
+import { api } from '../services/api';
 
 interface ProductFormProps {
   isOpen: boolean;
@@ -24,28 +25,24 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
     stock: 0,
     imageUrl: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
     if (productToEdit) {
+      const { imageUrl, ...rest } = productToEdit;
       setFormData({
-        name: productToEdit.name,
-        category: productToEdit.category,
-        supplier: productToEdit.supplier,
-        buyPrice: productToEdit.buyPrice,
-        sellPrice: productToEdit.sellPrice,
-        stock: productToEdit.stock,
-        imageUrl: productToEdit.imageUrl || '',
+        ...rest,
+        imageUrl: imageUrl || '',
       });
-      if (productToEdit.imageUrl) {
-        setImagePreview(productToEdit.imageUrl);
-      } else {
-        setImagePreview(null);
-      }
+      setImagePreview(imageUrl || null);
     } else {
       setFormData({ name: '', category: '', supplier: '', buyPrice: 0, sellPrice: 0, stock: 0, imageUrl: '' });
       setImagePreview(null);
     }
+    setImageFile(null); // Reset file on open
   }, [productToEdit, isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -56,21 +53,48 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
     }));
   };
   
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setFormData(prev => ({ ...prev, imageUrl: value }));
-    setImagePreview(value);
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    }
   };
 
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setFormData(prev => ({ ...prev, imageUrl: '' }));
+    if(fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalProductData = { ...formData, imageUrl: formData.imageUrl || undefined };
+    setIsUploading(true);
+    let finalImageUrl = formData.imageUrl;
 
-    if (productToEdit) {
-        onSave({ ...productToEdit, ...finalProductData });
-    } else {
-        onSave(finalProductData);
+    try {
+      if (imageFile) {
+        const uploadResponse = await api.uploadImage(imageFile);
+        // Assuming the Xano response for an image upload has a 'url' property.
+        finalImageUrl = uploadResponse.url; 
+      }
+
+      const finalProductData = { ...formData, imageUrl: finalImageUrl || undefined };
+
+      if (productToEdit) {
+          onSave({ ...productToEdit, ...finalProductData });
+      } else {
+          onSave(finalProductData);
+      }
+    } catch (error) {
+        console.error("Failed to upload image or save product", error);
+        alert("Error uploading image. Please try again.");
+    } finally {
+        setIsUploading(false);
     }
   };
   
@@ -127,17 +151,45 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                                 ))}
                             </select>
                         </div>
-
-                        <div>
-                            <label htmlFor="imageUrl" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.image_label')}</label>
-                            <input type="url" id="imageUrl" name="imageUrl" value={formData.imageUrl} onChange={handleImageChange} placeholder="https://example.com/image.png" className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent" />
-                        </div>
-                        {imagePreview && (
-                            <div className="my-4 flex justify-center">
-                                <img src={imagePreview} alt="Aperçu du produit" className="w-32 h-32 object-cover rounded-lg" />
-                            </div>
-                        )}
                         
+                        <div>
+                            <label className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.image_label')}</label>
+                            <div className="flex items-center space-x-4">
+                                <div className="w-24 h-24 rounded-lg bg-slate-100 dark:bg-dark flex items-center justify-center overflow-hidden">
+                                {imagePreview ? (
+                                    <img src={imagePreview} alt="Aperçu" className="w-full h-full object-cover" />
+                                ) : (
+                                    <UploadIcon className="w-8 h-8 text-slate-400" />
+                                )}
+                                </div>
+                                <div className="flex-1">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageFileChange}
+                                        ref={fileInputRef}
+                                        className="hidden"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="w-full mb-2 bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-white rounded-lg px-4 py-2 hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors text-sm"
+                                    >
+                                        {t('product_form.change_image')}
+                                    </button>
+                                    {imagePreview && (
+                                    <button
+                                        type="button"
+                                        onClick={handleRemoveImage}
+                                        className="w-full bg-red-500/10 text-red-500 rounded-lg px-4 py-2 hover:bg-red-500/20 transition-colors text-sm"
+                                    >
+                                        {t('product_form.remove_image')}
+                                    </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                            <div>
                                 <label htmlFor="supplier" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.supplier_label')}</label>
@@ -162,7 +214,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
 
                         <div className="flex justify-end pt-4 space-x-3">
                             <button type="button" onClick={onClose} className="bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-white rounded-lg px-4 py-2 hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors">{t('cancel')}</button>
-                            <button type="submit" className="bg-accent hover:bg-accent-hover text-dark font-semibold rounded-lg px-4 py-2 transition-colors">{t('save')}</button>
+                            <button type="submit" disabled={isUploading} className="bg-accent hover:bg-accent-hover text-dark font-semibold rounded-lg px-4 py-2 transition-colors flex items-center justify-center disabled:opacity-50">
+                                {isUploading && <LoaderIcon className="w-5 h-5 me-2 animate-spin"/>}
+                                {t('save')}
+                            </button>
                         </div>
                     </form>
                 </motion.div>

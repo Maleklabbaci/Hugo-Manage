@@ -31,13 +31,11 @@ const ProtectedRoute: React.FC = () => {
 };
 
 const AppRoutes: React.FC = () => {
-    const { isLoading } = useAuth();
-
     return (
         <HashRouter>
             <Routes>
                 <Route path="/login" element={<Login />} />
-                <Route element={isLoading ? <div className="flex items-center justify-center min-h-screen bg-slate-100 dark:bg-dark"><LoaderIcon className="w-12 h-12 animate-spin text-accent" /></div> : <ProtectedRoute />}>
+                <Route element={<ProtectedRoute />}>
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/products" element={<Products />} />
