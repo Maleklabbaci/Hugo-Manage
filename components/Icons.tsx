@@ -30,7 +30,10 @@ import {
   PiggyBank,
   Undo2,
   Copy,
-  Search
+  Search,
+  Database,
+  Upload,
+  Download,
 } from 'lucide-react';
 
 export {
@@ -65,4 +68,7 @@ export {
   Undo2 as UndoIcon,
   Copy as DuplicateIcon,
   Search as SearchIcon,
+  Database as DatabaseIcon,
+  Upload as UploadIcon,
+  Download as DownloadIcon,
 };

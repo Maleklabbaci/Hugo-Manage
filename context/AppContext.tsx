@@ -21,6 +21,8 @@ interface AppContextType {
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   resetData: () => void;
+  importData: (jsonData: string) => Promise<void>;
+  exportData: () => string;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -325,9 +327,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     storage.saveProducts([...MOCK_PRODUCTS]);
   }, []);
 
+  const exportData = useCallback(() => {
+    const data = {
+        products: storage.loadProducts(),
+        sales: storage.loadSales(),
+        activityLog: storage.loadActivityLog(),
+    };
+    return JSON.stringify(data, null, 2);
+  }, []);
+
+  const importData = useCallback(async (jsonData: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        try {
+            const data = JSON.parse(jsonData);
+            if (Array.isArray(data.products) && Array.isArray(data.sales) && Array.isArray(data.activityLog)) {
+                storage.saveProducts(data.products);
+                storage.saveSales(data.sales);
+                storage.saveActivityLog(data.activityLog);
+                setProducts(data.products);
+                setSales(data.sales);
+                setActivityLog(data.activityLog);
+                resolve();
+            } else {
+                reject(new Error('Invalid data format'));
+            }
+        } catch (error) {
+            reject(error);
+        }
+    });
+  }, []);
 
   return (
-    <AppContext.Provider value={{ products, activityLog, sales, theme, language, t, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, cancelSale, setTheme, setLanguage, resetData }}>
+    <AppContext.Provider value={{ products, activityLog, sales, theme, language, t, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, cancelSale, setTheme, setLanguage, resetData, exportData, importData }}>
       {children}
     </AppContext.Provider>
   );
