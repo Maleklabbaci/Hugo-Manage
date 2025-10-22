@@ -18,8 +18,20 @@ const Products: React.FC = () => {
   const [productToSell, setProductToSell] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  
+  const [searchTerm, setSearchTerm] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const productsPerPage = 30;
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchQuery(searchTerm);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
   
   const timeAgo = (isoDate: string): string => {
     const seconds = Math.floor((new Date().getTime() - new Date(isoDate).getTime()) / 1000);
@@ -153,8 +165,8 @@ const Products: React.FC = () => {
         </div>
         <input
             type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={t('products.search_placeholder')}
             className="w-full ps-10 pr-4 py-2 bg-white dark:bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
         />

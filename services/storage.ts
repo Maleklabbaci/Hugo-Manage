@@ -22,12 +22,14 @@ const set = <T,>(key: string, value: T): void => {
 
 export const storage = {
   loadProducts: (): Product[] => {
-    const products = get<Product[]>('products', []);
-    if (products.length === 0) {
-      storage.saveProducts(MOCK_PRODUCTS);
+    const productsJSON = window.localStorage.getItem('products');
+    if (productsJSON === null) {
+      // First time loading, or data was cleared. Initialize with mock data.
+      set<Product[]>('products', MOCK_PRODUCTS);
       return MOCK_PRODUCTS;
     }
-    return products;
+    // Data exists, parse it (even if it's an empty array '[]').
+    return get<Product[]>('products', []);
   },
   saveProducts: (products: Product[]) => set<Product[]>('products', products),
   
