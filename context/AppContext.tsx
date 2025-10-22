@@ -1,8 +1,9 @@
+
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import type { Product, Theme, Language, ActivityLog, Sale } from '../types';
 import { storage } from '../services/storage';
-import { MOCK_PRODUCTS } from '../mock/products';
 import { translations } from '../translations';
+import { useAuth } from './AuthContext';
 
 interface AppContextType {
   products: Product[];
@@ -28,11 +29,28 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [products, setProducts] = useState<Product[]>(storage.loadProducts());
-  const [activityLog, setActivityLog] = useState<ActivityLog[]>(storage.loadActivityLog());
-  const [sales, setSales] = useState<Sale[]>(storage.loadSales());
+  const { currentUser, isAuthenticated } = useAuth();
+  
+  const [products, setProducts] = useState<Product[]>([]);
+  const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
+  const [sales, setSales] = useState<Sale[]>([]);
+  
   const [theme, setThemeState] = useState<Theme>(storage.getTheme());
   const [language, setLanguageState] = useState<Language>(storage.getLanguage());
+
+  // Load user data when authentication state changes
+  useEffect(() => {
+    if (isAuthenticated && currentUser) {
+      setProducts(storage.loadProducts(currentUser));
+      setActivityLog(storage.loadActivityLog(currentUser));
+      setSales(storage.loadSales(currentUser));
+    } else {
+      // Clear data on logout
+      setProducts([]);
+      setActivityLog([]);
+      setSales([]);
+    }
+  }, [isAuthenticated, currentUser]);
 
   const t = useCallback((key: string, options?: { [key: string]: string | number }) => {
     let translation = translations[language]?.[key] || key;
@@ -61,6 +79,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [language]);
   
   const logActivity = useCallback((logData: Omit<ActivityLog, 'id' | 'timestamp'>) => {
+    if (!currentUser) return;
     setActivityLog(prevLog => {
       const newLog: ActivityLog = {
         ...logData,
@@ -68,12 +87,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         timestamp: new Date().toISOString(),
       };
       const updatedLog = [newLog, ...prevLog];
-      storage.saveActivityLog(updatedLog);
+      storage.saveActivityLog(currentUser, updatedLog);
       return updatedLog;
     });
-  }, []);
+  }, [currentUser]);
 
   const addProduct = useCallback((productData: Omit<Product, 'id' | 'status' | 'updatedAt'>) => {
+    if (!currentUser) return;
     let newProduct: Product | null = null;
     setProducts(prevProducts => {
       newProduct = {
@@ -83,7 +103,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updatedAt: new Date().toISOString(),
       };
       const updatedProducts = [...prevProducts, newProduct];
-      storage.saveProducts(updatedProducts);
+      storage.saveProducts(currentUser, updatedProducts);
       return updatedProducts;
     });
 
@@ -96,9 +116,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             });
         }
     }, 0);
-  }, [logActivity]);
+  }, [logActivity, currentUser]);
 
   const updateProduct = useCallback((updatedProduct: Product) => {
+    if (!currentUser) return;
     setProducts(prevProducts => {
       const originalProduct = prevProducts.find(p => p.id === updatedProduct.id);
       
@@ -137,12 +158,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       }
       
-      storage.saveProducts(updatedProducts);
+      storage.saveProducts(currentUser, updatedProducts);
       return updatedProducts;
     });
-  }, [logActivity, t]);
+  }, [logActivity, t, currentUser]);
 
   const deleteProduct = useCallback((productId: number) => {
+    if (!currentUser) return;
     setProducts(prevProducts => {
       const productToDelete = prevProducts.find(p => p.id === productId);
       if (productToDelete) {
@@ -153,12 +175,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
       }
       const updatedProducts = prevProducts.filter(p => p.id !== productId);
-      storage.saveProducts(updatedProducts);
+      storage.saveProducts(currentUser, updatedProducts);
       return updatedProducts;
     });
-  }, [logActivity]);
+  }, [logActivity, currentUser]);
   
   const deleteMultipleProducts = useCallback((productIds: number[]) => {
+    if (!currentUser) return;
     setProducts(prevProducts => {
         const productsToDelete = prevProducts.filter(p => productIds.includes(p.id));
         
@@ -172,12 +195,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
 
         const updatedProducts = prevProducts.filter(p => !productIds.includes(p.id));
-        storage.saveProducts(updatedProducts);
+        storage.saveProducts(currentUser, updatedProducts);
         return updatedProducts;
     });
-  }, [logActivity, t]);
+  }, [logActivity, t, currentUser]);
 
   const duplicateProduct = useCallback((productId: number) => {
+    if (!currentUser) return;
     const productToDuplicate = products.find(p => p.id === productId);
     if (!productToDuplicate) {
         console.error("Produit à dupliquer non trouvé");
@@ -195,7 +219,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updatedAt: new Date().toISOString(),
       };
       const updatedProducts = [...prevProducts, newProduct];
-      storage.saveProducts(updatedProducts);
+      storage.saveProducts(currentUser, updatedProducts);
       return updatedProducts;
     });
 
@@ -209,9 +233,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             });
         }
     }, 0);
-  }, [products, logActivity, t]);
+  }, [products, logActivity, t, currentUser]);
 
   const addSale = useCallback((productId: number, quantity: number) => {
+    if (!currentUser) return;
     const productToSell = products.find(p => p.id === productId);
     if (!productToSell || productToSell.stock < quantity) {
         console.error("Stock insuffisant ou produit non trouvé");
@@ -231,7 +256,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setSales(prevSales => {
         const updatedSales = [newSale, ...prevSales];
-        storage.saveSales(updatedSales);
+        storage.saveSales(currentUser, updatedSales);
         return updatedSales;
     });
 
@@ -249,7 +274,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
             return p;
         });
-        storage.saveProducts(updatedProducts);
+        storage.saveProducts(currentUser, updatedProducts);
         return updatedProducts;
     });
 
@@ -259,9 +284,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         productName: productToSell.name,
         details: t('history.log.units_sold', { quantity }),
     });
-  }, [products, sales, logActivity, t]);
+  }, [products, sales, logActivity, t, currentUser]);
 
   const cancelSale = useCallback((saleId: number) => {
+    if (!currentUser) return;
     let saleToCancel: Sale | undefined;
 
     setSales(prevSales => {
@@ -269,7 +295,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (!saleToCancel) return prevSales;
         
         const updatedSales = prevSales.filter(s => s.id !== saleId);
-        storage.saveSales(updatedSales);
+        storage.saveSales(currentUser, updatedSales);
         return updatedSales;
     });
 
@@ -294,7 +320,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
             return p;
         });
-        storage.saveProducts(updatedProducts);
+        storage.saveProducts(currentUser, updatedProducts);
         return updatedProducts;
     });
     
@@ -307,8 +333,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
     }, 0);
 
-  }, [logActivity, t]);
-
+  }, [logActivity, t, currentUser]);
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
@@ -320,30 +345,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const resetData = useCallback(() => {
-    storage.resetData();
-    setProducts([...MOCK_PRODUCTS]);
-    setActivityLog([]);
-    setSales([]);
-    storage.saveProducts([...MOCK_PRODUCTS]);
-  }, []);
+    if (!currentUser) return;
+    storage.resetData(currentUser);
+    // Reload data into state after reset
+    setProducts(storage.loadProducts(currentUser));
+    setActivityLog(storage.loadActivityLog(currentUser));
+    setSales(storage.loadSales(currentUser));
+  }, [currentUser]);
 
   const exportData = useCallback(() => {
-    const data = {
-        products: storage.loadProducts(),
-        sales: storage.loadSales(),
-        activityLog: storage.loadActivityLog(),
-    };
-    return JSON.stringify(data, null, 2);
-  }, []);
+    if (!currentUser) return "";
+    const data = storage.exportUserData(currentUser);
+    return data ? JSON.stringify(data, null, 2) : "";
+  }, [currentUser]);
 
   const importData = useCallback(async (jsonData: string): Promise<void> => {
+    if (!currentUser) return Promise.reject('No user logged in');
     return new Promise((resolve, reject) => {
         try {
             const data = JSON.parse(jsonData);
             if (Array.isArray(data.products) && Array.isArray(data.sales) && Array.isArray(data.activityLog)) {
-                storage.saveProducts(data.products);
-                storage.saveSales(data.sales);
-                storage.saveActivityLog(data.activityLog);
+                storage.importUserData(currentUser, data);
                 setProducts(data.products);
                 setSales(data.sales);
                 setActivityLog(data.activityLog);
@@ -355,7 +377,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             reject(error);
         }
     });
-  }, []);
+  }, [currentUser]);
 
   return (
     <AppContext.Provider value={{ products, activityLog, sales, theme, language, t, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, cancelSale, setTheme, setLanguage, resetData, exportData, importData }}>
