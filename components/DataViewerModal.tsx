@@ -18,7 +18,7 @@ interface DataViewerModalProps<T> {
 
 const ITEMS_PER_PAGE = 10;
 
-const DataViewerModal = <T extends { id: number | string }>({ isOpen, onClose, title, data, columns }: DataViewerModalProps<T>) => {
+const DataViewerModal = <T extends { id: number }>({ isOpen, onClose, title, data, columns }: DataViewerModalProps<T>) => {
   const { t } = useAppContext();
   const [currentPage, setCurrentPage] = useState(1);
 

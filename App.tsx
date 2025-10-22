@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -11,21 +10,34 @@ import Settings from './pages/Settings';
 import History from './pages/History';
 import Sales from './pages/Sales';
 import Layout from './components/Layout';
+import { LoaderIcon } from './components/Icons';
 
 const ProtectedRoute: React.FC = () => {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, isLoading } = useAuth();
+    
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-slate-100 dark:bg-dark">
+                <LoaderIcon className="w-12 h-12 animate-spin text-accent" />
+            </div>
+        );
+    }
+    
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
     }
+    
     return <Layout />;
 };
 
 const AppRoutes: React.FC = () => {
+    const { isLoading } = useAuth();
+
     return (
         <HashRouter>
             <Routes>
                 <Route path="/login" element={<Login />} />
-                <Route element={<ProtectedRoute />}>
+                <Route element={isLoading ? <div className="flex items-center justify-center min-h-screen bg-slate-100 dark:bg-dark"><LoaderIcon className="w-12 h-12 animate-spin text-accent" /></div> : <ProtectedRoute />}>
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/products" element={<Products />} />

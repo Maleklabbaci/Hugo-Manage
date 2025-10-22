@@ -7,7 +7,7 @@ import { useAppContext } from '../context/AppContext';
 interface SaleModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (productId: number, quantity: number) => void;
+  onConfirm: (product: Product, quantity: number) => void;
   product: Product | null;
 }
 
@@ -41,7 +41,7 @@ const SaleModal: React.FC<SaleModalProps> = ({ isOpen, onClose, onConfirm, produ
     
     const handleSubmit = () => {
         if (quantity > 0 && quantity <= product.stock) {
-            onConfirm(product.id, quantity);
+            onConfirm(product, quantity);
             onClose();
         } else {
             setError(t('sale_modal.error.invalid_quantity'));

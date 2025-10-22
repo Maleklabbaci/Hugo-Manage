@@ -3,7 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import type { Product } from '../types';
 import ProductForm from '../components/ProductForm';
 import SaleModal from '../components/SaleModal';
-import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon } from '../components/Icons';
+import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, LoaderIcon } from '../components/Icons';
 
 const calculateMargin = (product: Product) => {
   if (product.sellPrice === 0) return 0;
@@ -18,6 +18,7 @@ const Products: React.FC = () => {
   const [productToSell, setProductToSell] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,8 +34,9 @@ const Products: React.FC = () => {
     };
   }, [searchTerm]);
   
-  const timeAgo = (isoDate: string): string => {
-    const seconds = Math.floor((new Date().getTime() - new Date(isoDate).getTime()) / 1000);
+  const timeAgo = (timestamp: number | undefined): string => {
+    if (!timestamp) return '-';
+    const seconds = Math.floor((new Date().getTime() - timestamp) / 1000);
     if (seconds < 60) return t('products.time_ago.now');
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return t('products.time_ago.minutes', { count: minutes });
@@ -78,18 +80,26 @@ const Products: React.FC = () => {
     setProductToEdit(null);
   };
 
-  const handleSaveProduct = (productData: Omit<Product, 'id'| 'status' | 'updatedAt'> | Product) => {
-    if ('id' in productData) {
-      updateProduct(productData as Product);
-    } else {
-      addProduct(productData);
+  const handleSaveProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'owner_id' | 'status'> | Product) => {
+    setIsLoading(true);
+    try {
+      if ('id' in productData) {
+        await updateProduct(productData as Product);
+      } else {
+        await addProduct(productData as Omit<Product, 'id' | 'created_at' | 'owner_id'>);
+      }
+    } catch (error) {
+      console.error("Failed to save product:", error);
     }
+    setIsLoading(false);
     handleCloseModal();
   };
   
-  const handleDelete = (productId: number) => {
+  const handleDelete = async (productId: number) => {
     if (window.confirm(t('products.confirm_delete'))) {
-        deleteProduct(productId);
+        setIsLoading(true);
+        await deleteProduct(productId);
+        setIsLoading(false);
     }
   }
 
@@ -103,8 +113,10 @@ const Products: React.FC = () => {
       setProductToSell(null);
   };
 
-  const handleConfirmSale = (productId: number, quantity: number) => {
-      addSale(productId, quantity);
+  const handleConfirmSale = async (product: Product, quantity: number) => {
+      setIsLoading(true);
+      await addSale(product, quantity);
+      setIsLoading(false);
       handleCloseSaleModal();
   };
 
@@ -132,18 +144,25 @@ const Products: React.FC = () => {
     }
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (window.confirm(t('products.confirm_delete_multiple', { count: selectedProducts.length }))) {
-        deleteMultipleProducts(selectedProducts);
+        setIsLoading(true);
+        await deleteMultipleProducts(selectedProducts);
         setSelectedProducts([]);
+        setIsLoading(false);
     }
   };
+  
+  const handleDuplicate = async (productId: number) => {
+    setIsLoading(true);
+    await duplicateProduct(productId);
+    setIsLoading(false);
+  }
 
   const numSelected = selectedProducts.length;
   const numOnPage = paginatedProducts.length;
   const isAllSelected = numSelected === numOnPage && numOnPage > 0;
 
-  const tableHeaders = ["Image", "Nom", "Catégorie", "Prix achat", "Prix vente", "Stock", "Marge (%)", "Statut", "Dernière modif.", "Actions"];
   const tableHeaderKeys = ["image", "name", "category", "buy_price", "sell_price", "stock", "margin", "status", "last_updated", "actions"];
 
   return (
@@ -185,7 +204,8 @@ const Products: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white dark:bg-secondary rounded-2xl shadow-lg overflow-hidden">
+      <div className="bg-white dark:bg-secondary rounded-2xl shadow-lg overflow-hidden relative">
+        {isLoading && <div className="absolute inset-0 bg-secondary/50 flex items-center justify-center z-10"><LoaderIcon className="w-8 h-8 animate-spin text-accent"/></div>}
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left rtl:text-right text-slate-500 dark:text-slate-400">
             <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-800 dark:text-slate-300">
@@ -242,7 +262,7 @@ const Products: React.FC = () => {
                       {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-xs whitespace-nowrap">{timeAgo(product.updatedAt)}</td>
+                  <td className="px-6 py-4 text-xs whitespace-nowrap">{timeAgo(product.updated_at || product.created_at)}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                         <button 
@@ -261,7 +281,7 @@ const Products: React.FC = () => {
                             <EditIcon className="w-5 h-5" />
                         </button>
                         <button 
-                            onClick={() => duplicateProduct(product.id)}
+                            onClick={() => handleDuplicate(product.id)}
                             className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500"
                             title={t('duplicate')}
                         >

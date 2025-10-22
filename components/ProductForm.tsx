@@ -7,7 +7,7 @@ import { useAppContext } from '../context/AppContext';
 interface ProductFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (product: Omit<Product, 'id' | 'status' | 'updatedAt'> | Product) => void;
+  onSave: (product: Omit<Product, 'id' | 'created_at' | 'owner_id' | 'status'> | Product) => void;
   productToEdit?: Product | null;
 }
 
@@ -22,10 +22,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
     buyPrice: 0,
     sellPrice: 0,
     stock: 0,
+    imageUrl: '',
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageData, setImageData] = useState<string | null>(null);
-
+  
   useEffect(() => {
     if (productToEdit) {
       setFormData({
@@ -35,18 +35,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
         buyPrice: productToEdit.buyPrice,
         sellPrice: productToEdit.sellPrice,
         stock: productToEdit.stock,
+        imageUrl: productToEdit.imageUrl || '',
       });
       if (productToEdit.imageUrl) {
         setImagePreview(productToEdit.imageUrl);
-        setImageData(productToEdit.imageUrl);
       } else {
         setImagePreview(null);
-        setImageData(null);
       }
     } else {
-      setFormData({ name: '', category: '', supplier: '', buyPrice: 0, sellPrice: 0, stock: 0 });
+      setFormData({ name: '', category: '', supplier: '', buyPrice: 0, sellPrice: 0, stock: 0, imageUrl: '' });
       setImagePreview(null);
-      setImageData(null);
     }
   }, [productToEdit, isOpen]);
 
@@ -57,23 +55,17 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
       [name]: type === 'number' ? parseFloat(value) || 0 : value,
     }));
   };
-
+  
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setImagePreview(base64String);
-        setImageData(base64String);
-      };
-      reader.readAsDataURL(file);
-    }
+    const { value } = e.target;
+    setFormData(prev => ({ ...prev, imageUrl: value }));
+    setImagePreview(value);
   };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const finalProductData = { ...formData, imageUrl: imageData || undefined };
+    const finalProductData = { ...formData, imageUrl: formData.imageUrl || undefined };
 
     if (productToEdit) {
         onSave({ ...productToEdit, ...finalProductData });
@@ -137,8 +129,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                         </div>
 
                         <div>
-                            <label htmlFor="image" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.image_label')}</label>
-                            <input type="file" id="image" name="image" accept="image/*" onChange={handleImageChange} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-500/10 file:text-accent hover:file:bg-cyan-500/20" />
+                            <label htmlFor="imageUrl" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.image_label')}</label>
+                            <input type="url" id="imageUrl" name="imageUrl" value={formData.imageUrl} onChange={handleImageChange} placeholder="https://example.com/image.png" className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent" />
                         </div>
                         {imagePreview && (
                             <div className="my-4 flex justify-center">

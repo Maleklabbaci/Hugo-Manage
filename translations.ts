@@ -32,11 +32,13 @@ export const translations: Record<Language, Record<string, string>> = {
 
     // Login Page
     'login.title': 'Chez Hugo Manager',
-    'login.subtitle': 'Connectez-vous à votre espace',
+    'login.subtitle': 'Accédez à votre panneau de gestion',
+    'login.email_label': 'Email',
     'login.email_placeholder': 'Email',
+    'login.password_label': 'Mot de passe',
     'login.password_placeholder': 'Mot de passe',
-    'login.submit_button': 'Connexion',
-    'login.error.incorrect_credentials': 'Identifiants incorrects',
+    'login.submit_button': 'Se connecter',
+    'login.error.incorrect_credentials': 'Identifiants incorrects ou erreur de connexion',
 
     // Dashboard
     'dashboard.sales_revenue': 'Revenu des Ventes',
@@ -200,11 +202,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.default': 'Chez Hugo',
 
     'login.title': 'Chez Hugo Manager',
-    'login.subtitle': 'Login to your workspace',
+    'login.subtitle': 'Access your management panel',
+    'login.email_label': 'Email',
     'login.email_placeholder': 'Email',
+    'login.password_label': 'Password',
     'login.password_placeholder': 'Password',
-    'login.submit_button': 'Login',
-    'login.error.incorrect_credentials': 'Incorrect credentials',
+    'login.submit_button': 'Sign in',
+    'login.error.incorrect_credentials': 'Incorrect credentials or connection error',
 
     'dashboard.sales_revenue': 'Sales Revenue',
     'dashboard.sales_profit': 'Sales Profit',
@@ -359,11 +363,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.default': 'Chez Hugo',
 
     'login.title': 'Chez Hugo Manager',
-    'login.subtitle': 'تسجيل الدخول إلى مساحتك',
+    'login.subtitle': 'الوصول إلى لوحة الإدارة الخاصة بك',
+    'login.email_label': 'البريد الإلكتروني',
     'login.email_placeholder': 'البريد الإلكتروني',
+    'login.password_label': 'كلمة المرور',
     'login.password_placeholder': 'كلمة المرور',
     'login.submit_button': 'تسجيل الدخول',
-    'login.error.incorrect_credentials': 'بيانات الاعتماد غير صحيحة',
+    'login.error.incorrect_credentials': 'بيانات الاعتماد غير صحيحة أو خطأ في الاتصال',
 
     'dashboard.sales_revenue': 'إيرادات المبيعات',
     'dashboard.sales_profit': 'أرباح المبيعات',

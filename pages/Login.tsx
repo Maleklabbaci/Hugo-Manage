@@ -6,21 +6,21 @@ import { AlertCircleIcon, LoaderIcon } from '../components/Icons';
 import { useAppContext } from '../context/AppContext';
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('admin@chezhugo.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, isAuthenticated } = useAuth();
   const { t } = useAppContext();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
       await login(email, password);
     } catch (err) {
-      setError(t((err as Error).message));
+      setError(t((err as Error).message || 'login.error.incorrect_credentials'));
     } finally {
       setLoading(false);
     }
@@ -50,34 +50,38 @@ const Login: React.FC = () => {
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t('login.subtitle')}</p>
         </div>
         
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+          <div className="space-y-4">
             <div>
-              <label htmlFor="email-address" className="sr-only">{t('login.email_placeholder')}</label>
+              <label htmlFor="email-address" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                {t('login.email_label')}
+              </label>
               <input
                 id="email-address"
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-transparent placeholder-slate-500 text-slate-900 dark:text-white rounded-t-md focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-dark placeholder-slate-500 text-slate-900 dark:text-white rounded-md focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm"
                 placeholder={t('login.email_placeholder')}
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">{t('login.password_placeholder')}</label>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                {t('login.password_label')}
+              </label>
               <input
                 id="password"
                 name="password"
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-transparent placeholder-slate-500 text-slate-900 dark:text-white rounded-b-md focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm"
+                className="appearance-none relative block w-full px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-dark placeholder-slate-500 text-slate-900 dark:text-white rounded-md focus:outline-none focus:ring-accent focus:border-accent focus:z-10 sm:text-sm"
                 placeholder={t('login.password_placeholder')}
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
           </div>

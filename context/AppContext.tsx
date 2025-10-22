@@ -1,7 +1,6 @@
-
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import type { Product, Theme, Language, ActivityLog, Sale } from '../types';
-import { storage } from '../services/storage';
+import type { Product, Theme, Language, ActivityLog, Sale, UserData } from '../types';
+import { api } from '../services/api';
 import { translations } from '../translations';
 import { useAuth } from './AuthContext';
 
@@ -12,18 +11,18 @@ interface AppContextType {
   theme: Theme;
   language: Language;
   t: (key: string, options?: { [key: string]: string | number }) => string;
-  addProduct: (product: Omit<Product, 'id' | 'status' | 'updatedAt'>) => void;
-  updateProduct: (product: Product) => void;
-  deleteProduct: (productId: number) => void;
-  deleteMultipleProducts: (productIds: number[]) => void;
-  duplicateProduct: (productId: number) => void;
-  addSale: (productId: number, quantity: number) => void;
-  cancelSale: (saleId: number) => void;
+  addProduct: (product: Omit<Product, 'id' | 'created_at' | 'owner_id'>) => Promise<void>;
+  updateProduct: (product: Product) => Promise<void>;
+  deleteProduct: (productId: number) => Promise<void>;
+  deleteMultipleProducts: (productIds: number[]) => Promise<void>;
+  duplicateProduct: (productId: number) => Promise<void>;
+  addSale: (product: Product, quantity: number) => Promise<void>;
+  cancelSale: (sale: Sale) => Promise<void>;
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
-  resetData: () => void;
+  resetData: () => Promise<void>;
   importData: (jsonData: string) => Promise<void>;
-  exportData: () => string;
+  exportData: () => Promise<string>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -35,22 +34,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   
-  const [theme, setThemeState] = useState<Theme>(storage.getTheme());
-  const [language, setLanguageState] = useState<Language>(storage.getLanguage());
+  const [theme, setThemeState] = useState<Theme>(api.getTheme());
+  const [language, setLanguageState] = useState<Language>(api.getLanguage());
 
-  // Load user data when authentication state changes
-  useEffect(() => {
-    if (isAuthenticated && currentUser) {
-      setProducts(storage.loadProducts(currentUser));
-      setActivityLog(storage.loadActivityLog(currentUser));
-      setSales(storage.loadSales(currentUser));
-    } else {
-      // Clear data on logout
-      setProducts([]);
-      setActivityLog([]);
-      setSales([]);
+  const fetchAllData = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const [initialProducts, initialSales, initialLogs] = await Promise.all([
+        api.getProducts(),
+        api.getSales(),
+        api.getActivityLog(),
+      ]);
+      setProducts(initialProducts);
+      setSales(initialSales);
+      setActivityLog(initialLogs);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
     }
-  }, [isAuthenticated, currentUser]);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAllData();
+    } else {
+      setProducts([]);
+      setSales([]);
+      setActivityLog([]);
+    }
+  }, [isAuthenticated, fetchAllData]);
 
   const t = useCallback((key: string, options?: { [key: string]: string | number }) => {
     let translation = translations[language]?.[key] || key;
@@ -69,7 +80,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else {
       root.classList.remove('dark');
     }
-    storage.setTheme(theme);
+    api.setTheme(theme);
   }, [theme]);
   
   useEffect(() => {
@@ -78,306 +89,205 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     root.dir = language === 'ar' ? 'rtl' : 'ltr';
   }, [language]);
   
-  const logActivity = useCallback((logData: Omit<ActivityLog, 'id' | 'timestamp'>) => {
+  const logActivity = useCallback(async (logData: Omit<ActivityLog, 'id' | 'created_at' | 'owner_id' | 'timestamp'>) => {
     if (!currentUser) return;
-    setActivityLog(prevLog => {
-      const newLog: ActivityLog = {
-        ...logData,
-        id: prevLog.length > 0 ? Math.max(...prevLog.map(l => l.id)) + 1 : 1,
-        timestamp: new Date().toISOString(),
-      };
-      const updatedLog = [newLog, ...prevLog];
-      storage.saveActivityLog(currentUser, updatedLog);
-      return updatedLog;
-    });
+    const newLog = {
+      ...logData,
+      timestamp: new Date().getTime(),
+    };
+    await api.addActivityLog(newLog);
+    // Refresh log after adding
+    setActivityLog(await api.getActivityLog());
   }, [currentUser]);
 
-  const addProduct = useCallback((productData: Omit<Product, 'id' | 'status' | 'updatedAt'>) => {
+  const addProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'owner_id'>) => {
     if (!currentUser) return;
-    let newProduct: Product | null = null;
-    setProducts(prevProducts => {
-      newProduct = {
-        ...productData,
-        id: prevProducts.length > 0 ? Math.max(...prevProducts.map(p => p.id)) + 1 : 1,
-        status: productData.stock > 0 ? 'actif' : 'rupture',
-        updatedAt: new Date().toISOString(),
-      };
-      const updatedProducts = [...prevProducts, newProduct];
-      storage.saveProducts(currentUser, updatedProducts);
-      return updatedProducts;
+    const newProductData = {
+      ...productData,
+      status: productData.stock > 0 ? 'actif' : 'rupture',
+    };
+    const newProduct = await api.addProduct(newProductData);
+    await logActivity({
+        action: 'created',
+        product_id: newProduct.id,
+        product_name: newProduct.name,
     });
+    setProducts(await api.getProducts());
+  };
 
-    setTimeout(() => {
-        if (newProduct) {
-             logActivity({
-                action: 'created',
-                productId: newProduct.id,
-                productName: newProduct.name,
-            });
-        }
-    }, 0);
-  }, [logActivity, currentUser]);
-
-  const updateProduct = useCallback((updatedProduct: Product) => {
+  const updateProduct = async (updatedProduct: Product) => {
     if (!currentUser) return;
-    setProducts(prevProducts => {
-      const originalProduct = prevProducts.find(p => p.id === updatedProduct.id);
-      
-      const updatedProducts = prevProducts.map(p => {
-        if (p.id === updatedProduct.id) {
-          const status: Product['status'] = updatedProduct.stock > 0 ? 'actif' : 'rupture';
-          return {
-            ...updatedProduct,
-            status,
-            updatedAt: new Date().toISOString(),
-          };
-        }
-        return p;
-      });
-
-      if (originalProduct) {
-        const changes: string[] = [];
-        (Object.keys(updatedProduct) as Array<keyof Product>).forEach(key => {
-            if (key !== 'id' && key !== 'updatedAt' && key !== 'status' && originalProduct[key] !== updatedProduct[key]) {
-                if(key === 'imageUrl') {
-                     if((originalProduct.imageUrl || '') !== (updatedProduct.imageUrl || '')) {
+    const originalProduct = products.find(p => p.id === updatedProduct.id);
+    if (!originalProduct) return;
+    
+    const status = updatedProduct.stock > 0 ? 'actif' : 'rupture';
+    const dataToUpdate = { ...updatedProduct, status };
+    
+    const changes: string[] = [];
+    (Object.keys(dataToUpdate) as Array<keyof Product>).forEach(key => {
+        if (key !== 'id' && key !== 'updated_at' && key !== 'status' && originalProduct[key] !== dataToUpdate[key]) {
+             if(key === 'imageUrl') {
+                  if((originalProduct.imageUrl || '') !== (dataToUpdate.imageUrl || '')) {
                        changes.push(t('history.log.image_updated'));
-                     }
-                } else {
-                     changes.push(`${t('log.'+key) || key}: "${originalProduct[key]}" → "${updatedProduct[key]}"`);
-                }
-            }
-        });
-        if (changes.length > 0) {
-            logActivity({
-                action: 'updated',
-                productId: updatedProduct.id,
-                productName: updatedProduct.name,
-                details: changes.join('; '),
-            });
+                  }
+             } else {
+                  changes.push(`${t('log.'+key) || key}: "${originalProduct[key]}" → "${dataToUpdate[key]}"`);
+             }
         }
-      }
-      
-      storage.saveProducts(currentUser, updatedProducts);
-      return updatedProducts;
     });
-  }, [logActivity, t, currentUser]);
 
-  const deleteProduct = useCallback((productId: number) => {
+    await api.updateProduct(updatedProduct.id, dataToUpdate);
+    setProducts(await api.getProducts());
+
+    if (changes.length > 0) {
+        await logActivity({
+            action: 'updated',
+            product_id: updatedProduct.id,
+            product_name: updatedProduct.name,
+            details: changes.join('; '),
+        });
+    }
+  };
+
+  const deleteProduct = async (productId: number) => {
     if (!currentUser) return;
-    setProducts(prevProducts => {
-      const productToDelete = prevProducts.find(p => p.id === productId);
-      if (productToDelete) {
-        logActivity({
+    const productToDelete = products.find(p => p.id === productId);
+    if (productToDelete) {
+        await api.deleteProduct(productId);
+        await logActivity({
           action: 'deleted',
-          productId: productToDelete.id,
-          productName: productToDelete.name,
+          product_id: productToDelete.id,
+          product_name: productToDelete.name,
         });
-      }
-      const updatedProducts = prevProducts.filter(p => p.id !== productId);
-      storage.saveProducts(currentUser, updatedProducts);
-      return updatedProducts;
-    });
-  }, [logActivity, currentUser]);
+        setProducts(await api.getProducts());
+    }
+  };
   
-  const deleteMultipleProducts = useCallback((productIds: number[]) => {
+  const deleteMultipleProducts = async (productIds: number[]) => {
     if (!currentUser) return;
-    setProducts(prevProducts => {
-        const productsToDelete = prevProducts.filter(p => productIds.includes(p.id));
-        
-        productsToDelete.forEach(product => {
-            logActivity({
-                action: 'deleted',
-                productId: product.id,
-                productName: product.name,
-                details: t('history.log.bulk_delete'),
-            });
+    const productsToDelete = products.filter(p => productIds.includes(p.id));
+    
+    for (const product of productsToDelete) {
+        await api.deleteProduct(product.id);
+        await logActivity({
+            action: 'deleted',
+            product_id: product.id,
+            product_name: product.name,
+            details: t('history.log.bulk_delete'),
         });
+    }
+    setProducts(await api.getProducts());
+  };
 
-        const updatedProducts = prevProducts.filter(p => !productIds.includes(p.id));
-        storage.saveProducts(currentUser, updatedProducts);
-        return updatedProducts;
-    });
-  }, [logActivity, t, currentUser]);
-
-  const duplicateProduct = useCallback((productId: number) => {
+  const duplicateProduct = async (productId: number) => {
     if (!currentUser) return;
     const productToDuplicate = products.find(p => p.id === productId);
-    if (!productToDuplicate) {
-        console.error("Produit à dupliquer non trouvé");
-        return;
-    }
+    if (!productToDuplicate) return;
 
-    let newProduct: Product | null = null;
-    setProducts(prevProducts => {
-      newProduct = {
-        ...productToDuplicate,
-        id: prevProducts.length > 0 ? Math.max(...prevProducts.map(p => p.id)) + 1 : 1,
+    const { id, created_at, owner_id, ...rest } = productToDuplicate;
+    const newProductData = {
+        ...rest,
         name: `${productToDuplicate.name} (copie)`,
         stock: 0,
         status: 'rupture',
-        updatedAt: new Date().toISOString(),
-      };
-      const updatedProducts = [...prevProducts, newProduct];
-      storage.saveProducts(currentUser, updatedProducts);
-      return updatedProducts;
+    };
+    
+    const newProduct = await api.addProduct(newProductData);
+    await logActivity({
+        action: 'created',
+        product_id: newProduct.id,
+        product_name: newProduct.name,
+        details: t('history.log.duplicated', { productName: productToDuplicate.name }),
     });
+    setProducts(await api.getProducts());
+  };
 
-    setTimeout(() => {
-        if (newProduct) {
-             logActivity({
-                action: 'created',
-                productId: newProduct.id,
-                productName: newProduct.name,
-                details: t('history.log.duplicated', {productName: productToDuplicate.name}),
-            });
-        }
-    }, 0);
-  }, [products, logActivity, t, currentUser]);
+  const addSale = async (productToSell: Product, quantity: number) => {
+    if (!currentUser || productToSell.stock < quantity) return;
 
-  const addSale = useCallback((productId: number, quantity: number) => {
-    if (!currentUser) return;
-    const productToSell = products.find(p => p.id === productId);
-    if (!productToSell || productToSell.stock < quantity) {
-        console.error("Stock insuffisant ou produit non trouvé");
-        return;
-    }
-
-    const newSale: Sale = {
-        id: sales.length > 0 ? Math.max(...sales.map(s => s.id)) + 1 : 1,
-        productId: productToSell.id,
-        productName: productToSell.name,
+    const newSaleData = {
+        product_id: productToSell.id,
+        product_name: productToSell.name,
         quantity,
         sellPrice: productToSell.sellPrice,
         totalPrice: productToSell.sellPrice * quantity,
         totalMargin: (productToSell.sellPrice - productToSell.buyPrice) * quantity,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().getTime(),
     };
+    await api.addSale(newSaleData);
 
-    setSales(prevSales => {
-        const updatedSales = [newSale, ...prevSales];
-        storage.saveSales(currentUser, updatedSales);
-        return updatedSales;
-    });
+    const newStock = productToSell.stock - quantity;
+    const status = newStock > 0 ? 'actif' : 'rupture';
+    await api.updateProduct(productToSell.id, { ...productToSell, stock: newStock, status });
 
-    setProducts(prevProducts => {
-        const updatedProducts = prevProducts.map(p => {
-            if (p.id === productId) {
-                const newStock = p.stock - quantity;
-                const status: Product['status'] = newStock > 0 ? 'actif' : 'rupture';
-                return {
-                    ...p,
-                    stock: newStock,
-                    status,
-                    updatedAt: new Date().toISOString(),
-                };
-            }
-            return p;
-        });
-        storage.saveProducts(currentUser, updatedProducts);
-        return updatedProducts;
-    });
-
-    logActivity({
+    await logActivity({
         action: 'sold',
-        productId: productToSell.id,
-        productName: productToSell.name,
+        product_id: productToSell.id,
+        product_name: productToSell.name,
         details: t('history.log.units_sold', { quantity }),
     });
-  }, [products, sales, logActivity, t, currentUser]);
+    setProducts(await api.getProducts());
+    setSales(await api.getSales());
+  };
 
-  const cancelSale = useCallback((saleId: number) => {
+  const cancelSale = async (saleToCancel: Sale) => {
     if (!currentUser) return;
-    let saleToCancel: Sale | undefined;
-
-    setSales(prevSales => {
-        saleToCancel = prevSales.find(s => s.id === saleId);
-        if (!saleToCancel) return prevSales;
-        
-        const updatedSales = prevSales.filter(s => s.id !== saleId);
-        storage.saveSales(currentUser, updatedSales);
-        return updatedSales;
-    });
-
-    if (!saleToCancel) {
-        console.error("Vente non trouvée");
-        return;
+    
+    const productToUpdate = products.find(p => p.id === saleToCancel.product_id);
+    
+    await api.deleteSale(saleToCancel.id);
+    
+    if (productToUpdate) {
+        const newStock = productToUpdate.stock + saleToCancel.quantity;
+        const status = newStock > 0 ? 'actif' : 'rupture';
+        await api.updateProduct(productToUpdate.id, { ...productToUpdate, stock: newStock, status });
     }
     
-    const saleInfo = saleToCancel;
-
-    setProducts(prevProducts => {
-        const updatedProducts = prevProducts.map(p => {
-            if (p.id === saleInfo.productId) {
-                const newStock = p.stock + saleInfo.quantity;
-                const status: Product['status'] = newStock > 0 ? 'actif' : 'rupture';
-                return {
-                    ...p,
-                    stock: newStock,
-                    status,
-                    updatedAt: new Date().toISOString(),
-                };
-            }
-            return p;
-        });
-        storage.saveProducts(currentUser, updatedProducts);
-        return updatedProducts;
+    await logActivity({
+        action: 'sale_cancelled',
+        product_id: saleToCancel.product_id,
+        product_name: saleToCancel.product_name,
+        details: t('history.log.sale_cancelled', { quantity: saleToCancel.quantity }),
     });
-    
-    setTimeout(() => {
-        logActivity({
-            action: 'sale_cancelled',
-            productId: saleInfo.productId,
-            productName: saleInfo.productName,
-            details: t('history.log.sale_cancelled', { quantity: saleInfo.quantity }),
-        });
-    }, 0);
-
-  }, [logActivity, t, currentUser]);
+    setProducts(await api.getProducts());
+    setSales(await api.getSales());
+  };
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
   }, []);
   
   const setLanguage = useCallback((newLanguage: Language) => {
-    storage.setLanguage(newLanguage);
+    api.setLanguage(newLanguage);
     setLanguageState(newLanguage);
   }, []);
 
-  const resetData = useCallback(() => {
+  const resetData = async () => {
     if (!currentUser) return;
-    storage.resetData(currentUser);
-    // Reload data into state after reset
-    setProducts(storage.loadProducts(currentUser));
-    setActivityLog(storage.loadActivityLog(currentUser));
-    setSales(storage.loadSales(currentUser));
-  }, [currentUser]);
+    await api.resetData();
+    await fetchAllData();
+  };
 
-  const exportData = useCallback(() => {
+  const exportData = async () => {
     if (!currentUser) return "";
-    const data = storage.exportUserData(currentUser);
+    const data = await api.exportData();
     return data ? JSON.stringify(data, null, 2) : "";
-  }, [currentUser]);
+  };
 
-  const importData = useCallback(async (jsonData: string): Promise<void> => {
+  const importData = async (jsonData: string): Promise<void> => {
     if (!currentUser) return Promise.reject('No user logged in');
-    return new Promise((resolve, reject) => {
-        try {
-            const data = JSON.parse(jsonData);
-            if (Array.isArray(data.products) && Array.isArray(data.sales) && Array.isArray(data.activityLog)) {
-                storage.importUserData(currentUser, data);
-                setProducts(data.products);
-                setSales(data.sales);
-                setActivityLog(data.activityLog);
-                resolve();
-            } else {
-                reject(new Error('Invalid data format'));
-            }
-        } catch (error) {
-            reject(error);
+    try {
+        const data: UserData = JSON.parse(jsonData);
+        if (Array.isArray(data.products) && Array.isArray(data.sales) && Array.isArray(data.activityLog)) {
+            await api.importData(data);
+            await fetchAllData();
+        } else {
+            throw new Error('Invalid data format');
         }
-    });
-  }, [currentUser]);
+    } catch (error) {
+        throw error;
+    }
+  };
 
   return (
     <AppContext.Provider value={{ products, activityLog, sales, theme, language, t, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, cancelSale, setTheme, setLanguage, resetData, exportData, importData }}>

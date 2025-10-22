@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import { ShoppingCartIcon, UndoIcon } from '../components/Icons';
-import type { Language } from '../types';
+import type { Language, Sale } from '../types';
 
 const localeMap: Record<Language, string> = {
     fr: 'fr-FR',
@@ -14,14 +13,14 @@ const Sales: React.FC = () => {
     const { sales, cancelSale, t, language } = useAppContext();
     const locale = localeMap[language];
 
-    const formatTimestamp = (isoString: string) => {
-      const date = new Date(isoString);
+    const formatTimestamp = (timestamp: number) => {
+      const date = new Date(timestamp);
       return date.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
     };
 
-    const handleCancelSale = (saleId: number) => {
+    const handleCancelSale = (sale: Sale) => {
         if (window.confirm(t('sales.confirm_delete'))) {
-            cancelSale(saleId);
+            cancelSale(sale);
         }
     };
 
@@ -53,7 +52,7 @@ const Sales: React.FC = () => {
                         <tbody>
                             {sales.map(sale => (
                                 <tr key={sale.id} className="bg-white dark:bg-secondary border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                    <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{sale.productName}</td>
+                                    <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{sale.product_name}</td>
                                     <td className="px-6 py-4">{sale.quantity}</td>
                                     <td className="px-6 py-4">{sale.sellPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>
                                     <td className="px-6 py-4 font-semibold">{sale.totalPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>
@@ -63,7 +62,7 @@ const Sales: React.FC = () => {
                                     <td className="px-6 py-4">{formatTimestamp(sale.timestamp)}</td>
                                     <td className="px-6 py-4">
                                         <button 
-                                            onClick={() => handleCancelSale(sale.id)} 
+                                            onClick={() => handleCancelSale(sale)} 
                                             className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500" 
                                             title={t('sales.cancel_sale')}>
                                             <UndoIcon className="w-5 h-5" />

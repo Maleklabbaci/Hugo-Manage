@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import { AddIcon, EditIcon, DeleteIcon, ShoppingCartIcon, UndoIcon } from '../components/Icons';
@@ -15,8 +14,8 @@ const History: React.FC = () => {
   const { activityLog, t, language } = useAppContext();
   const locale = localeMap[language];
 
-  const formatTimestamp = (isoString: string) => {
-    const date = new Date(isoString);
+  const formatTimestamp = (timestamp: number) => {
+    const date = new Date(timestamp);
     return date.toLocaleString(locale, {
       day: '2-digit',
       month: '2-digit',
@@ -32,31 +31,31 @@ const History: React.FC = () => {
         return {
           Icon: AddIcon,
           color: 'text-green-500',
-          title: t('history.action.created', { productName: log.productName }),
+          title: t('history.action.created', { productName: log.product_name }),
         };
       case 'updated':
         return {
           Icon: EditIcon,
           color: 'text-blue-500',
-          title: t('history.action.updated', { productName: log.productName }),
+          title: t('history.action.updated', { productName: log.product_name }),
         };
       case 'deleted':
         return {
           Icon: DeleteIcon,
           color: 'text-red-500',
-          title: t('history.action.deleted', { productName: log.productName }),
+          title: t('history.action.deleted', { productName: log.product_name }),
         };
       case 'sold':
         return {
           Icon: ShoppingCartIcon,
           color: 'text-green-500',
-          title: t('history.action.sold', { productName: log.productName }),
+          title: t('history.action.sold', { productName: log.product_name }),
         };
       case 'sale_cancelled':
         return {
           Icon: UndoIcon,
           color: 'text-amber-500',
-          title: t('history.action.sale_cancelled', { productName: log.productName }),
+          title: t('history.action.sale_cancelled', { productName: log.product_name }),
         };
       default:
         return {

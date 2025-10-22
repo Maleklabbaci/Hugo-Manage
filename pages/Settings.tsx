@@ -9,6 +9,7 @@ const Settings: React.FC = () => {
   const { theme, setTheme, language, setLanguage, t, products, sales, activityLog, importData, exportData, resetData } = useAppContext();
   const { logout } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [modalContent, setModalContent] = useState<{
     isOpen: boolean;
@@ -19,8 +20,8 @@ const Settings: React.FC = () => {
 
   const locale = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-GB' : 'ar-SA-u-nu-latn';
 
-  const formatTimestamp = (isoString: string) => {
-    const date = new Date(isoString);
+  const formatTimestamp = (timestamp: number) => {
+    const date = new Date(timestamp);
     return date.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
   };
   
@@ -32,8 +33,9 @@ const Settings: React.FC = () => {
       setLanguage(e.target.value as Language);
   }
 
-  const handleExport = () => {
-    const jsonData = exportData();
+  const handleExport = async () => {
+    setIsLoading(true);
+    const jsonData = await exportData();
     const blob = new Blob([jsonData], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -44,6 +46,7 @@ const Settings: React.FC = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    setIsLoading(false);
   };
 
   const handleImportClick = () => {
@@ -54,6 +57,7 @@ const Settings: React.FC = () => {
       const file = e.target.files?.[0];
       if (file) {
           if (window.confirm(t('settings.confirm_import_text'))) {
+              setIsLoading(true);
               const reader = new FileReader();
               reader.onload = async (event) => {
                   try {
@@ -63,10 +67,13 @@ const Settings: React.FC = () => {
                   } catch (err) {
                       console.error(err);
                       alert(t('settings.import_error_format'));
+                  } finally {
+                      setIsLoading(false);
                   }
               };
               reader.onerror = () => {
                   alert(t('settings.import_error_read'));
+                  setIsLoading(false);
               }
               reader.readAsText(file);
           }
@@ -74,9 +81,11 @@ const Settings: React.FC = () => {
       if(e.target) e.target.value = '';
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
       if (window.confirm(t('settings.confirm_reset_text'))) {
-          resetData();
+          setIsLoading(true);
+          await resetData();
+          setIsLoading(false);
       }
   };
 
@@ -100,7 +109,7 @@ const Settings: React.FC = () => {
         title: t('sidebar.sales'),
         data: sales,
         columns: [
-            { header: t('sales.table.product'), accessor: (s: Sale) => s.productName },
+            { header: t('sales.table.product'), accessor: (s: Sale) => s.product_name },
             { header: t('sales.table.quantity'), accessor: (s: Sale) => s.quantity },
             { header: t('sales.table.total_price'), accessor: (s: Sale) => s.totalPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' }) },
             { header: t('sales.table.date'), accessor: (s: Sale) => formatTimestamp(s.timestamp) },
@@ -127,7 +136,7 @@ const Settings: React.FC = () => {
           data: activityLog,
           columns: [
               { header: t('actions'), accessor: (log: ActivityLog) => getActionIcon(log.action) },
-              { header: t('history.title'), accessor: (log: ActivityLog) => t(`history.action.${log.action}`, { productName: log.productName }) },
+              { header: t('history.title'), accessor: (log: ActivityLog) => t(`history.action.${log.action}`, { productName: log.product_name }) },
               { header: t('history.details'), accessor: (log: ActivityLog) => log.details || '-' },
               { header: t('sales.table.date'), accessor: (log: ActivityLog) => formatTimestamp(log.timestamp) },
           ]
@@ -183,14 +192,16 @@ const Settings: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button
                     onClick={handleExport}
-                    className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg px-4 py-2 transition-colors"
+                    disabled={isLoading}
+                    className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg px-4 py-2 transition-colors disabled:opacity-50"
                 >
                     <DownloadIcon className="w-5 h-5 me-2"/>
                     {t('settings.data_export')}
                 </button>
                 <button
                     onClick={handleImportClick}
-                    className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg px-4 py-2 transition-colors"
+                    disabled={isLoading}
+                    className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg px-4 py-2 transition-colors disabled:opacity-50"
                 >
                     <UploadIcon className="w-5 h-5 me-2"/>
                     {t('settings.data_import')}
@@ -198,7 +209,8 @@ const Settings: React.FC = () => {
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="application/json" />
                 <button
                     onClick={handleReset}
-                    className="flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg px-4 py-2 transition-colors"
+                    disabled={isLoading}
+                    className="flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg px-4 py-2 transition-colors disabled:opacity-50"
                 >
                     <RefreshCwIcon className="w-5 h-5 me-2"/>
                     {t('settings.data_reset')}
