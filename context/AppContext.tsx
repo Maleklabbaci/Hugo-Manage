@@ -66,8 +66,8 @@ interface AppContextType {
   isLoading: boolean;
   isConfigured: boolean;
   t: (key: string, options?: { [key: string]: string | number }) => string;
-  addProduct: (product: Omit<Product, 'id' | 'status' | 'updatedAt'>) => Promise<void>;
-  updateProduct: (product: Product) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id' | 'status' | 'updatedAt'>) => Promise<Product | null>;
+  updateProduct: (product: Product) => Promise<Product | null>;
   deleteProduct: (productId: number) => Promise<void>;
   deleteMultipleProducts: (productIds: number[]) => Promise<void>;
   duplicateProduct: (productId: number) => Promise<void>;
@@ -174,8 +174,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [supabase]);
 
-  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'status' | 'updatedAt'>) => {
-    if (!supabase) return;
+  const addProduct = useCallback(async (productData: Omit<Product, 'id' | 'status' | 'updatedAt'>): Promise<Product | null> => {
+    if (!supabase) return null;
     const newProductData = {
         ...productData,
         status: productData.stock > 0 ? 'actif' : 'rupture',
@@ -186,58 +186,64 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     if (error) {
         console.error("Failed to add product:", error);
-    } else {
-        const newProduct = data[0];
-        setProducts(prev => [newProduct, ...prev]);
-        logActivity({
-            action: 'created',
-            productId: newProduct.id,
-            productName: newProduct.name,
-        });
+        alert(t('product_form.error_add', { error: error.message }));
+        return null;
     }
-  }, [supabase, logActivity]);
+    
+    const newProduct = data[0];
+    setProducts(prev => [newProduct, ...prev]);
+    logActivity({
+        action: 'created',
+        productId: newProduct.id,
+        productName: newProduct.name,
+    });
+    return newProduct;
+  }, [supabase, logActivity, t]);
 
-  const updateProduct = useCallback(async (updatedProduct: Product) => {
-    if (!supabase) return;
+  const updateProduct = useCallback(async (updatedProduct: Product): Promise<Product | null> => {
+    if (!supabase) return null;
     const originalProduct = products.find(p => p.id === updatedProduct.id);
     
-    const payload = {
+    // Fix: Explicitly type `payload` as `Product` to prevent type widening of the `status` property to a generic `string`.
+    const payload: Product = {
       ...updatedProduct,
       status: updatedProduct.stock > 0 ? 'actif' : 'rupture',
       updatedAt: new Date().toISOString(),
     };
-
-    setProducts(prev => prev.map(p => p.id === updatedProduct.id ? payload : p));
     
     const { error } = await supabase.from('products').update(payload).match({ id: updatedProduct.id });
 
     if (error) {
         console.error("Failed to update product:", error);
-        setProducts(prev => prev.map(p => p.id === updatedProduct.id ? originalProduct || p : p)); // Revert
-    } else {
-        if (originalProduct) {
-            const changes: string[] = [];
-            (Object.keys(updatedProduct) as Array<keyof Product>).forEach(key => {
-                if (key !== 'id' && key !== 'updatedAt' && key !== 'status' && originalProduct[key] !== updatedProduct[key]) {
-                    if(key === 'imageUrl') {
-                         if((originalProduct.imageUrl || '') !== (updatedProduct.imageUrl || '')) {
-                           changes.push(t('history.log.image_updated'));
-                         }
-                    } else {
-                         changes.push(`${t('log.'+key) || key}: "${originalProduct[key]}" → "${updatedProduct[key]}"`);
-                    }
+        alert(t('product_form.error_update', { error: error.message }));
+        return null;
+    } 
+
+    setProducts(prev => prev.map(p => p.id === updatedProduct.id ? payload : p));
+    
+    if (originalProduct) {
+        const changes: string[] = [];
+        (Object.keys(updatedProduct) as Array<keyof Product>).forEach(key => {
+            if (key !== 'id' && key !== 'updatedAt' && key !== 'status' && originalProduct[key] !== updatedProduct[key]) {
+                if(key === 'imageUrl') {
+                     if((originalProduct.imageUrl || '') !== (updatedProduct.imageUrl || '')) {
+                       changes.push(t('history.log.image_updated'));
+                     }
+                } else {
+                     changes.push(`${t('log.'+key) || key}: "${originalProduct[key]}" → "${updatedProduct[key]}"`);
                 }
-            });
-            if (changes.length > 0) {
-                logActivity({
-                    action: 'updated',
-                    productId: updatedProduct.id,
-                    productName: updatedProduct.name,
-                    details: changes.join('; '),
-                });
             }
-          }
-    }
+        });
+        if (changes.length > 0) {
+            logActivity({
+                action: 'updated',
+                productId: updatedProduct.id,
+                productName: updatedProduct.name,
+                details: changes.join('; '),
+            });
+        }
+      }
+    return payload;
   }, [supabase, products, logActivity, t]);
 
   const deleteProduct = useCallback(async (productId: number) => {

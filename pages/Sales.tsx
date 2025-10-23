@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ShoppingCartIcon, UndoIcon } from '../components/Icons';
+import { ShoppingCartIcon, UndoIcon, DollarSignIcon, ArchiveIcon, TrendingUpIcon } from '../components/Icons';
 import type { Language, Sale } from '../types';
 
 const localeMap: Record<Language, string> = {
@@ -14,30 +13,30 @@ const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTim
     const { t, language } = useAppContext();
     const locale = localeMap[language];
     return (
-        <div className="bg-white dark:bg-secondary rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white dark:bg-secondary rounded-xl shadow-md overflow-hidden">
             <div className="p-4">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h3 className="font-bold text-slate-800 dark:text-white">{sale.productName}</h3>
+                        <h3 className="font-bold text-slate-800 dark:text-white leading-tight">{sale.productName}</h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400">{formatTimestamp(sale.timestamp)}</p>
                     </div>
-                    <button onClick={() => onCancel(sale.id)} className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500" title={t('sales.cancel_sale')}>
+                    <button onClick={() => onCancel(sale.id)} className="p-2 -mt-1 -me-1 rounded-full transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500" title={t('sales.cancel_sale')}>
                         <UndoIcon className="w-5 h-5" />
                     </button>
                 </div>
-            </div>
-            <div className="grid grid-cols-3 gap-px bg-slate-100 dark:bg-dark text-center text-sm">
-                <div className="bg-white dark:bg-secondary p-2">
-                    <div className="text-xs text-slate-500 dark:text-slate-400">{t('sales.table.total_price')}</div>
-                    <div className="font-semibold">{sale.totalPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</div>
-                </div>
-                <div className="bg-white dark:bg-secondary p-2">
-                    <div className="text-xs text-slate-500 dark:text-slate-400">{t('sales.table.quantity')}</div>
-                    <div className="font-semibold">{sale.quantity}</div>
-                </div>
-                <div className="bg-white dark:bg-secondary p-2">
-                    <div className="text-xs text-slate-500 dark:text-slate-400">{t('sales.table.margin')}</div>
-                    <div className="font-semibold text-green-500">{(sale.totalMargin ?? 0).toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</div>
+                <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+                    <div className="bg-slate-50 dark:bg-dark p-2 rounded-lg">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">{t('sales.table.quantity')}</div>
+                        <div className="font-semibold text-slate-800 dark:text-white flex items-center justify-center space-x-1"><ArchiveIcon className="w-4 h-4"/><span>{sale.quantity}</span></div>
+                    </div>
+                     <div className="bg-slate-50 dark:bg-dark p-2 rounded-lg">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">{t('sales.table.total_price')}</div>
+                        <div className="font-semibold text-slate-800 dark:text-white flex items-center justify-center space-x-1"><DollarSignIcon className="w-4 h-4"/><span>{sale.totalPrice.toFixed(0)}</span></div>
+                    </div>
+                     <div className="bg-slate-50 dark:bg-dark p-2 rounded-lg">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">{t('sales.table.margin')}</div>
+                        <div className="font-semibold text-green-500 flex items-center justify-center space-x-1"><TrendingUpIcon className="w-4 h-4"/><span>{(sale.totalMargin ?? 0).toFixed(0)}</span></div>
+                    </div>
                 </div>
             </div>
         </div>

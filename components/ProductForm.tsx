@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import type { Product } from '../types';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { XIcon } from './Icons';
+import { XIcon, LoaderIcon } from './Icons';
 import { useAppContext } from '../context/AppContext';
 
 interface ProductFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (product: Omit<Product, 'id' | 'status' | 'updatedAt'> | Product) => void;
+  onSave: (product: Omit<Product, 'id' | 'status' | 'updatedAt'> | Product) => Promise<void>;
   productToEdit?: Product | null;
 }
 
@@ -25,6 +25,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageData, setImageData] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (productToEdit) {
@@ -71,15 +72,17 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     const finalProductData = { ...formData, imageUrl: imageData || undefined };
 
     if (productToEdit) {
-        onSave({ ...productToEdit, ...finalProductData });
+        await onSave({ ...productToEdit, ...finalProductData });
     } else {
-        onSave(finalProductData);
+        await onSave(finalProductData);
     }
+    setIsLoading(false);
   };
   
   const backdropVariants: Variants = {
@@ -170,7 +173,14 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
 
                         <div className="flex justify-end pt-4 space-x-3">
                             <button type="button" onClick={onClose} className="bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-white rounded-lg px-4 py-2 hover:bg-slate-300 dark:hover:bg-slate-500 transform transition-all duration-200 hover:-translate-y-0.5">{t('cancel')}</button>
-                            <button type="submit" className="text-white bg-gradient-to-r from-cyan-400 to-blue-500 hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5 transform transition-all duration-200 font-semibold rounded-lg px-4 py-2">{t('save')}</button>
+                            <button 
+                                type="submit" 
+                                disabled={isLoading}
+                                className="flex items-center justify-center text-white bg-gradient-to-r from-cyan-400 to-blue-500 hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5 transform transition-all duration-200 font-semibold rounded-lg px-4 py-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                {isLoading && <LoaderIcon className="animate-spin w-5 h-5 me-2" />}
+                                {t('save')}
+                            </button>
                         </div>
                     </form>
                 </motion.div>

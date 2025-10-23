@@ -1,9 +1,9 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { MenuIcon, SearchIcon } from './Icons';
+import { SearchIcon } from './Icons';
 import { useAppContext } from '../context/AppContext';
 
-const Header: React.FC<{ onMenuClick: () => void; onSearchClick: () => void; }> = ({ onMenuClick, onSearchClick }) => {
+const Header: React.FC<{ onSearchClick: () => void; }> = ({ onSearchClick }) => {
   const location = useLocation();
   const { t } = useAppContext();
 
@@ -26,10 +26,7 @@ const Header: React.FC<{ onMenuClick: () => void; onSearchClick: () => void; }> 
     <header className="bg-white dark:bg-secondary shadow-md sticky top-0 z-20">
       <div className="flex items-center justify-between h-16 px-4 md:px-8">
         <div className="flex items-center">
-          <button onClick={onMenuClick} className="md:hidden text-slate-500 dark:text-slate-300 me-4">
-            <MenuIcon className="w-6 h-6" />
-          </button>
-          <h1 className="text-xl font-semibold text-slate-800 dark:text-white">{title}</h1>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-white">{title}</h1>
         </div>
         <div className="flex items-center">
           <button onClick={onSearchClick} className="p-2 rounded-full text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">

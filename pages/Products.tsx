@@ -3,58 +3,93 @@ import { useAppContext } from '../context/AppContext';
 import type { Product } from '../types';
 import ProductForm from '../components/ProductForm';
 import SaleModal from '../components/SaleModal';
-import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon } from '../components/Icons';
+import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, MoreVerticalIcon } from '../components/Icons';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const calculateMargin = (product: Product) => {
-  if (product.sellPrice <= 0) return 0;
+  if (product.sellPrice <= 0) return '0.0';
   return (((product.sellPrice - product.buyPrice) / product.sellPrice) * 100).toFixed(1);
 };
 
-const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, isSelected: boolean, onEdit: (p: Product) => void, onSell: (p: Product) => void, onDuplicate: (id: number) => void, onDelete: (id: number) => void, timeAgo: (iso: string) => string }> = 
-({ product, onSelect, isSelected, onEdit, onSell, onDuplicate, onDelete, timeAgo }) => {
+const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, isSelected: boolean, onEdit: (p: Product) => void, onSell: (p: Product) => void, onDuplicate: (id: number) => void, onDelete: (id: number) => void }> = 
+({ product, onSelect, isSelected, onEdit, onSell, onDuplicate, onDelete }) => {
   const { t } = useAppContext();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const margin = useMemo(() => calculateMargin(product), [product]);
+
   return (
-    <div className={`bg-white dark:bg-secondary rounded-lg shadow-md overflow-hidden transition-all duration-200 ${isSelected ? 'ring-2 ring-cyan-500' : ''}`}>
-      <div className="flex items-start p-4">
-        <div className="flex-shrink-0 flex items-center space-x-4">
-            <input 
-                type="checkbox"
-                className="w-4 h-4 text-cyan-500 bg-slate-100 border-slate-300 rounded focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
-                checked={isSelected}
-                onChange={() => onSelect(product.id)}
-            />
-            {product.imageUrl ? (
-              <img src={product.imageUrl} alt={product.name} className="w-16 h-16 object-cover rounded-md" />
-            ) : (
-              <div className="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-md flex items-center justify-center">
-                <ProductsIcon className="w-8 h-8 text-slate-400" />
+    <motion.div 
+        layout
+        className={`bg-white dark:bg-secondary rounded-xl shadow-md overflow-hidden transition-all duration-200 relative ${isSelected ? 'ring-2 ring-cyan-500' : 'ring-1 ring-transparent'}`}
+    >
+      <div className="flex items-start p-4 space-x-4">
+        {product.imageUrl ? (
+          <img src={product.imageUrl} alt={product.name} className="w-20 h-20 object-cover rounded-lg" />
+        ) : (
+          <div className="w-20 h-20 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+            <ProductsIcon className="w-10 h-10 text-slate-400" />
+          </div>
+        )}
+        <div className="flex-1">
+          <div className="flex justify-between items-start">
+              <div>
+                  <h3 className="font-bold text-slate-800 dark:text-white leading-tight">{product.name}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{product.category}</p>
               </div>
-            )}
-        </div>
-        <div className="flex-grow ms-4">
-          <h3 className="font-bold text-slate-800 dark:text-white">{product.name}</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{product.category}</p>
+              <input 
+                  type="checkbox"
+                  className="w-5 h-5 text-cyan-500 bg-slate-100 border-slate-300 rounded-md focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-secondary focus:ring-2 dark:bg-slate-600 dark:border-slate-500 flex-shrink-0"
+                  checked={isSelected}
+                  onChange={() => onSelect(product.id)}
+              />
+          </div>
           <div className="mt-2 flex items-center space-x-2">
             <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'}`}>
               {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
             </span>
-             <p className="text-xs text-slate-400 dark:text-slate-500">{timeAgo(product.updatedAt)}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Stock: {product.stock}</p>
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-px bg-slate-100 dark:bg-dark text-center">
-          <div className="bg-white dark:bg-secondary p-2"><div className="text-xs text-slate-500 dark:text-slate-400">{t('products.table.sell_price')}</div><div className="font-semibold">{product.sellPrice.toFixed(2)} DA</div></div>
-          <div className="bg-white dark:bg-secondary p-2"><div className="text-xs text-slate-500 dark:text-slate-400">{t('products.table.stock')}</div><div className="font-semibold">{product.stock}</div></div>
-          <div className="bg-white dark:bg-secondary p-2"><div className="text-xs text-slate-500 dark:text-slate-400">{t('products.table.margin')}</div><div className="font-semibold">{calculateMargin(product)}%</div></div>
+      <div className="px-4 pb-4">
+        <div className="flex items-center justify-between">
+           <div className="text-left">
+             <div className="text-xs text-slate-500 dark:text-slate-400">{t('products.table.sell_price')}</div>
+             <div className="font-semibold text-lg text-slate-800 dark:text-white">{product.sellPrice.toFixed(2)} DA</div>
+           </div>
+           <div className="text-right">
+             <div className="text-xs text-slate-500 dark:text-slate-400">{t('products.table.margin')}</div>
+             <div className={`font-semibold text-lg ${parseFloat(margin) > 0 ? 'text-green-500' : 'text-red-500'}`}>{margin}%</div>
+           </div>
+        </div>
+        <div className="mt-4 flex items-center space-x-2">
+           <button onClick={() => onSell(product)} className="flex-1 text-white bg-gradient-to-r from-cyan-500 to-blue-500 disabled:from-slate-400 disabled:to-slate-500 rounded-lg h-10 font-semibold text-sm disabled:opacity-70 flex items-center justify-center" disabled={product.stock === 0}>
+             <ShoppingCartIcon className="w-4 h-4 me-2"/> {t('sell')}
+           </button>
+           <div className="relative">
+             <button onClick={() => setMenuOpen(!menuOpen)} onBlur={() => setTimeout(() => setMenuOpen(false), 100)} className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+               <MoreVerticalIcon className="w-5 h-5"/>
+             </button>
+             <AnimatePresence>
+              {menuOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="absolute bottom-12 right-0 bg-white dark:bg-slate-800 rounded-lg shadow-lg border dark:border-slate-700 w-40 z-10 overflow-hidden"
+                >
+                  <button onClick={() => { onEdit(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"><EditIcon className="w-4 h-4 me-2"/> {t('edit')}</button>
+                  <button onClick={() => { onDuplicate(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"><DuplicateIcon className="w-4 h-4 me-2"/> {t('duplicate')}</button>
+                  <div className="h-px bg-slate-200 dark:bg-slate-700 my-1"></div>
+                  <button onClick={() => { onDelete(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-red-500 hover:bg-red-500/10"><DeleteIcon className="w-4 h-4 me-2"/> {t('delete')}</button>
+                </motion.div>
+              )}
+             </AnimatePresence>
+           </div>
+        </div>
       </div>
-      <div className="p-2 flex justify-end space-x-2 bg-slate-50 dark:bg-secondary/50">
-           <button onClick={() => onSell(product)} className="p-2 rounded-md transition-colors bg-green-500/10 hover:bg-green-500/20 text-green-500 disabled:opacity-50" disabled={product.stock === 0} title={t('sell')}><ShoppingCartIcon className="w-5 h-5" /></button>
-           <button onClick={() => onEdit(product)} className="p-2 rounded-md transition-colors bg-blue-500/10 hover:bg-blue-500/20 text-blue-500" title={t('edit')}><EditIcon className="w-5 h-5" /></button>
-           <button onClick={() => onDuplicate(product.id)} className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500" title={t('duplicate')}><DuplicateIcon className="w-5 h-5" /></button>
-           <button onClick={() => onDelete(product.id)} className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" title={t('delete')}><DeleteIcon className="w-5 h-5" /></button>
-      </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -122,13 +157,17 @@ const Products: React.FC = () => {
     setProductToEdit(null);
   };
 
-  const handleSaveProduct = (productData: Omit<Product, 'id'| 'status' | 'updatedAt'> | Product) => {
+  const handleSaveProduct = async (productData: Omit<Product, 'id'| 'status' | 'updatedAt'> | Product) => {
+    let result: Product | null;
     if ('id' in productData) {
-      updateProduct(productData as Product);
+      result = await updateProduct(productData as Product);
     } else {
-      addProduct(productData);
+      result = await addProduct(productData);
     }
-    handleCloseModal();
+
+    if (result) {
+      handleCloseModal();
+    }
   };
   
   const handleDelete = (productId: number) => {
@@ -240,7 +279,6 @@ const Products: React.FC = () => {
               onSell={handleOpenSaleModal}
               onDuplicate={duplicateProduct}
               onDelete={handleDelete}
-              timeAgo={timeAgo}
             />
           ))}
         </div>
@@ -366,7 +404,7 @@ const Products: React.FC = () => {
       <AnimatePresence>
         {isMobile && numSelected > 0 && (
           <motion.div
-            className="fixed bottom-4 left-4 right-4 z-10 bg-dark p-3 rounded-xl shadow-lg flex items-center justify-between"
+            className="fixed bottom-20 left-4 right-4 z-10 bg-dark p-3 rounded-xl shadow-lg flex items-center justify-between"
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
@@ -384,7 +422,7 @@ const Products: React.FC = () => {
       </AnimatePresence>
 
       <ProductForm isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveProduct} productToEdit={productToEdit} />
-      <SaleModal isOpen={isSaleModalOpen} onClose={handleCloseSaleModal} onConfirm={handleConfirmSale} product={productToSell} />
+      <SaleModal isOpen={isSaleModalOpen} onClose={handleCloseModal} onConfirm={handleConfirmSale} product={productToSell} />
     </div>
   );
 };

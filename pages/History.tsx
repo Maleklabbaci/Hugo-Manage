@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import { AddIcon, EditIcon, DeleteIcon, ShoppingCartIcon, UndoIcon } from '../components/Icons';
@@ -96,32 +95,34 @@ const History: React.FC = () => {
     <div>
       <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">{t('history.title')}</h2>
       <motion.div 
-        className="space-y-4"
+        className="relative space-y-4"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
+        <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-slate-200 dark:bg-slate-700 sm:left-7"></div>
         {activityLog.map(log => {
           const { Icon, color, title } = getActionDetails(log);
           return (
-            <motion.div 
-              key={log.id} 
-              className="bg-white dark:bg-secondary p-4 rounded-lg shadow-md flex flex-col sm:flex-row items-start sm:space-x-4"
-              variants={itemVariants}
+             <motion.div 
+                key={log.id} 
+                className="relative flex items-start space-x-4 pl-12 sm:pl-14"
+                variants={itemVariants}
             >
-              <div className="flex items-center w-full sm:w-auto mb-2 sm:mb-0">
-                <div className={`p-2 bg-slate-100 dark:bg-dark rounded-full ${color}`}>
-                  <Icon className="w-5 h-5" />
+                <div className={`absolute left-0 top-1.5 p-2 bg-slate-100 dark:bg-dark rounded-full ${color} ring-4 ring-slate-100 dark:ring-dark`}>
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <p className="font-semibold text-slate-800 dark:text-white sm:hidden ms-3">{title}</p>
-              </div>
-              <div className="flex-1">
-                <p className="hidden sm:block font-semibold text-slate-800 dark:text-white">{title}</p>
-                {log.details && (
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('history.details')} : {log.details}</p>
-                )}
-              </div>
-              <p className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap self-end sm:self-center">{formatTimestamp(log.timestamp)}</p>
+                <div className="flex-1 bg-white dark:bg-secondary p-4 rounded-lg shadow-md w-full">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-start">
+                        <div className="flex-1 mb-1 sm:mb-0">
+                            <p className="font-semibold text-slate-800 dark:text-white">{title}</p>
+                            {log.details && (
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('history.details')} : {log.details}</p>
+                            )}
+                        </div>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap sm:ms-4 flex-shrink-0">{formatTimestamp(log.timestamp)}</p>
+                    </div>
+                </div>
             </motion.div>
           );
         })}

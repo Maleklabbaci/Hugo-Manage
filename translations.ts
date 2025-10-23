@@ -92,6 +92,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'product_form.stock_label': 'Stock',
     'product_form.buy_price_label': "Prix d'achat",
     'product_form.sell_price_label': 'Prix de vente',
+    'product_form.error_add': "Erreur lors de l'ajout du produit : {error}",
+    'product_form.error_update': 'Erreur lors de la mise à jour du produit : {error}',
     
     // Sale Modal
     'sale_modal.title': 'Vendre un produit',
@@ -261,6 +263,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'product_form.stock_label': 'Stock',
     'product_form.buy_price_label': 'Buy Price',
     'product_form.sell_price_label': 'Sell Price',
+    'product_form.error_add': 'Error adding product: {error}',
+    'product_form.error_update': 'Error updating product: {error}',
     
     'sale_modal.title': 'Sell Product',
     'sale_modal.product': 'Product',
@@ -424,6 +428,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'product_form.stock_label': 'المخزون',
     'product_form.buy_price_label': 'سعر الشراء',
     'product_form.sell_price_label': 'سعر البيع',
+    'product_form.error_add': 'خطأ في إضافة المنتج: {error}',
+    'product_form.error_update': 'خطأ في تحديث المنتج: {error}',
     
     'sale_modal.title': 'بيع منتج',
     'sale_modal.product': 'المنتج',
