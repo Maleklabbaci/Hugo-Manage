@@ -11,7 +11,7 @@ interface ProductFormProps {
   productToEdit?: Product | null;
 }
 
-const categories = ["Lunettes", "Montres", "Sacoches & Porte feuille", "Casquette", "Bracelet"];
+const categories = ["Lunettes", "Montres", "Sacoches & Porte feuille", "Casquette", "Bracelet", "Ceintures", "Écharpes"];
 
 const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, productToEdit }) => {
   const { t } = useAppContext();

@@ -360,5 +360,29 @@ export const MOCK_PRODUCTS: Product[] = [
     status: "actif",
     updatedAt: "2023-11-25T14:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Shamballa-Bracelet"
+  },
+  {
+    id: 31,
+    name: "Ceinture en cuir réversible",
+    category: "Ceintures",
+    supplier: "LeatherGoods",
+    buyPrice: 28.00,
+    sellPrice: 69.99,
+    stock: 85,
+    status: "actif",
+    updatedAt: "2023-11-26T10:00:00Z",
+    imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Belt"
+  },
+  {
+    id: 32,
+    name: "Écharpe en cachemire",
+    category: "Écharpes",
+    supplier: "WarmWear",
+    buyPrice: 50.00,
+    sellPrice: 129.99,
+    stock: 40,
+    status: "actif",
+    updatedAt: "2023-11-27T11:30:00Z",
+    imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Scarf"
   }
 ];
