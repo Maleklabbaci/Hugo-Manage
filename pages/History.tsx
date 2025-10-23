@@ -120,7 +120,7 @@ const History: React.FC = () => {
                             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('history.details')} : {log.details}</p>
                             )}
                         </div>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap sm:ms-4 flex-shrink-0">{formatTimestamp(log.timestamp)}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap sm:ms-4 flex-shrink-0">{formatTimestamp(log.createdAt)}</p>
                     </div>
                 </div>
             </motion.div>

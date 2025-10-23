@@ -18,7 +18,7 @@ export interface ActivityLog {
   productName: string;
   action: 'created' | 'updated' | 'deleted' | 'sold' | 'sale_cancelled';
   details?: string;
-  timestamp: string; // ISO string format
+  createdAt: string; // ISO string format
 }
 
 export interface Sale {
@@ -29,7 +29,7 @@ export interface Sale {
   sellPrice: number;
   totalPrice: number;
   totalMargin: number;
-  timestamp: string; // ISO string format
+  createdAt: string; // ISO string format
 }
 
 export type Theme = 'light' | 'dark';

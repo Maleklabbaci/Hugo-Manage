@@ -1,4 +1,5 @@
 
+
 import React, { useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -40,7 +41,7 @@ const Statistics: React.FC = () => {
   const monthlySalesData = useMemo(() => {
     const salesByMonth: { [key: string]: number } = {};
     sales.forEach(s => {
-      const date = new Date(s.timestamp);
+      const date = new Date(s.createdAt);
       const month = date.toLocaleString(locale, { month: 'short', year: '2-digit' });
       salesByMonth[month] = (salesByMonth[month] || 0) + s.totalPrice;
     });

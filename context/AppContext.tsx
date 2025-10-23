@@ -57,7 +57,7 @@ CREATE TABLE sales (
   sell_price REAL NOT NULL,
   total_price REAL NOT NULL,
   total_margin REAL NOT NULL,
-  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- 4. Créer la table du journal d'activité (`activity_log`)
@@ -67,7 +67,7 @@ CREATE TABLE activity_log (
   product_name TEXT NOT NULL,
   action TEXT NOT NULL, -- ex: 'created', 'updated', 'sold'
   details TEXT,
-  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- 5. Attacher le trigger à la table 'products' pour automatiser 'updated_at'
@@ -110,6 +110,9 @@ interface AppContextType {
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
+
+// Helper to convert snake_case to camelCase
+const snakeToCamel = (str: string) => str.replace(/_([a-z])/g, g => g[1].toUpperCase());
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -166,10 +169,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { data: productsData, error: productsError } = await supabase.from('products').select('*').order('created_at', { ascending: false });
       if (productsError) throw productsError;
 
-      const { data: salesData, error: salesError } = await supabase.from('sales').select('*').order('timestamp', { ascending: false });
+      const { data: salesData, error: salesError } = await supabase.from('sales').select('*').order('created_at', { ascending: false });
       if (salesError) throw salesError;
 
-      const { data: logData, error: logError } = await supabase.from('activity_log').select('*').order('timestamp', { ascending: false });
+      const { data: logData, error: logError } = await supabase.from('activity_log').select('*').order('created_at', { ascending: false });
       if (logError) throw logError;
 
       setProducts(productsData.map((p: any) => ({
@@ -181,11 +184,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setSales(salesData.map((s: any) => ({
         id: s.id, productId: s.product_id, productName: s.product_name,
         quantity: s.quantity, sellPrice: s.sell_price, totalPrice: s.total_price,
-        totalMargin: s.total_margin, timestamp: s.timestamp,
+        totalMargin: s.total_margin, createdAt: s.created_at,
       })));
       setActivityLog(logData.map((l: any) => ({
         id: l.id, productId: l.product_id, productName: l.product_name,
-        action: l.action, details: l.details, timestamp: l.timestamp,
+        action: l.action, details: l.details, createdAt: l.created_at,
       })));
 
     } catch (error) {
@@ -224,7 +227,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { data, error } = await supabase.from('products').insert(newProductPayload).select().single();
       if (error) throw error;
       
-      // FIX: Explicitly cast 'status' to the correct union type to resolve TypeScript error.
       const createdProduct = { ...productData, id: data.id, status: newProductPayload.status as ('actif' | 'rupture'), createdAt: data.created_at, updatedAt: data.updated_at };
       await logActivity('created', createdProduct);
       await fetchData();
@@ -249,9 +251,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { data, error } = await supabase.from('products').update(updatedProductPayload).eq('id', product.id).select().single();
       if (error) throw error;
       
-      const changes: string[] = (Object.keys(updatedProductPayload) as Array<keyof typeof updatedProductPayload>).filter(key => key !== 'status' && updatedProductPayload[key] !== oldProduct[key as keyof Product])
-        .map(key => `${t('log.'+key.replace('_',''))}: "${oldProduct[key.replace('_','') as keyof Product]}" -> "${updatedProductPayload[key]}"`);
-      if (updatedProductPayload.image_url !== oldProduct.imageUrl) changes.push(t('history.log.image_updated'));
+      const changes: string[] = [];
+      for (const key of Object.keys(updatedProductPayload) as Array<keyof typeof updatedProductPayload>) {
+          if (key === 'status' || key === 'image_url') continue;
+
+          const camelCaseKey = snakeToCamel(key) as keyof Product;
+          const oldValue = oldProduct[camelCaseKey];
+          const newValue = product[camelCaseKey];
+
+          if (String(oldValue) !== String(newValue)) {
+              changes.push(`${t('log.' + camelCaseKey)}: "${oldValue}" -> "${newValue}"`);
+          }
+      }
+
+      if (updatedProductPayload.image_url !== oldProduct.imageUrl) {
+          changes.push(t('history.log.image_updated'));
+      }
 
       await logActivity('updated', product, changes.join(', '));
       await fetchData();

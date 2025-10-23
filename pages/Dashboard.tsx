@@ -73,10 +73,10 @@ const Dashboard: React.FC = () => {
     const eightWeeksAgo = new Date();
     eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 56);
     
-    const recentSales = sales.filter(sale => new Date(sale.timestamp) >= eightWeeksAgo);
+    const recentSales = sales.filter(sale => new Date(sale.createdAt) >= eightWeeksAgo);
 
     recentSales.forEach(sale => {
-      const weekStartDate = getWeekStart(new Date(sale.timestamp));
+      const weekStartDate = getWeekStart(new Date(sale.createdAt));
       const weekKey = weekStartDate.toISOString().split('T')[0];
       
       if (!profitByWeek[weekKey]) {
