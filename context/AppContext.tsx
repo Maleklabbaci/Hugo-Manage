@@ -1,9 +1,15 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import { createClient, SupabaseClient, Session, User } from '@supabase/supabase-js';
 import type { Product, Theme, Language, ActivityLog, Sale } from '../types';
 import { storage } from '../services/storage';
 import { translations } from '../translations';
 import { MOCK_PRODUCTS } from '../mock/products';
+
+export interface Notification {
+  id: number; // product id
+  type: 'warning' | 'error';
+  message: string;
+}
 
 /*
 -- =================================================================
@@ -49,6 +55,7 @@ interface AppContextType {
   products: Product[];
   sales: Sale[];
   activityLog: ActivityLog[];
+  notifications: Notification[];
   theme: Theme;
   language: Language;
   isLoading: boolean;
@@ -69,6 +76,8 @@ interface AppContextType {
   duplicateProduct: (productId: number) => Promise<void>;
   addSale: (productId: number, quantity: number) => Promise<void>;
   cancelSale: (saleId: number) => Promise<void>;
+  markNotificationAsRead: (productId: number) => void;
+  markAllNotificationsAsRead: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -84,6 +93,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isConfigured, setIsConfigured] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [readNotificationIds, setReadNotificationIds] = useState<number[]>([]);
 
   useEffect(() => {
     const { supabaseUrl, supabaseAnonKey } = storage.getSupabaseCredentials();
@@ -135,6 +145,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return translation;
   }, [language]);
     
+  const notifications = useMemo(() => {
+    const lowStockAlerts = products
+      .filter(p => p.stock > 0 && p.stock <= 5 && !readNotificationIds.includes(p.id))
+      .map(p => ({
+        id: p.id,
+        type: 'warning' as const,
+        message: t('dashboard.notifications.low_stock', { productName: p.name, count: p.stock }),
+      }));
+
+    const outOfStockAlerts = products
+      .filter(p => p.stock === 0 && !readNotificationIds.includes(p.id))
+      .map(p => ({
+        id: p.id,
+        type: 'error' as const,
+        message: t('dashboard.notifications.out_of_stock', { productName: p.name }),
+      }));
+    
+    return [...outOfStockAlerts, ...lowStockAlerts];
+  }, [products, readNotificationIds, t]);
+
+  const markNotificationAsRead = (productId: number) => {
+    setReadNotificationIds(prev => [...new Set([...prev, productId])]);
+  };
+
+  const markAllNotificationsAsRead = () => {
+    const allCurrentIds = notifications.map(n => n.id);
+    setReadNotificationIds(prev => [...new Set([...prev, ...allCurrentIds])]);
+  };
+
   const fetchData = useCallback(async () => {
     if (!supabase || !session) return;
     setIsLoading(true);
@@ -148,29 +187,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { data: logData, error: logError } = await supabase.from('activity_log').select('*').order('created_at', { ascending: false });
       if (logError) throw logError;
 
-      setProducts(productsData.map((p: any) => ({
-        id: p.id, name: p.name, category: p.category, supplier: p.supplier,
-        buyPrice: p.buyprice, sellPrice: p.sellprice, stock: p.stock,
-        status: p.status, createdAt: p.created_at, imageUrl: p.imageurl,
+      setProducts((productsData || []).map((p: any) => ({
+        id: p.id,
+        name: p.name || '',
+        category: p.category || '',
+        supplier: p.supplier || '',
+        buyPrice: p.buyprice ?? 0,
+        sellPrice: p.sellprice ?? 0,
+        stock: p.stock ?? 0,
+        status: p.status || ((p.stock ?? 0) > 0 ? 'actif' : 'rupture'),
+        createdAt: p.created_at,
+        imageUrl: p.imageurl,
         ownerId: p.owner_id
       })));
-      setSales(salesData.map((s: any) => ({
-        id: s.id, productId: s.product_id, productName: s.productname,
-        quantity: s.quantity, sellPrice: s.sellprice, totalPrice: s.totalprice,
-        totalMargin: s.totalmargin, createdAt: s.created_at, ownerId: s.owner_id
+      setSales((salesData || []).map((s: any) => ({
+        id: s.id,
+        productId: s.product_id,
+        productName: s.productname || '',
+        quantity: s.quantity ?? 0,
+        sellPrice: s.sellprice ?? 0,
+        totalPrice: s.totalprice ?? 0,
+        totalMargin: s.totalmargin ?? 0,
+        createdAt: s.created_at,
+        ownerId: s.owner_id
       })));
-      setActivityLog(logData.map((l: any) => ({
-        id: l.id, productId: l.product_id, productName: l.productname,
-        action: l.action, details: l.details, createdAt: l.created_at, ownerId: l.owner_id
+      setActivityLog((logData || []).map((l: any) => ({
+        id: l.id,
+        productId: l.product_id,
+        productName: l.productname || '',
+        action: l.action,
+        details: l.details,
+        createdAt: l.created_at,
+        ownerId: l.owner_id
       })));
 
     } catch (error) {
-      console.error("Error fetching data:", error);
-      alert(`Error fetching data: ${(error as Error).message}`);
+        let errorMessage = (error as Error).message;
+        if (errorMessage.includes("permission denied for table")) {
+             errorMessage = t('error.rls_permission_denied');
+        }
+        console.error("Error fetching data:", error);
+        alert(t('error.fetch_data', { error: errorMessage }));
     } finally {
       setIsLoading(false);
     }
-  }, [supabase, session]);
+  }, [supabase, session, t]);
 
   useEffect(() => {
     if (isConfigured && session) {
@@ -370,35 +431,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const cancelSale = async (saleId: number) => {
-      if (!supabase) return;
-      const saleToCancel = sales.find(s => s.id === saleId);
-      if (!saleToCancel) return;
+    if (!supabase) return;
+    const saleToCancel = sales.find(s => s.id === saleId);
+    if (!saleToCancel) return;
 
-      const product = products.find(p => p.id === saleToCancel.productId);
-      if (!product) return;
-      
-      const { error: deleteSaleError } = await supabase.from('sales').delete().eq('id', saleId);
-      if (deleteSaleError) {
-          alert(deleteSaleError.message);
-          return;
-      }
-      
+    // First, try to delete the sale record. This is the primary action.
+    const { error: deleteSaleError } = await supabase.from('sales').delete().eq('id', saleId);
+
+    if (deleteSaleError) {
+      alert(deleteSaleError.message);
+      return; // If we can't delete the sale, stop here.
+    }
+
+    // If sale deletion is successful, then handle product stock.
+    const product = products.find(p => p.id === saleToCancel.productId);
+
+    if (product) {
+      // Product exists, so try to restore stock.
       const newStock = product.stock + saleToCancel.quantity;
       const { error: stockUpdateError } = await supabase.from('products').update({ stock: newStock, status: 'actif' }).eq('id', product.id);
-      
+
       if (stockUpdateError) {
-          alert(stockUpdateError.message);
+        alert(t('sales.error_restoring_stock'));
       } else {
-          await logActivity('sale_cancelled', product, t('history.log.sale_cancelled', { quantity: saleToCancel.quantity }));
-          await fetchData();
+        await logActivity('sale_cancelled', product, t('history.log.sale_cancelled', { quantity: saleToCancel.quantity }));
       }
+    } else {
+      // Product does not exist. The sale is cancelled, but we can't restore stock.
+      await logActivity('sale_cancelled', { id: saleToCancel.productId, name: saleToCancel.productName }, t('history.log.sale_cancelled_deleted_product'));
+    }
+    
+    // In all successful cancellation scenarios, refresh the data.
+    await fetchData();
   };
 
   const value = {
     products, sales, activityLog, theme, language, isLoading, isConfigured, supabase,
-    session, user, setTheme, setLanguage, t, login, logout,
+    session, user, notifications, setTheme, setLanguage, t, login, logout,
     addProduct, addMultipleProducts, updateProduct, deleteProduct, deleteMultipleProducts, 
-    duplicateProduct, addSale, cancelSale,
+    duplicateProduct, addSale, cancelSale, markNotificationAsRead, markAllNotificationsAsRead,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

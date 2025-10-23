@@ -50,7 +50,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.stock_by_category_chart_title': 'Stock par catégorie',
     'dashboard.chart.profit': 'Profit',
     'dashboard.chart.units': 'unités',
-    'dashboard.notifications.title': 'Notifications',
     'dashboard.notifications.low_stock': '{productName} est en stock faible ({count} articles restants).',
     'dashboard.notifications.out_of_stock': '{productName} est en rupture de stock.',
     'dashboard.weekly_sales_growth': 'Croissance Ventes (hebdo)',
@@ -117,8 +116,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'sales.title': 'Historique des Ventes',
     'sales.empty.title': 'Aucune vente enregistrée',
     'sales.empty.subtitle': 'Commencez à vendre des produits depuis la page "Produits".',
-    'sales.confirm_delete': 'Êtes-vous sûr de vouloir annuler cette vente ? Le stock du produit sera restauré.',
+    'sales.confirm_cancel': 'Êtes-vous sûr de vouloir annuler cette vente ? Le stock du produit sera restauré.',
     'sales.cancel_sale': 'Annuler la vente',
+    'sales.error_restoring_stock': 'La vente a été annulée, mais une erreur est survenue lors de la restauration du stock. Veuillez vérifier manuellement le stock du produit.',
     'sales.table.product': 'Produit',
     'sales.table.quantity': 'Quantité',
     'sales.table.unit_price': 'Prix Unitaire',
@@ -139,6 +139,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'history.action.unknown': 'Action inconnue',
     'history.log.units_sold': '{quantity} unité(s) vendue(s)',
     'history.log.sale_cancelled': 'Vente de {quantity} unité(s) annulée.',
+    'history.log.sale_cancelled_deleted_product': 'Vente annulée (produit supprimé).',
     'history.log.bulk_delete': 'Supprimé via action groupée',
     'history.log.duplicated': 'Dupliqué depuis "{productName}"',
     'history.log.image_updated': "l'image a été modifiée",
@@ -149,7 +150,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'statistics.out_of_stock_rate': 'Taux de rupture',
     'statistics.monthly_revenue_chart_title': "Chiffre d'affaires mensuel",
     'statistics.potential_profit_chart_title': 'Évolution du bénéfice potentiel par mois',
-    'statistics.category_distribution_chart_title': 'Répartition des produits par catégorie',
+    'statistics.category_distribution_chart_title': 'Stock par catégorie',
     'statistics.chart.revenue': 'Revenu',
     'statistics.chart.potential_profit': 'Bénéfice Potentiel',
     'statistics.chart.products': 'produits',
@@ -182,6 +183,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'search.results_for': 'pour la recherche "{query}"',
     'search.sale_details': 'Qté: {quantity}, Total: {price} DA',
 
+    // Notifications
+    'notifications.title': 'Notifications',
+    'notifications.empty': 'Aucune nouvelle notification',
+    'notifications.clear_all': 'Tout effacer',
+
     // Activity Log details (in AppContext)
     'log.name': 'Nom',
     'log.category': 'Catégorie',
@@ -190,6 +196,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'log.sellPrice': 'Prix de vente',
     'log.stock': 'Stock',
     'log.imageUrl': 'Image',
+    
+    // Error handling
+    'error.fetch_data': "Erreur lors de la récupération des données : {error}",
+    'error.rls_permission_denied': "Permission refusée. Assurez-vous d'avoir exécuté le script de sécurité SQL (RLS) dans votre base de données Supabase.",
   },
   en: {
     'save': 'Save',
@@ -235,7 +245,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.stock_by_category_chart_title': 'Stock by Category',
     'dashboard.chart.profit': 'Profit',
     'dashboard.chart.units': 'units',
-    'dashboard.notifications.title': 'Notifications',
     'dashboard.notifications.low_stock': '{productName} is low on stock ({count} items left).',
     'dashboard.notifications.out_of_stock': '{productName} is out of stock.',
     'dashboard.weekly_sales_growth': 'Weekly Sales Growth',
@@ -298,8 +307,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'sales.title': 'Sales History',
     'sales.empty.title': 'No Sales Recorded',
     'sales.empty.subtitle': 'Start selling products from the "Products" page.',
-    'sales.confirm_delete': 'Are you sure you want to cancel this sale? The product stock will be restored.',
+    'sales.confirm_cancel': 'Are you sure you want to cancel this sale? The product stock will be restored.',
     'sales.cancel_sale': 'Cancel sale',
+    'sales.error_restoring_stock': 'The sale was cancelled, but an error occurred while restoring the stock. Please check the product\'s stock manually.',
     'sales.table.product': 'Product',
     'sales.table.quantity': 'Quantity',
     'sales.table.unit_price': 'Unit Price',
@@ -319,6 +329,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'history.action.unknown': 'Unknown action',
     'history.log.units_sold': '{quantity} unit(s) sold',
     'history.log.sale_cancelled': 'Sale of {quantity} unit(s) cancelled.',
+    'history.log.sale_cancelled_deleted_product': 'Sale cancelled (product was deleted).',
     'history.log.bulk_delete': 'Deleted via bulk action',
     'history.log.duplicated': 'Duplicated from "{productName}"',
     'history.log.image_updated': 'image was updated',
@@ -328,7 +339,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'statistics.out_of_stock_rate': 'Out of Stock Rate',
     'statistics.monthly_revenue_chart_title': 'Monthly Revenue',
     'statistics.potential_profit_chart_title': 'Monthly Potential Profit Evolution',
-    'statistics.category_distribution_chart_title': 'Product Distribution by Category',
+    'statistics.category_distribution_chart_title': 'Stock by Category',
     'statistics.chart.revenue': 'Revenue',
     'statistics.chart.potential_profit': 'Potential Profit',
     'statistics.chart.products': 'products',
@@ -359,6 +370,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'search.no_results': 'No results found',
     'search.results_for': 'for query "{query}"',
     'search.sale_details': 'Qty: {quantity}, Total: {price} DZD',
+    
+    // Notifications
+    'notifications.title': 'Notifications',
+    'notifications.empty': 'No new notifications',
+    'notifications.clear_all': 'Clear all',
 
     'log.name': 'Name',
     'log.category': 'Category',
@@ -367,6 +383,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'log.sellPrice': 'Sell Price',
     'log.stock': 'Stock',
     'log.imageUrl': 'Image',
+    
+    'error.fetch_data': 'Error fetching data: {error}',
+    'error.rls_permission_denied': 'Permission denied. Make sure you have run the SQL security (RLS) script in your Supabase database.',
   },
   ar: {
     'save': 'حفظ',
@@ -412,7 +431,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.stock_by_category_chart_title': 'المخزون حسب الفئة',
     'dashboard.chart.profit': 'الربح',
     'dashboard.chart.units': 'وحدات',
-    'dashboard.notifications.title': 'الإشعارات',
     'dashboard.notifications.low_stock': 'مخزون {productName} منخفض ({count} قطع متبقية).',
     'dashboard.notifications.out_of_stock': 'نفد مخزون {productName}.',
     'dashboard.weekly_sales_growth': 'نمو المبيعات (أسبوعي)',
@@ -475,8 +493,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'sales.title': 'سجل المبيعات',
     'sales.empty.title': 'لا توجد مبيعات مسجلة',
     'sales.empty.subtitle': 'ابدأ ببيع المنتجات من صفحة "المنتجات".',
-    'sales.confirm_delete': 'هل أنت متأكد أنك تريد إلغاء عملية البيع هذه؟ سيتم استعادة مخزون المنتج.',
+    'sales.confirm_cancel': 'هل أنت متأكد أنك تريد إلغاء عملية البيع هذه؟ سيتم استعادة مخزون المنتج.',
     'sales.cancel_sale': 'إلغاء البيع',
+    'sales.error_restoring_stock': 'تم إلغاء البيع، ولكن حدث خطأ أثناء استعادة المخزون. يرجى التحقق من مخزون المنتج يدويًا.',
     'sales.table.product': 'المنتج',
     'sales.table.quantity': 'الكمية',
     'sales.table.unit_price': 'سعر الوحدة',
@@ -496,6 +515,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'history.action.unknown': 'إجراء غير معروف',
     'history.log.units_sold': 'تم بيع {quantity} وحدة (وحدات)',
     'history.log.sale_cancelled': 'تم إلغاء بيع {quantity} وحدة (وحدات).',
+    'history.log.sale_cancelled_deleted_product': 'تم إلغاء البيع (تم حذف المنتج).',
     'history.log.bulk_delete': 'تم الحذف عبر إجراء جماعي',
     'history.log.duplicated': 'تم نسخه من "{productName}"',
     'history.log.image_updated': 'تم تعديل الصورة',
@@ -505,7 +525,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'statistics.out_of_stock_rate': 'معدل النفاذ',
     'statistics.monthly_revenue_chart_title': 'الإيرادات الشهرية',
     'statistics.potential_profit_chart_title': 'تطور الربح المحتمل الشهري',
-    'statistics.category_distribution_chart_title': 'توزيع المنتجات حسب الفئة',
+    'statistics.category_distribution_chart_title': 'المخزون حسب الفئة',
     'statistics.chart.revenue': 'الإيرادات',
     'statistics.chart.potential_profit': 'الربح المحتمل',
     'statistics.chart.products': 'منتجات',
@@ -536,6 +556,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'search.no_results': 'لم يتم العثور على نتائج',
     'search.results_for': 'للبحث "{query}"',
     'search.sale_details': 'الكمية: {quantity}, الإجمالي: {price} د.ج',
+    
+    // Notifications
+    'notifications.title': 'الإشعارات',
+    'notifications.empty': 'لا توجد إشعارات جديدة',
+    'notifications.clear_all': 'مسح الكل',
 
     'log.name': 'الاسم',
     'log.category': 'الفئة',
@@ -544,5 +569,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'log.sellPrice': 'سعر البيع',
     'log.stock': 'المخزون',
     'log.imageUrl': 'الصورة',
+
+    // Error handling
+    'error.fetch_data': 'خطأ في جلب البيانات: {error}',
+    'error.rls_permission_denied': 'تم رفض الإذن. تأكد من أنك قمت بتشغيل برنامج الأمان SQL (RLS) في قاعدة بيانات Supabase الخاصة بك.',
   },
 };

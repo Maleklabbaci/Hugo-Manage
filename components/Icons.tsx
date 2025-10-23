@@ -35,6 +35,7 @@ import {
   Upload,
   Download,
   Server,
+  Bell,
 } from 'lucide-react';
 
 export {
@@ -73,4 +74,5 @@ export {
   Upload as UploadIcon,
   Download as DownloadIcon,
   Server as ServerIcon,
+  Bell as NotificationIcon,
 };

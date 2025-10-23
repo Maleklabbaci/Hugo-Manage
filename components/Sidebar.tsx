@@ -4,7 +4,7 @@ import { DashboardIcon, ProductsIcon, SettingsIcon, HistoryIcon, ShoppingCartIco
 import { useAppContext } from '../context/AppContext';
 
 // Reusable NavItem for both sidebar and bottom nav
-const NavItem: React.FC<{ to: string; icon: React.ElementType; label: string; isMobile?: boolean }> = ({ to, icon: Icon, label, isMobile }) => {
+const NavItem: React.FC<{ to: string; icon: React.ElementType; label: string; count?: number; isMobile?: boolean }> = ({ to, icon: Icon, label, count, isMobile }) => {
     const location = useLocation();
     // For bottom nav, we want to match the base path
     const isActive = location.pathname.startsWith(to);
@@ -13,11 +13,18 @@ const NavItem: React.FC<{ to: string; icon: React.ElementType; label: string; is
         return (
             <NavLink
                 to={to}
-                className={`flex flex-col items-center justify-center flex-1 py-2 transition-colors duration-200 ${
+                className={`flex flex-col items-center justify-center flex-1 py-2 transition-colors duration-200 relative ${
                     isActive ? 'text-cyan-400' : 'text-slate-400 hover:text-cyan-300'
                 }`}
             >
-                <Icon className="w-6 h-6 mb-1" />
+                <div className="relative">
+                    <Icon className="w-6 h-6 mb-1" />
+                    {typeof count !== 'undefined' && count > 0 && (
+                        <span className="absolute -top-1 -right-2 bg-cyan-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1">
+                            {count > 99 ? '99+' : count}
+                        </span>
+                    )}
+                </div>
                 <span className="text-xs font-medium tracking-tight">{label}</span>
             </NavLink>
         );
@@ -32,32 +39,32 @@ const NavItem: React.FC<{ to: string; icon: React.ElementType; label: string; is
             }`}
         >
             <Icon className="w-6 h-6 me-4 transition-transform duration-200 group-hover:scale-110" />
-            <span className="text-md">{label}</span>
+            <span className="flex-1 text-md">{label}</span>
+            {typeof count !== 'undefined' && count > 0 && (
+                <span className="bg-cyan-500/20 text-cyan-300 text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {count}
+                </span>
+            )}
         </NavLink>
     );
 };
 
 
 const Sidebar: React.FC = () => {
-  const { t, language } = useAppContext();
+  const { t, language, products, sales } = useAppContext();
   const isRtl = language === 'ar';
   
-  const mobileNavLinks = [
+  const navLinks = [
     { to: "/dashboard", icon: DashboardIcon, label: t('sidebar.dashboard') },
-    { to: "/products", icon: ProductsIcon, label: t('sidebar.products') },
-    { to: "/sales", icon: ShoppingCartIcon, label: t('sidebar.sales') },
+    { to: "/products", icon: ProductsIcon, label: t('sidebar.products'), count: products.length },
+    { to: "/sales", icon: ShoppingCartIcon, label: t('sidebar.sales'), count: sales.length },
+    { to: "/statistics", icon: StatsIcon, label: t('sidebar.statistics'), desktopOnly: true },
     { to: "/history", icon: HistoryIcon, label: t('sidebar.history') },
     { to: "/settings", icon: SettingsIcon, label: t('sidebar.settings') },
   ];
-
-  const desktopNavLinks = [
-    { to: "/dashboard", icon: DashboardIcon, label: t('sidebar.dashboard') },
-    { to: "/products", icon: ProductsIcon, label: t('sidebar.products') },
-    { to: "/sales", icon: ShoppingCartIcon, label: t('sidebar.sales') },
-    { to: "/statistics", icon: StatsIcon, label: t('sidebar.statistics') },
-    { to: "/history", icon: HistoryIcon, label: t('sidebar.history') },
-    { to: "/settings", icon: SettingsIcon, label: t('sidebar.settings') },
-  ];
+  
+  const mobileNavLinks = navLinks.filter(l => !l.desktopOnly);
+  const desktopNavLinks = navLinks;
 
   return (
     <>

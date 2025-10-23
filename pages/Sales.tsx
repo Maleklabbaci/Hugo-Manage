@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { ShoppingCartIcon, UndoIcon, DollarSignIcon, ArchiveIcon, TrendingUpIcon } from '../components/Icons';
 import type { Language, Sale } from '../types';
+import { motion } from 'framer-motion';
 
 const localeMap: Record<Language, string> = {
     fr: 'fr-FR',
@@ -20,9 +21,15 @@ const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTim
                         <h3 className="font-bold text-slate-800 dark:text-white leading-tight">{sale.productName}</h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400">{formatTimestamp(sale.createdAt)}</p>
                     </div>
-                    <button onClick={() => onCancel(sale.id)} className="p-2 -mt-1 -me-1 rounded-full transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500" title={t('sales.cancel_sale')}>
+                    <motion.button 
+                        onClick={() => onCancel(sale.id)} 
+                        className="p-2 -mt-1 -me-1 rounded-full transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500" 
+                        title={t('sales.cancel_sale')}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                    >
                         <UndoIcon className="w-5 h-5" />
-                    </button>
+                    </motion.button>
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-3 text-center">
                     <div className="bg-slate-50 dark:bg-black/20 p-2 rounded-lg">
@@ -60,7 +67,7 @@ const Sales: React.FC = () => {
     };
 
     const handleCancelSale = (saleId: number) => {
-        if (window.confirm(t('sales.confirm_delete'))) {
+        if (window.confirm(t('sales.confirm_cancel'))) {
             cancelSale(saleId);
         }
     };
@@ -109,12 +116,13 @@ const Sales: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4">{formatTimestamp(sale.createdAt)}</td>
                                         <td className="px-6 py-4">
-                                            <button 
+                                            <motion.button 
                                                 onClick={() => handleCancelSale(sale.id)} 
                                                 className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500" 
-                                                title={t('sales.cancel_sale')}>
+                                                title={t('sales.cancel_sale')}
+                                                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                                                 <UndoIcon className="w-5 h-5" />
-                                            </button>
+                                            </motion.button>
                                         </td>
                                     </tr>
                                 ))}

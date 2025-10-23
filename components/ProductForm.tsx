@@ -172,15 +172,26 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                         </div>
 
                         <div className="flex justify-end pt-4 space-x-3">
-                            <button type="button" onClick={onClose} className="bg-slate-200 dark:bg-white/10 text-slate-800 dark:text-white rounded-lg px-4 py-2 hover:bg-slate-300 dark:hover:bg-white/20 transform transition-all duration-200 hover:-translate-y-0.5">{t('cancel')}</button>
-                            <button 
-                                type="submit" 
+                            <motion.button
+                                type="button"
+                                onClick={onClose}
+                                className="bg-slate-200 dark:bg-white/10 text-slate-800 dark:text-white rounded-lg px-4 py-2 font-semibold"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                {t('cancel')}
+                            </motion.button>
+                            <motion.button
+                                type="submit"
                                 disabled={isLoading}
-                                className="flex items-center justify-center text-white bg-gradient-to-r from-cyan-400 to-blue-500 hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5 transform transition-all duration-200 font-semibold rounded-lg px-4 py-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                                className="flex items-center justify-center text-white bg-gradient-to-r from-cyan-400 to-blue-500 font-semibold rounded-lg px-4 py-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                                whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(34, 211, 238, 0.3), 0 4px 6px -2px rgba(34, 211, 238, 0.2)' }}
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                             >
                                 {isLoading && <LoaderIcon className="animate-spin w-5 h-5 me-2" />}
                                 {t('save')}
-                            </button>
+                            </motion.button>
                         </div>
                     </form>
                 </motion.div>

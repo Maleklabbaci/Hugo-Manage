@@ -64,9 +64,16 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
            </div>
         </div>
         <div className="mt-4 flex items-center space-x-2">
-           <button onClick={() => onSell(product)} className="flex-1 text-white bg-gradient-to-r from-cyan-500 to-blue-500 disabled:from-slate-400 disabled:to-slate-500 rounded-lg h-10 font-semibold text-sm disabled:opacity-70 flex items-center justify-center" disabled={product.stock === 0}>
+           <motion.button 
+             onClick={() => onSell(product)} 
+             className="flex-1 text-white bg-gradient-to-r from-cyan-500 to-blue-500 disabled:from-slate-400 disabled:to-slate-500 rounded-lg h-10 font-semibold text-sm disabled:opacity-70 flex items-center justify-center" 
+             disabled={product.stock === 0}
+             whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(34, 211, 238, 0.3), 0 4px 6px -2px rgba(34, 211, 238, 0.2)' }}
+             whileTap={{ scale: 0.95 }}
+             transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+           >
              <ShoppingCartIcon className="w-4 h-4 me-2"/> {t('sell')}
-           </button>
+           </motion.button>
            <div className="relative">
              <button onClick={() => setMenuOpen(!menuOpen)} onBlur={() => setTimeout(() => setMenuOpen(false), 100)} className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20">
                <MoreVerticalIcon className="w-5 h-5"/>
@@ -322,21 +329,26 @@ const Products: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-slate-800 dark:text-white">{t('products.title')}</h2>
         <div className="flex items-center space-x-2">
-            <button
+            <motion.button
                 onClick={handleImportClick}
                 disabled={isImporting}
-                className="flex items-center bg-white/50 dark:bg-white/10 text-slate-700 dark:text-white border border-white/30 dark:border-white/20 hover:bg-white/80 dark:hover:bg-white/20 hover:-translate-y-0.5 transform transition-all duration-200 font-semibold rounded-lg px-4 py-2 disabled:opacity-50"
+                className="flex items-center bg-white/50 dark:bg-white/10 text-slate-700 dark:text-white border border-white/30 dark:border-white/20 hover:bg-white/80 dark:hover:bg-white/20 font-semibold rounded-lg px-4 py-2 disabled:opacity-50"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
             >
                 {isImporting ? <LoaderIcon className="w-5 h-5 me-2 animate-spin" /> : <UploadIcon className="w-5 h-5 me-2" />}
                 <span className="hidden sm:inline">{t('products.import_shopify')}</span>
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={() => handleOpenModal()}
-              className="flex items-center text-white bg-gradient-to-r from-cyan-400 to-blue-500 hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5 transform transition-all duration-200 font-semibold rounded-lg px-4 py-2"
+              className="flex items-center text-white bg-gradient-to-r from-cyan-400 to-blue-500 font-semibold rounded-lg px-4 py-2"
+              whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(34, 211, 238, 0.3), 0 4px 6px -2px rgba(34, 211, 238, 0.2)' }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <AddIcon className="w-5 h-5 me-2" />
               <span className="hidden sm:inline">{t('products.add_product')}</span>
-            </button>
+            </motion.button>
         </div>
         <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".csv" className="hidden" />
       </div>
@@ -357,13 +369,16 @@ const Products: React.FC = () => {
       {numSelected > 0 && !isMobile && (
         <div className="bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 p-3 rounded-lg mb-4 flex items-center justify-between shadow-md">
             <span className="font-semibold">{t('products.selected_text', { count: numSelected })}</span>
-            <button
+            <motion.button
                 onClick={handleBulkDelete}
-                className="flex items-center bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold rounded-lg px-3 py-1.5 text-sm transform transition-all duration-200 hover:shadow-lg hover:shadow-red-500/50 hover:-translate-y-0.5"
+                className="flex items-center bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold rounded-lg px-3 py-1.5 text-sm"
+                whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.3), 0 4px 6px -2px rgba(239, 68, 68, 0.2)' }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
                 <DeleteIcon className="w-4 h-4 me-2" />
                 {t('products.delete_selected')}
-            </button>
+            </motion.button>
         </div>
       )}
 
@@ -443,35 +458,39 @@ const Products: React.FC = () => {
                     <td className="px-6 py-4 text-xs whitespace-nowrap">{timeAgo(product.createdAt)}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                          <button 
+                          <motion.button 
                               onClick={() => handleOpenSaleModal(product)} 
                               className="p-2 rounded-md transition-colors bg-green-500/10 hover:bg-green-500/20 text-green-500 disabled:bg-slate-500/10 disabled:text-slate-500 disabled:cursor-not-allowed"
                               disabled={product.stock === 0}
                               title={t('sell')}
+                              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                           >
                               <ShoppingCartIcon className="w-5 h-5" />
-                          </button>
-                          <button 
+                          </motion.button>
+                          <motion.button 
                               onClick={() => handleOpenModal(product)} 
                               className="p-2 rounded-md transition-colors bg-blue-500/10 hover:bg-blue-500/20 text-blue-500" 
                               title={t('edit')}
+                               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                           >
                               <EditIcon className="w-5 h-5" />
-                          </button>
-                          <button 
+                          </motion.button>
+                          <motion.button 
                               onClick={() => duplicateProduct(product.id)}
                               className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500"
                               title={t('duplicate')}
+                               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                           >
                               <DuplicateIcon className="w-5 h-5" />
-                          </button>
-                          <button 
+                          </motion.button>
+                          <motion.button 
                               onClick={() => handleDelete(product.id)} 
                               className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" 
                               title={t('delete')}
+                               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                           >
                               <DeleteIcon className="w-5 h-5" />
-                          </button>
+                          </motion.button>
                       </div>
                     </td>
                   </tr>
@@ -510,13 +529,16 @@ const Products: React.FC = () => {
             exit={{ y: 100 }}
           >
             <span className="font-semibold text-white">{t('products.selected_text', { count: numSelected })}</span>
-            <button
+            <motion.button
               onClick={handleBulkDelete}
               className="flex items-center bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold rounded-lg px-3 py-1.5 text-sm"
+              whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.3), 0 4px 6px -2px rgba(239, 68, 68, 0.2)' }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
               <DeleteIcon className="w-4 h-4 me-2" />
               {t('products.delete_selected')}
-            </button>
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>

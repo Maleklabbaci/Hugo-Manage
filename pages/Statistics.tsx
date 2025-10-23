@@ -1,5 +1,7 @@
 
 
+
+
 import React, { useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -23,7 +25,7 @@ const getWeekStart = (date: Date): Date => {
 };
 
 
-const COLORS = ['#22D3EE', '#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
+const COLORS = ['#22D3EE', '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', '#d0ed57', '#ffc0cb'];
 const localeMap: Record<Language, string> = {
     fr: 'fr-FR',
     en: 'en-GB',
@@ -51,6 +53,7 @@ const Statistics: React.FC = () => {
   const monthlySalesData = useMemo(() => {
     const salesByMonth: { [key: string]: number } = {};
     sales.forEach(s => {
+      if (!s.createdAt || !s.totalPrice) return;
       const date = new Date(s.createdAt);
       const month = date.toLocaleString(locale, { month: 'short', year: '2-digit' });
       salesByMonth[month] = (salesByMonth[month] || 0) + s.totalPrice;
@@ -71,12 +74,14 @@ const Statistics: React.FC = () => {
   }, [sales, locale]);
 
 
-  const categoryDistribution = useMemo(() => {
-    const countByCategory = products.reduce<Record<string, number>>((acc, p) => {
-      acc[p.category] = (acc[p.category] || 0) + 1;
+  const stockByCategoryData = useMemo(() => {
+    const stockByCategory = products.reduce<Record<string, number>>((acc, p) => {
+      if (!p.category) return acc;
+      const simplifiedCategory = p.category.split(/\s*>\s*/).pop()?.trim() || p.category;
+      acc[simplifiedCategory] = (acc[simplifiedCategory] || 0) + (p.stock || 0);
       return acc;
     }, {});
-    return Object.entries(countByCategory).map(([name, value]) => ({ name, value }));
+    return Object.entries(stockByCategory).map(([name, value]) => ({ name, value }));
   }, [products]);
 
   const indicators = useMemo(() => {
@@ -92,15 +97,16 @@ const Statistics: React.FC = () => {
     startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
 
     const thisWeekRevenue = sales
-      .filter(s => new Date(s.createdAt) >= startOfThisWeek)
-      .reduce((acc, s) => acc + s.totalPrice, 0);
+      .filter(s => s.createdAt && new Date(s.createdAt) >= startOfThisWeek)
+      .reduce((acc, s) => acc + (s.totalPrice || 0), 0);
 
     const lastWeekRevenue = sales
       .filter(s => {
+        if (!s.createdAt) return false;
         const saleDate = new Date(s.createdAt);
         return saleDate >= startOfLastWeek && saleDate < startOfThisWeek;
       })
-      .reduce((acc, s) => acc + s.totalPrice, 0);
+      .reduce((acc, s) => acc + (s.totalPrice || 0), 0);
       
     let weeklySalesGrowth: number;
     if (lastWeekRevenue > 0) {
@@ -174,13 +180,13 @@ const Statistics: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4">{t('statistics.category_distribution_chart_title')}</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
-                    <Pie data={categoryDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} label>
-                        {categoryDistribution.map((entry, index) => (
+                    <Pie data={stockByCategoryData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120}>
+                        {stockByCategoryData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                     </Pie>
-                    <Tooltip formatter={(value) => `${value} ${t('statistics.chart.products')}`} contentStyle={{ backgroundColor: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.1)'}}/>
-                    <Legend />
+                    <Tooltip formatter={(value) => `${value} ${t('dashboard.chart.units')}`} contentStyle={{ backgroundColor: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.1)'}}/>
+                    <Legend wrapperStyle={{ overflow: "hidden", textOverflow: "ellipsis", width: "100%"}}/>
                 </PieChart>
             </ResponsiveContainer>
         </div>

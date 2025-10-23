@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppContext } from '../context/AppContext';
 import { ServerIcon } from './Icons';
 import GlobalSearch from './GlobalSearch';
+import NotificationPanel from './NotificationPanel';
 
 const SupabaseBanner = () => {
     const { t } = useAppContext();
@@ -22,6 +23,7 @@ const SupabaseBanner = () => {
 
 const Layout: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const location = useLocation();
   const { isConfigured } = useAppContext();
 
@@ -29,8 +31,12 @@ const Layout: React.FC = () => {
     <div className="flex h-screen">
       <Sidebar />
       <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <NotificationPanel isOpen={isNotificationsOpen} onClose={() => setIsNotificationsOpen(false)} />
       <div className="flex-1 flex flex-col overflow-hidden md:ms-64">
-        <Header onSearchClick={() => setIsSearchOpen(true)} />
+        <Header 
+            onSearchClick={() => setIsSearchOpen(true)}
+            onNotificationClick={() => setIsNotificationsOpen(prev => !prev)}
+        />
         {!isConfigured && <SupabaseBanner />}
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8 pb-20 md:pb-8">
             <AnimatePresence mode="wait">

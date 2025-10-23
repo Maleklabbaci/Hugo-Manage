@@ -3,6 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import { SunIcon, MoonIcon, LogoutIcon, LanguagesIcon, ServerIcon } from '../components/Icons';
 import type { Language, Theme } from '../types';
 import { storage } from '../services/storage';
+import { motion } from 'framer-motion';
 
 const Settings: React.FC = () => {
   const { theme, setTheme, language, setLanguage, t, logout, session } = useAppContext();
@@ -52,12 +53,15 @@ const Settings: React.FC = () => {
                   <label htmlFor="supabaseAnonKey" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('settings.supabase.anon_key_label')}</label>
                   <input type="password" id="supabaseAnonKey" value={supabaseAnonKey} onChange={e => setSupabaseAnonKey(e.target.value)} className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="ey..." />
               </div>
-              <button
+              <motion.button
                   onClick={handleSaveSupabase}
-                  className="w-full flex items-center justify-center bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold rounded-lg px-4 py-2.5 transform transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5"
+                  className="w-full flex items-center justify-center bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold rounded-lg px-4 py-2.5"
+                  whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(34, 211, 238, 0.3), 0 4px 6px -2px rgba(34, 211, 238, 0.2)' }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
               >
                   {t('settings.supabase.save_button')}
-              </button>
+              </motion.button>
           </div>
       </div>
 
@@ -65,18 +69,20 @@ const Settings: React.FC = () => {
         <h3 className="text-lg font-semibold mb-4 border-b pb-2 border-slate-300 dark:border-white/10">{t('settings.theme_title')}</h3>
         <div className="flex items-center justify-between">
           <p>{t('settings.theme_select')}</p>
-          <div className="flex rounded-lg p-1 bg-slate-200 dark:bg-black/20">
+          <div className="relative flex w-32 rounded-lg p-1 bg-slate-200 dark:bg-black/20">
             <button
               onClick={() => handleThemeChange('light')}
-              className={`p-2 rounded-md transition-colors ${theme === 'light' ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-white shadow' : 'text-slate-500 dark:text-slate-300'}`}
+              className={`relative z-10 flex-1 p-2 rounded-md transition-colors text-center ${theme === 'light' ? 'text-white' : 'text-slate-500 dark:text-slate-300'}`}
             >
-              <SunIcon className="w-5 h-5"/>
+              <SunIcon className="w-5 h-5 mx-auto"/>
+              {theme === 'light' && <motion.div layoutId="active-theme" className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-md shadow-lg -z-10" />}
             </button>
             <button
               onClick={() => handleThemeChange('dark')}
-              className={`p-2 rounded-md transition-colors ${theme === 'dark' ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-white shadow' : 'text-slate-500 dark:text-slate-300'}`}
+              className={`relative z-10 flex-1 p-2 rounded-md transition-colors text-center ${theme === 'dark' ? 'text-white' : 'text-slate-500 dark:text-slate-300'}`}
             >
-              <MoonIcon className="w-5 h-5"/>
+              <MoonIcon className="w-5 h-5 mx-auto"/>
+              {theme === 'dark' && <motion.div layoutId="active-theme" className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-md shadow-lg -z-10" />}
             </button>
           </div>
         </div>
@@ -96,13 +102,16 @@ const Settings: React.FC = () => {
 
       {session && (
         <div>
-          <button
+          <motion.button
             onClick={logout}
             className="w-full bg-red-500/10 dark:bg-red-500/10 text-red-500 font-semibold rounded-lg px-4 py-2.5 flex items-center justify-center transition-colors hover:bg-red-500/20"
+            whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.2), 0 4px 6px -2px rgba(239, 68, 68, 0.1)' }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           >
             <LogoutIcon className="w-5 h-5 me-2"/>
             {t('settings.logout_button')}
-          </button>
+          </motion.button>
         </div>
       )}
     </div>
