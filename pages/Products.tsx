@@ -241,7 +241,7 @@ const Products: React.FC = () => {
             const lines = text.split(/\r?\n/);
             const header = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
             
-            const requiredColumns = ['Handle', 'Title', 'Type', 'Variant Price', 'Variant SKU', 'Image Src'];
+            const requiredColumns = ['Handle', 'Title', 'Product Category', 'Variant Price', 'Variant SKU', 'Image Src'];
             const missingColumns: string[] = [];
             const colIndices: Record<string, number> = {};
             requiredColumns.forEach(col => {
@@ -268,20 +268,22 @@ const Products: React.FC = () => {
                     processedHandles.add(handle);
                     
                     const name = data[colIndices['Title']];
-                    const category = data[colIndices['Type']];
-                    const sellPrice = parseFloat(data[colIndices['Variant Price']]);
+                    const category = data[colIndices['Product Category']];
+                    const sellPriceStr = data[colIndices['Variant Price']];
                     const stockStr = data[colIndices['Variant SKU']] || '';
-                    const stock = parseInt(stockStr.replace(/'/g, ''), 10) || 0;
                     const imageUrl = data[colIndices['Image Src']];
 
-                    if (name && category && !isNaN(sellPrice)) {
+                    const sellPrice = parseFloat(sellPriceStr);
+                    const stock = parseInt(stockStr.replace(/'/g, ''), 10);
+                    
+                    if (name && !isNaN(sellPrice)) {
                         newProducts.push({
                             name,
-                            category,
+                            category: category || t('products.uncategorized'),
                             supplier: 'Shopify',
                             buyPrice: 0,
                             sellPrice,
-                            stock,
+                            stock: !isNaN(stock) ? stock : 0,
                             imageUrl: imageUrl || undefined,
                         });
                     }
@@ -291,6 +293,8 @@ const Products: React.FC = () => {
             if (newProducts.length > 0) {
                 await addMultipleProducts(newProducts);
                 alert(t('products.import.success', { count: newProducts.length }));
+            } else {
+                alert(t('products.import.error_no_products_found'));
             }
         } catch (error) {
             console.error("Import error:", error);

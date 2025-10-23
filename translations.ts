@@ -64,6 +64,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.import.success': '{count} produits importés avec succès.',
     'products.import.error_file': 'Erreur de lecture du fichier. Assurez-vous que c\'est un CSV valide de Shopify.',
     'products.import.error_format': 'Format CSV invalide. Colonnes requises manquantes: {columns}',
+    'products.import.error_no_products_found': 'Aucun produit valide trouvé dans le fichier. Veuillez vérifier le format du fichier.',
     'products.search_placeholder': 'Rechercher un produit...',
     'products.no_results_title': 'Aucun produit trouvé',
     'products.no_results_subtitle': 'Essayez de modifier vos critères de recherche.',
@@ -87,6 +88,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.time_ago.minutes': 'Il y a {count} min',
     'products.time_ago.hours': 'Il y a {count} h',
     'products.time_ago.days': 'Il y a {count} j',
+    'products.uncategorized': 'Non classé',
 
     // Product Form
     'product_form.edit_title': 'Modifier le produit',
@@ -246,6 +248,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.import.success': '{count} products imported successfully.',
     'products.import.error_file': 'Error reading file. Ensure it is a valid Shopify CSV.',
     'products.import.error_format': 'Invalid CSV format. Missing required columns: {columns}',
+    'products.import.error_no_products_found': 'No valid products found in the file. Please check the file format.',
     'products.search_placeholder': 'Search for a product...',
     'products.no_results_title': 'No products found',
     'products.no_results_subtitle': 'Try changing your search criteria.',
@@ -269,6 +272,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.time_ago.minutes': '{count} min ago',
     'products.time_ago.hours': '{count}h ago',
     'products.time_ago.days': '{count}d ago',
+    'products.uncategorized': 'Uncategorized',
 
     'product_form.edit_title': 'Edit Product',
     'product_form.add_title': 'Add Product',
@@ -421,6 +425,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.import.success': 'تم استيراد {count} منتجات بنجاح.',
     'products.import.error_file': 'خطأ في قراءة الملف. تأكد من أنه ملف CSV صالح من Shopify.',
     'products.import.error_format': 'تنسيق CSV غير صالح. الأعمدة المطلوبة مفقودة: {columns}',
+    'products.import.error_no_products_found': 'لم يتم العثور على منتجات صالحة في الملف. يرجى التحقق من تنسيق الملف.',
     'products.search_placeholder': 'ابحث عن منتج...',
     'products.no_results_title': 'لم يتم العثور على منتجات',
     'products.no_results_subtitle': 'حاول تغيير معايير البحث الخاصة بك.',
@@ -444,6 +449,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.time_ago.minutes': 'منذ {count} دقيقة',
     'products.time_ago.hours': 'منذ {count} ساعة',
     'products.time_ago.days': 'منذ {count} يوم',
+    'products.uncategorized': 'غير مصنف',
 
     'product_form.edit_title': 'تعديل المنتج',
     'product_form.add_title': 'إضافة منتج',
