@@ -107,6 +107,7 @@ const Products: React.FC = () => {
   const productsPerPage = 30;
   
   const timeAgo = (isoDate: string): string => {
+    if (!isoDate) return '-';
     const seconds = Math.floor((new Date().getTime() - new Date(isoDate).getTime()) / 1000);
     if (seconds < 60) return t('products.time_ago.now');
     const minutes = Math.floor(seconds / 60);
@@ -157,7 +158,7 @@ const Products: React.FC = () => {
     setProductToEdit(null);
   };
 
-  const handleSaveProduct = async (productData: Omit<Product, 'id'| 'status' | 'updatedAt'> | Product) => {
+  const handleSaveProduct = async (productData: Omit<Product, 'id'| 'status' | 'createdAt' | 'updatedAt'> | Product) => {
     let result: Product | null;
     if ('id' in productData) {
       result = await updateProduct(productData as Product);
@@ -340,7 +341,7 @@ const Products: React.FC = () => {
                         {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-xs whitespace-nowrap">{timeAgo(product.updatedAt)}</td>
+                    <td className="px-6 py-4 text-xs whitespace-nowrap">{timeAgo(product.createdAt)}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
                           <button 
@@ -422,7 +423,7 @@ const Products: React.FC = () => {
       </AnimatePresence>
 
       <ProductForm isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveProduct} productToEdit={productToEdit} />
-      <SaleModal isOpen={isSaleModalOpen} onClose={handleCloseModal} onConfirm={handleConfirmSale} product={productToSell} />
+      <SaleModal isOpen={isSaleModalOpen} onClose={handleCloseSaleModal} onConfirm={handleConfirmSale} product={productToSell} />
     </div>
   );
 };

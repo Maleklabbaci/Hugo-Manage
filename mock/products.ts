@@ -10,6 +10,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 89.99,
     stock: 80,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-10-15T10:00:00Z",
     updatedAt: "2023-10-15T10:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Sunglasses"
   },
@@ -22,6 +24,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 199.99,
     stock: 45,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-10-12T14:30:00Z",
     updatedAt: "2023-10-12T14:30:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Watch"
   },
@@ -34,6 +38,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 99.99,
     stock: 0,
     status: "rupture",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-09-28T09:00:00Z",
     updatedAt: "2023-09-28T09:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Bag"
   },
@@ -46,6 +52,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 24.99,
     stock: 120,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-01T11:20:00Z",
     updatedAt: "2023-11-01T11:20:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Cap"
   },
@@ -58,6 +66,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 59.99,
     stock: 70,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-10-22T16:45:00Z",
     updatedAt: "2023-10-22T16:45:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Wallet"
   },
@@ -70,6 +80,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 69.99,
     stock: 90,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-05T18:00:00Z",
     updatedAt: "2023-11-05T18:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Sport-Watch"
   },
@@ -82,6 +94,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 34.99,
     stock: 150,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-10-30T13:10:00Z",
     updatedAt: "2023-10-30T13:10:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Bracelet"
   },
@@ -94,6 +108,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 149.99,
     stock: 60,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-02T10:05:00Z",
     updatedAt: "2023-11-02T10:05:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Glasses"
   },
@@ -106,6 +122,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 29.99,
     stock: 110,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-10-18T12:00:00Z",
     updatedAt: "2023-10-18T12:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Trucker-Cap"
   },
@@ -118,6 +136,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 22.99,
     stock: 200,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-04T15:30:00Z",
     updatedAt: "2023-11-04T15:30:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Bead-Bracelet"
   },
@@ -130,6 +150,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 119.99,
     stock: 55,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-06T10:00:00Z",
     updatedAt: "2023-11-06T10:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Backpack"
   },
@@ -142,6 +164,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 179.99,
     stock: 30,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-07T11:30:00Z",
     updatedAt: "2023-11-07T11:30:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Classic-Watch"
   },
@@ -154,6 +178,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 110.00,
     stock: 75,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-08T09:15:00Z",
     updatedAt: "2023-11-08T09:15:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Polarized-Glasses"
   },
@@ -166,6 +192,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 19.99,
     stock: 150,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-09T14:00:00Z",
     updatedAt: "2023-11-09T14:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Beanie"
   },
@@ -178,6 +206,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 29.99,
     stock: 180,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-10T16:20:00Z",
     updatedAt: "2023-11-10T16:20:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Anchor-Bracelet"
   },
@@ -190,6 +220,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 49.99,
     stock: 95,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-11T12:00:00Z",
     updatedAt: "2023-11-11T12:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Card-Holder"
   },
@@ -202,6 +234,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 249.99,
     stock: 40,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-12T10:45:00Z",
     updatedAt: "2023-11-12T10:45:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Smartwatch"
   },
@@ -214,6 +248,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 79.99,
     stock: 100,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-13T11:00:00Z",
     updatedAt: "2023-11-13T11:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Blue-Light-Glasses"
   },
@@ -226,6 +262,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 34.99,
     stock: 80,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-14T15:00:00Z",
     updatedAt: "2023-11-14T15:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Snapback-Cap"
   },
@@ -238,6 +276,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 129.99,
     stock: 60,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-15T18:30:00Z",
     updatedAt: "2023-11-15T18:30:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Silver-Gourmette"
   },
@@ -250,6 +290,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 79.99,
     stock: 70,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-16T09:00:00Z",
     updatedAt: "2023-11-16T09:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Sling-Bag"
   },
@@ -262,6 +304,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 299.99,
     stock: 25,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-17T14:20:00Z",
     updatedAt: "2023-11-17T14:20:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Diving-Watch"
   },
@@ -274,6 +318,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 95.00,
     stock: 0,
     status: "rupture",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-18T11:50:00Z",
     updatedAt: "2023-11-18T11:50:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Round-Sunglasses"
   },
@@ -286,6 +332,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 39.99,
     stock: 90,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-19T13:00:00Z",
     updatedAt: "2023-11-19T13:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Bucket-Hat"
   },
@@ -298,6 +346,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 59.99,
     stock: 110,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-20T10:00:00Z",
     updatedAt: "2023-11-20T10:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Steel-Bracelet"
   },
@@ -310,6 +360,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 199.99,
     stock: 35,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-21T15:10:00Z",
     updatedAt: "2023-11-21T15:10:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Briefcase"
   },
@@ -322,6 +374,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 450.00,
     stock: 15,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-22T17:00:00Z",
     updatedAt: "2023-11-22T17:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Skeleton-Watch"
   },
@@ -334,6 +388,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 19.99,
     stock: 250,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-23T12:30:00Z",
     updatedAt: "2023-11-23T12:30:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Glasses-Case"
   },
@@ -346,6 +402,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 44.99,
     stock: 50,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-24T09:45:00Z",
     updatedAt: "2023-11-24T09:45:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Beret"
   },
@@ -358,6 +416,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 27.99,
     stock: 130,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-25T14:00:00Z",
     updatedAt: "2023-11-25T14:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Shamballa-Bracelet"
   },
@@ -370,6 +430,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 69.99,
     stock: 85,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-26T10:00:00Z",
     updatedAt: "2023-11-26T10:00:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Belt"
   },
@@ -382,6 +444,8 @@ export const MOCK_PRODUCTS: Product[] = [
     sellPrice: 129.99,
     stock: 40,
     status: "actif",
+    // FIX: Add missing createdAt property
+    createdAt: "2023-11-27T11:30:00Z",
     updatedAt: "2023-11-27T11:30:00Z",
     imageUrl: "https://placehold.co/400x400/e0f2fe/083344/Scarf"
   }

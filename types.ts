@@ -7,6 +7,7 @@ export interface Product {
   sellPrice: number;
   stock: number;
   status: 'actif' | 'rupture';
+  createdAt: string; // ISO string format
   updatedAt: string; // ISO string format
   imageUrl?: string;
 }
