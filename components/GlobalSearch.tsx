@@ -74,11 +74,11 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                     onClick={onClose}
                 >
                     <motion.div
-                        className="bg-white dark:bg-secondary rounded-2xl shadow-xl w-full max-w-2xl relative max-h-[70vh] flex flex-col"
+                        className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 rounded-2xl shadow-xl w-full max-w-2xl relative max-h-[70vh] flex flex-col"
                         variants={modalVariants}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="p-4 border-b dark:border-slate-700 flex items-center">
+                        <div className="p-4 border-b dark:border-white/10 flex items-center">
                            <SearchIcon className="w-5 h-5 text-slate-400 me-3"/>
                            <input
                                 ref={inputRef}
@@ -103,7 +103,7 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                                         <div className="mb-2">
                                             <h3 className="text-xs font-bold uppercase text-slate-400 px-3 py-2">{t('search.products')}</h3>
                                             <ul>{searchResults.products.map(p => (
-                                                <li key={`prod-${p.id}`}><Link to="/products" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-dark">
+                                                <li key={`prod-${p.id}`}><Link to="/products" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5">
                                                     <ProductsIcon className="w-5 h-5 text-cyan-500 me-4"/>
                                                     <div>
                                                         <p className="font-semibold text-slate-800 dark:text-white">{p.name}</p>
@@ -117,7 +117,7 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                                         <div className="mb-2">
                                             <h3 className="text-xs font-bold uppercase text-slate-400 px-3 py-2">{t('search.sales')}</h3>
                                             <ul>{searchResults.sales.map(s => (
-                                                <li key={`sale-${s.id}`}><Link to="/sales" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-dark">
+                                                <li key={`sale-${s.id}`}><Link to="/sales" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5">
                                                     <ShoppingCartIcon className="w-5 h-5 text-green-500 me-4"/>
                                                      <div>
                                                         <p className="font-semibold text-slate-800 dark:text-white">{s.productName}</p>
@@ -131,7 +131,7 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                                         <div className="mb-2">
                                             <h3 className="text-xs font-bold uppercase text-slate-400 px-3 py-2">{t('search.history')}</h3>
                                             <ul>{searchResults.activityLog.map(l => (
-                                                <li key={`log-${l.id}`}><Link to="/history" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-dark">
+                                                <li key={`log-${l.id}`}><Link to="/history" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5">
                                                     <HistoryIcon className="w-5 h-5 text-amber-500 me-4"/>
                                                      <div>
                                                         <p className="font-semibold text-slate-800 dark:text-white">{l.productName}</p>

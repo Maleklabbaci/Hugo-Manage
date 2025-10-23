@@ -10,7 +10,7 @@ import GlobalSearch from './GlobalSearch';
 const SupabaseBanner = () => {
     const { t } = useAppContext();
     return (
-        <div className="bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 p-3 text-sm text-center flex items-center justify-center">
+        <div className="bg-amber-100/80 dark:bg-amber-900/40 backdrop-blur-md text-amber-800 dark:text-amber-300 p-3 text-sm text-center flex items-center justify-center border-b border-amber-300/50">
             <ServerIcon className="w-5 h-5 me-3 flex-shrink-0" />
             <span className="font-medium">{t('settings.supabase.unconfigured_prefix')}</span>
             <Link to="/settings" className="font-bold underline ms-1 hover:text-amber-600 dark:hover:text-amber-200">
@@ -26,13 +26,13 @@ const Layout: React.FC = () => {
   const { isConfigured } = useAppContext();
 
   return (
-    <div className="flex h-screen bg-slate-100 dark:bg-dark">
+    <div className="flex h-screen">
       <Sidebar />
       <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <div className="flex-1 flex flex-col overflow-hidden md:ms-64">
         <Header onSearchClick={() => setIsSearchOpen(true)} />
         {!isConfigured && <SupabaseBanner />}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 dark:bg-dark p-4 md:p-8 pb-20 md:pb-8">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8 pb-20 md:pb-8">
             <AnimatePresence mode="wait">
                 <motion.div
                     key={location.pathname}

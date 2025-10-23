@@ -53,10 +53,17 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.notifications.title': 'Notifications',
     'dashboard.notifications.low_stock': '{productName} est en stock faible ({count} articles restants).',
     'dashboard.notifications.out_of_stock': '{productName} est en rupture de stock.',
+    'dashboard.weekly_sales_growth': 'Croissance Ventes (hebdo)',
+    'dashboard.this_week': 'cette semaine',
 
     // Products Page
     'products.title': 'Liste des produits',
     'products.add_product': 'Ajouter produit',
+    'products.import_shopify': 'Importer depuis Shopify',
+    'products.import.loading': 'Importation en cours...',
+    'products.import.success': '{count} produits importés avec succès.',
+    'products.import.error_file': 'Erreur de lecture du fichier. Assurez-vous que c\'est un CSV valide de Shopify.',
+    'products.import.error_format': 'Format CSV invalide. Colonnes requises manquantes: {columns}',
     'products.search_placeholder': 'Rechercher un produit...',
     'products.no_results_title': 'Aucun produit trouvé',
     'products.no_results_subtitle': 'Essayez de modifier vos critères de recherche.',
@@ -133,6 +140,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'history.log.bulk_delete': 'Supprimé via action groupée',
     'history.log.duplicated': 'Dupliqué depuis "{productName}"',
     'history.log.image_updated': "l'image a été modifiée",
+    'history.log.imported_from_shopify': 'Importé depuis Shopify',
 
     // Statistics Page
     'statistics.avg_margin': 'Marge moyenne',
@@ -143,6 +151,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'statistics.chart.revenue': 'Revenu',
     'statistics.chart.potential_profit': 'Bénéfice Potentiel',
     'statistics.chart.products': 'produits',
+    'statistics.weekly_sales_growth': 'Croissance Ventes (hebdo)',
     
     // Settings Page
     'settings.theme_title': 'Thème',
@@ -227,9 +236,16 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.notifications.title': 'Notifications',
     'dashboard.notifications.low_stock': '{productName} is low on stock ({count} items left).',
     'dashboard.notifications.out_of_stock': '{productName} is out of stock.',
+    'dashboard.weekly_sales_growth': 'Weekly Sales Growth',
+    'dashboard.this_week': 'this week',
 
     'products.title': 'Product List',
     'products.add_product': 'Add Product',
+    'products.import_shopify': 'Import from Shopify',
+    'products.import.loading': 'Importing...',
+    'products.import.success': '{count} products imported successfully.',
+    'products.import.error_file': 'Error reading file. Ensure it is a valid Shopify CSV.',
+    'products.import.error_format': 'Invalid CSV format. Missing required columns: {columns}',
     'products.search_placeholder': 'Search for a product...',
     'products.no_results_title': 'No products found',
     'products.no_results_subtitle': 'Try changing your search criteria.',
@@ -302,6 +318,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'history.log.bulk_delete': 'Deleted via bulk action',
     'history.log.duplicated': 'Duplicated from "{productName}"',
     'history.log.image_updated': 'image was updated',
+    'history.log.imported_from_shopify': 'Imported from Shopify',
 
     'statistics.avg_margin': 'Average Margin',
     'statistics.out_of_stock_rate': 'Out of Stock Rate',
@@ -311,6 +328,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'statistics.chart.revenue': 'Revenue',
     'statistics.chart.potential_profit': 'Potential Profit',
     'statistics.chart.products': 'products',
+    'statistics.weekly_sales_growth': 'Weekly Sales Growth',
 
     'settings.theme_title': 'Theme',
     'settings.theme_select': 'Choose the application theme:',
@@ -393,9 +411,16 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.notifications.title': 'الإشعارات',
     'dashboard.notifications.low_stock': 'مخزون {productName} منخفض ({count} قطع متبقية).',
     'dashboard.notifications.out_of_stock': 'نفد مخزون {productName}.',
+    'dashboard.weekly_sales_growth': 'نمو المبيعات (أسبوعي)',
+    'dashboard.this_week': 'هذا الأسبوع',
 
     'products.title': 'قائمة المنتجات',
     'products.add_product': 'إضافة منتج',
+    'products.import_shopify': 'استيراد من Shopify',
+    'products.import.loading': 'جاري الاستيراد...',
+    'products.import.success': 'تم استيراد {count} منتجات بنجاح.',
+    'products.import.error_file': 'خطأ في قراءة الملف. تأكد من أنه ملف CSV صالح من Shopify.',
+    'products.import.error_format': 'تنسيق CSV غير صالح. الأعمدة المطلوبة مفقودة: {columns}',
     'products.search_placeholder': 'ابحث عن منتج...',
     'products.no_results_title': 'لم يتم العثور على منتجات',
     'products.no_results_subtitle': 'حاول تغيير معايير البحث الخاصة بك.',
@@ -468,6 +493,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'history.log.bulk_delete': 'تم الحذف عبر إجراء جماعي',
     'history.log.duplicated': 'تم نسخه من "{productName}"',
     'history.log.image_updated': 'تم تعديل الصورة',
+    'history.log.imported_from_shopify': 'تم الاستيراد من Shopify',
 
     'statistics.avg_margin': 'متوسط الهامش',
     'statistics.out_of_stock_rate': 'معدل النفاذ',
@@ -477,6 +503,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'statistics.chart.revenue': 'الإيرادات',
     'statistics.chart.potential_profit': 'الربح المحتمل',
     'statistics.chart.products': 'منتجات',
+    'statistics.weekly_sales_growth': 'نمو المبيعات (أسبوعي)',
 
     'settings.theme_title': 'المظهر',
     'settings.theme_select': 'اختر مظهر التطبيق:',
@@ -502,7 +529,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'search.history': 'السجل',
     'search.no_results': 'لم يتم العثور على نتائج',
     'search.results_for': 'للبحث "{query}"',
-    'search.sale_details': 'الكمية: {quantity}، الإجمالي: {price} د.ج',
+    'search.sale_details': 'الكمية: {quantity}, الإجمالي: {price} د.ج',
 
     'log.name': 'الاسم',
     'log.category': 'الفئة',

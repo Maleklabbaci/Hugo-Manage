@@ -13,6 +13,16 @@ const calculateMargin = (product: Product) => {
   return ((product.sellPrice - product.buyPrice) / product.sellPrice) * 100;
 };
 
+const getWeekStart = (date: Date): Date => {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+  const monday = new Date(d.setDate(diff));
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+};
+
+
 const COLORS = ['#22D3EE', '#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
 const localeMap: Record<Language, string> = {
     fr: 'fr-FR',
@@ -74,13 +84,49 @@ const Statistics: React.FC = () => {
     const avgMargin = products.length > 0 ? totalMargin / products.length : 0;
     const outOfStockCount = products.filter(p => p.stock === 0).length;
     const ruptureRate = products.length > 0 ? (outOfStockCount / products.length) * 100 : 0;
-    return { avgMargin, ruptureRate };
-  }, [products]);
+    
+    // Weekly Sales Growth Calculation
+    const today = new Date();
+    const startOfThisWeek = getWeekStart(today);
+    const startOfLastWeek = new Date(startOfThisWeek);
+    startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+
+    const thisWeekRevenue = sales
+      .filter(s => new Date(s.createdAt) >= startOfThisWeek)
+      .reduce((acc, s) => acc + s.totalPrice, 0);
+
+    const lastWeekRevenue = sales
+      .filter(s => {
+        const saleDate = new Date(s.createdAt);
+        return saleDate >= startOfLastWeek && saleDate < startOfThisWeek;
+      })
+      .reduce((acc, s) => acc + s.totalPrice, 0);
+      
+    let weeklySalesGrowth: number;
+    if (lastWeekRevenue > 0) {
+        weeklySalesGrowth = ((thisWeekRevenue - lastWeekRevenue) / lastWeekRevenue) * 100;
+    } else if (thisWeekRevenue > 0) {
+        weeklySalesGrowth = Infinity;
+    } else {
+        weeklySalesGrowth = 0;
+    }
+    
+    return { avgMargin, ruptureRate, weeklySalesGrowth };
+  }, [products, sales]);
+  
+  const formatGrowth = (growth: number): string => {
+    if (growth === Infinity) {
+      return '🔺 +∞%';
+    }
+    const sign = growth >= 0 ? '+' : '';
+    const arrow = growth >= 0 ? '🔺' : '🔻';
+    return `${arrow} ${sign}${growth.toFixed(0)} %`;
+  };
   
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-secondary p-2 border border-slate-700 rounded-md shadow-lg">
+        <div className="bg-slate-900/80 p-2 border border-white/10 rounded-md shadow-lg">
           <p className="label text-white">{`${label} : ${payload[0].value.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`}</p>
         </div>
       );
@@ -90,11 +136,12 @@ const Statistics: React.FC = () => {
 
   return (
     <div className="space-y-8 text-slate-800 dark:text-white">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatCard icon={TrendingUpIcon} title={t('statistics.avg_margin')} value={`${indicators.avgMargin.toFixed(1)}%`} />
             <StatCard icon={PackageXIcon} title={t('statistics.out_of_stock_rate')} value={`${indicators.ruptureRate.toFixed(1)}%`} />
+            <StatCard icon={TrendingUpIcon} title={t('statistics.weekly_sales_growth')} value={formatGrowth(indicators.weeklySalesGrowth)} description={t('dashboard.this_week')} />
         </div>
-        <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
+        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 p-6 rounded-2xl">
             <h3 className="text-lg font-semibold mb-4">{t('statistics.monthly_revenue_chart_title')}</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={monthlySalesData}>
@@ -102,7 +149,7 @@ const Statistics: React.FC = () => {
                     <XAxis dataKey="name" tick={{ fill: '#94a3b8' }} fontSize={12} />
                     <YAxis tick={{ fill: '#94a3b8' }} tickFormatter={(value) => `${(value/1000)}k`} />
                     <Tooltip
-                        contentStyle={{ backgroundColor: '#1E293B', border: '1px solid #334155', color: '#fff' }}
+                        contentStyle={{ backgroundColor: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
                         formatter={(value: number) => [value.toLocaleString(locale, { style: 'currency', currency: 'DZD' }), t('statistics.chart.revenue')]}
                     />
                     <Legend />
@@ -110,7 +157,7 @@ const Statistics: React.FC = () => {
                 </BarChart>
             </ResponsiveContainer>
         </div>
-        <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
+        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 p-6 rounded-2xl">
             <h3 className="text-lg font-semibold mb-4">{t('statistics.potential_profit_chart_title')}</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={monthlyProfitData}>
@@ -123,7 +170,7 @@ const Statistics: React.FC = () => {
                 </LineChart>
             </ResponsiveContainer>
         </div>
-        <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
+        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 p-6 rounded-2xl">
             <h3 className="text-lg font-semibold mb-4">{t('statistics.category_distribution_chart_title')}</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -132,7 +179,7 @@ const Statistics: React.FC = () => {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                     </Pie>
-                    <Tooltip formatter={(value) => `${value} ${t('statistics.chart.products')}`}/>
+                    <Tooltip formatter={(value) => `${value} ${t('statistics.chart.products')}`} contentStyle={{ backgroundColor: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.1)'}}/>
                     <Legend />
                 </PieChart>
             </ResponsiveContainer>

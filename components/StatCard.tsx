@@ -11,7 +11,7 @@ interface StatCardProps {
 const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, description }) => {
   return (
     <motion.div
-      className="bg-white dark:bg-secondary p-4 rounded-xl shadow-lg flex items-center space-x-3 md:space-x-4 md:p-6 transition-all duration-300 hover:shadow-cyan-500/20 hover:-translate-y-1"
+      className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 p-4 rounded-xl flex items-center space-x-3 md:space-x-4 md:p-6 transition-all duration-300 hover:border-cyan-400/50 hover:shadow-cyan-500/20 hover:-translate-y-1"
       whileHover={{ scale: 1.02 }}
     >
       <div className="bg-cyan-500/10 p-2 md:p-3 rounded-full">

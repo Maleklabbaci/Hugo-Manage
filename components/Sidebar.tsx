@@ -27,7 +27,7 @@ const NavItem: React.FC<{ to: string; icon: React.ElementType; label: string; is
     return (
         <NavLink
             to={to}
-            className={({isActive: isDesktopActive}) => `flex items-center px-4 py-3 text-slate-300 hover:bg-secondary hover:text-white rounded-lg transition-all duration-200 group ${
+            className={({isActive: isDesktopActive}) => `flex items-center px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg transition-all duration-200 group ${
                 isDesktopActive ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold shadow-lg shadow-cyan-500/30' : ''
             }`}
         >
@@ -62,7 +62,7 @@ const Sidebar: React.FC = () => {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className={`fixed top-0 h-full bg-dark text-white w-64 p-4 z-40 transform transition-transform duration-300 ease-in-out ${isRtl ? 'right-0' : 'left-0'} hidden md:block md:translate-x-0`}>
+      <aside className={`fixed top-0 h-full bg-black/30 backdrop-blur-xl border-r border-white/10 text-white w-64 p-4 z-40 transform transition-transform duration-300 ease-in-out ${isRtl ? 'right-0' : 'left-0'} hidden md:block md:translate-x-0`}>
         <div className="flex items-center mb-10 px-2">
             <svg className="w-10 h-10 text-cyan-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -79,7 +79,7 @@ const Sidebar: React.FC = () => {
       </aside>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-secondary border-t border-slate-200 dark:border-slate-700/50 shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.1)] flex items-center justify-around z-40 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white/80 dark:bg-black/30 backdrop-blur-lg border-t border-slate-200 dark:border-white/10 shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.1)] flex items-center justify-around z-40 md:hidden">
         {mobileNavLinks.map(link => <NavItem key={link.to} {...link} isMobile={true} />)}
       </nav>
     </>

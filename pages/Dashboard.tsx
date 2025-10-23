@@ -62,10 +62,45 @@ const Dashboard: React.FC = () => {
     const salesRevenue = sales.reduce((acc, s) => acc + s.totalPrice, 0);
     const unitsSold = sales.reduce((acc, s) => acc + s.quantity, 0);
     const salesProfit = sales.reduce((acc, s) => acc + (s.totalMargin || 0), 0);
+    
+    // Weekly Sales Growth Calculation
+    const today = new Date();
+    const startOfThisWeek = getWeekStart(today);
+    const startOfLastWeek = new Date(startOfThisWeek);
+    startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
 
-    return { totalProducts, stockValue, totalProfit, outOfStock, salesRevenue, unitsSold, salesProfit };
+    const thisWeekRevenue = sales
+      .filter(s => new Date(s.createdAt) >= startOfThisWeek)
+      .reduce((acc, s) => acc + s.totalPrice, 0);
+
+    const lastWeekRevenue = sales
+      .filter(s => {
+        const saleDate = new Date(s.createdAt);
+        return saleDate >= startOfLastWeek && saleDate < startOfThisWeek;
+      })
+      .reduce((acc, s) => acc + s.totalPrice, 0);
+      
+    let weeklySalesGrowth: number;
+    if (lastWeekRevenue > 0) {
+        weeklySalesGrowth = ((thisWeekRevenue - lastWeekRevenue) / lastWeekRevenue) * 100;
+    } else if (thisWeekRevenue > 0) {
+        weeklySalesGrowth = Infinity;
+    } else {
+        weeklySalesGrowth = 0;
+    }
+
+
+    return { totalProducts, stockValue, totalProfit, outOfStock, salesRevenue, unitsSold, salesProfit, weeklySalesGrowth };
   }, [products, sales]);
 
+  const formatGrowth = (growth: number): string => {
+    if (growth === Infinity) {
+      return '🔺 +∞%';
+    }
+    const sign = growth >= 0 ? '+' : '';
+    const arrow = growth >= 0 ? '🔺' : '🔻';
+    return `${arrow} ${sign}${growth.toFixed(0)} %`;
+  };
 
   const weeklyProfitData = useMemo(() => {
     const profitByWeek: { [key: string]: number } = {};
@@ -104,7 +139,7 @@ const Dashboard: React.FC = () => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-secondary p-2 border border-slate-700 rounded-md shadow-lg">
+        <div className="bg-slate-900/80 p-2 border border-white/10 rounded-md shadow-lg">
           <p className="label text-white">{`${label}`}</p>
           <p className="text-cyan-400">{`${t('dashboard.chart.profit')}: ${payload[0].value.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`}</p>
         </div>
@@ -127,10 +162,10 @@ const Dashboard: React.FC = () => {
                             initial={{ opacity: 0, y: -20, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -20, scale: 0.95, transition: { duration: 0.2 } }}
-                            className={`flex items-center justify-between p-4 rounded-lg shadow ${
+                            className={`flex items-center justify-between p-4 rounded-lg backdrop-blur-md ${
                                 notification.type === 'error'
-                                ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
-                                : 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300'
+                                ? 'bg-red-500/20 text-red-100 border border-red-500/30'
+                                : 'bg-amber-500/20 text-amber-100 border border-amber-500/30'
                             }`}
                          >
                              <div className="flex items-center">
@@ -153,10 +188,11 @@ const Dashboard: React.FC = () => {
                 </AnimatePresence>
             </div>
         )}
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <StatCard icon={CreditCardIcon} title={t('dashboard.sales_revenue')} value={`${stats.salesRevenue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={PiggyBankIcon} title={t('dashboard.sales_profit')} value={`${stats.salesProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={ShoppingCartIcon} title={t('dashboard.units_sold')} value={stats.unitsSold} />
+        <StatCard icon={TrendingUpIcon} title={t('dashboard.weekly_sales_growth')} value={formatGrowth(stats.weeklySalesGrowth)} description={t('dashboard.this_week')} />
         <StatCard icon={TrendingUpIcon} title={t('dashboard.potential_profit')} value={`${stats.totalProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={ArchiveIcon} title={t('dashboard.stock_value')} value={`${stats.stockValue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={ShoppingBagIcon} title={t('dashboard.total_products')} value={stats.totalProducts} />
@@ -164,7 +200,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
+        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 p-6 rounded-2xl">
           <h3 className="text-lg font-semibold mb-4">{t('dashboard.weekly_profit_chart_title')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={weeklyProfitData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
@@ -178,7 +214,7 @@ const Dashboard: React.FC = () => {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
+        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 p-6 rounded-2xl">
           <h3 className="text-lg font-semibold mb-4">{t('dashboard.stock_by_category_chart_title')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -187,7 +223,7 @@ const Dashboard: React.FC = () => {
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => `${value} ${t('dashboard.chart.units')}`} />
+              <Tooltip formatter={(value) => `${value} ${t('dashboard.chart.units')}`} contentStyle={{ backgroundColor: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.1)'}}/>
               <Legend />
             </PieChart>
           </ResponsiveContainer>

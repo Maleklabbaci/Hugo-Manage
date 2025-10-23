@@ -100,7 +100,7 @@ const History: React.FC = () => {
         initial="hidden"
         animate="visible"
       >
-        <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-slate-200 dark:bg-slate-700 sm:left-7"></div>
+        <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-slate-200 dark:bg-white/10 sm:left-7"></div>
         {activityLog.map(log => {
           const { Icon, color, title } = getActionDetails(log);
           return (
@@ -109,10 +109,10 @@ const History: React.FC = () => {
                 className="relative flex items-start space-x-4 pl-12 sm:pl-14"
                 variants={itemVariants}
             >
-                <div className={`absolute left-0 top-1.5 p-2 bg-slate-100 dark:bg-dark rounded-full ${color} ring-4 ring-slate-100 dark:ring-dark`}>
+                <div className={`absolute left-0 top-1.5 p-2 bg-slate-100 dark:bg-[#0B1120] rounded-full ${color} ring-4 ring-slate-100 dark:ring-[#0B1120]`}>
                     <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div className="flex-1 bg-white dark:bg-secondary p-4 rounded-lg shadow-md w-full">
+                <div className="flex-1 bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 p-4 rounded-lg w-full">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-start">
                         <div className="flex-1 mb-1 sm:mb-0">
                             <p className="font-semibold text-slate-800 dark:text-white">{title}</p>

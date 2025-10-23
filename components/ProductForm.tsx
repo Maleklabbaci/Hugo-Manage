@@ -99,7 +99,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
     <AnimatePresence>
         {isOpen && (
             <motion.div 
-                className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4"
+                className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4"
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
@@ -107,7 +107,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                 onClick={onClose}
             >
                 <motion.div 
-                    className="bg-white dark:bg-secondary rounded-2xl shadow-xl w-full max-w-lg relative p-8 max-h-[90vh] overflow-y-auto"
+                    className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 rounded-2xl shadow-xl w-full max-w-lg relative p-8 max-h-[90vh] overflow-y-auto"
                     variants={modalVariants}
                     onClick={(e) => e.stopPropagation()}
                 >
@@ -119,7 +119,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                         
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.name_label')}</label>
-                            <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required />
+                            <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required />
                         </div>
                         
                         <div>
@@ -129,7 +129,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                                 name="category" 
                                 value={formData.category} 
                                 onChange={handleChange} 
-                                className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" 
+                                className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" 
                                 required
                             >
                                 <option value="" disabled>{t('product_form.select_category')}</option>
@@ -152,27 +152,27 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                            <div>
                                 <label htmlFor="supplier" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.supplier_label')}</label>
-                                <input type="text" id="supplier" name="supplier" value={formData.supplier} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required />
+                                <input type="text" id="supplier" name="supplier" value={formData.supplier} onChange={handleChange} className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required />
                             </div>
                             <div>
                                 <label htmlFor="stock" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.stock_label')}</label>
-                                <input type="number" id="stock" name="stock" value={formData.stock} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="1" />
+                                <input type="number" id="stock" name="stock" value={formData.stock} onChange={handleChange} className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="1" />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="buyPrice" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.buy_price_label')}</label>
-                                <input type="number" id="buyPrice" name="buyPrice" value={formData.buyPrice} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="0.01" />
+                                <input type="number" id="buyPrice" name="buyPrice" value={formData.buyPrice} onChange={handleChange} className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="0.01" />
                             </div>
                             <div>
                                 <label htmlFor="sellPrice" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.sell_price_label')}</label>
-                                <input type="number" id="sellPrice" name="sellPrice" value={formData.sellPrice} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="0.01" />
+                                <input type="number" id="sellPrice" name="sellPrice" value={formData.sellPrice} onChange={handleChange} className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="0.01" />
                             </div>
                         </div>
 
                         <div className="flex justify-end pt-4 space-x-3">
-                            <button type="button" onClick={onClose} className="bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-white rounded-lg px-4 py-2 hover:bg-slate-300 dark:hover:bg-slate-500 transform transition-all duration-200 hover:-translate-y-0.5">{t('cancel')}</button>
+                            <button type="button" onClick={onClose} className="bg-slate-200 dark:bg-white/10 text-slate-800 dark:text-white rounded-lg px-4 py-2 hover:bg-slate-300 dark:hover:bg-white/20 transform transition-all duration-200 hover:-translate-y-0.5">{t('cancel')}</button>
                             <button 
                                 type="submit" 
                                 disabled={isLoading}

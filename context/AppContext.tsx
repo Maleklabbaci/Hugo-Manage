@@ -62,6 +62,7 @@ interface AppContextType {
   login: (email: string, pass: string) => Promise<{ error: Error | null }>;
   logout: () => Promise<void>;
   addProduct: (productData: Omit<Product, 'id' | 'status' | 'createdAt'>) => Promise<Product | null>;
+  addMultipleProducts: (productsData: Omit<Product, 'id' | 'status' | 'createdAt'>[]) => Promise<void>;
   updateProduct: (product: Product) => Promise<Product | null>;
   deleteProduct: (productId: number) => Promise<void>;
   deleteMultipleProducts: (productIds: number[]) => Promise<void>;
@@ -227,6 +228,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const addMultipleProducts = async (productsData: Omit<Product, 'id' | 'status' | 'createdAt'>[]) => {
+    if (!supabase || !user) return;
+    try {
+        const newProductsPayload = productsData.map(p => ({
+            name: p.name,
+            category: p.category,
+            supplier: p.supplier,
+            buyprice: p.buyPrice,
+            sellprice: p.sellPrice,
+            stock: p.stock,
+            imageurl: p.imageUrl,
+            status: p.stock > 0 ? 'actif' : 'rupture',
+            owner_id: user.id
+        }));
+
+        const { data, error } = await supabase.from('products').insert(newProductsPayload).select();
+        if (error) throw error;
+        
+        if (data) {
+            for (const newProduct of data) {
+                await logActivity('created', {id: newProduct.id, name: newProduct.name}, t('history.log.imported_from_shopify'));
+            }
+        }
+        await fetchData();
+    } catch (error) {
+        alert(t('product_form.error_add', { error: (error as Error).message }));
+    }
+  };
+
   const updateProduct = async (product: Product): Promise<Product | null> => {
     if (!supabase) return null;
     const oldProduct = products.find(p => p.id === product.id);
@@ -367,7 +397,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const value = {
     products, sales, activityLog, theme, language, isLoading, isConfigured, supabase,
     session, user, setTheme, setLanguage, t, login, logout,
-    addProduct, updateProduct, deleteProduct, deleteMultipleProducts, 
+    addProduct, addMultipleProducts, updateProduct, deleteProduct, deleteMultipleProducts, 
     duplicateProduct, addSale, cancelSale,
   };
 

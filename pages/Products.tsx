@@ -1,9 +1,9 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import type { Product } from '../types';
 import ProductForm from '../components/ProductForm';
 import SaleModal from '../components/SaleModal';
-import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, MoreVerticalIcon } from '../components/Icons';
+import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, MoreVerticalIcon, UploadIcon, LoaderIcon } from '../components/Icons';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const calculateMargin = (product: Product) => {
@@ -21,13 +21,13 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
   return (
     <motion.div 
         layout
-        className={`bg-white dark:bg-secondary rounded-xl shadow-md overflow-hidden transition-all duration-200 relative ${isSelected ? 'ring-2 ring-cyan-500' : 'ring-1 ring-transparent'}`}
+        className={`bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-xl overflow-hidden transition-all duration-200 relative ${isSelected ? 'ring-2 ring-cyan-500' : 'ring-1 ring-transparent'}`}
     >
       <div className="flex items-start p-4 space-x-4">
         {product.imageUrl ? (
           <img src={product.imageUrl} alt={product.name} className="w-20 h-20 object-cover rounded-lg" />
         ) : (
-          <div className="w-20 h-20 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+          <div className="w-20 h-20 bg-slate-200 dark:bg-slate-700/50 rounded-lg flex items-center justify-center">
             <ProductsIcon className="w-10 h-10 text-slate-400" />
           </div>
         )}
@@ -45,7 +45,7 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
               />
           </div>
           <div className="mt-2 flex items-center space-x-2">
-            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'}`}>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
               {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
             </span>
             <p className="text-xs text-slate-400 dark:text-slate-500">Stock: {product.stock}</p>
@@ -68,7 +68,7 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
              <ShoppingCartIcon className="w-4 h-4 me-2"/> {t('sell')}
            </button>
            <div className="relative">
-             <button onClick={() => setMenuOpen(!menuOpen)} onBlur={() => setTimeout(() => setMenuOpen(false), 100)} className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600">
+             <button onClick={() => setMenuOpen(!menuOpen)} onBlur={() => setTimeout(() => setMenuOpen(false), 100)} className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20">
                <MoreVerticalIcon className="w-5 h-5"/>
              </button>
              <AnimatePresence>
@@ -77,11 +77,11 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
                   initial={{ opacity: 0, scale: 0.9, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  className="absolute bottom-12 right-0 bg-white dark:bg-slate-800 rounded-lg shadow-lg border dark:border-slate-700 w-40 z-10 overflow-hidden"
+                  className="absolute bottom-12 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-lg shadow-lg w-40 z-10 overflow-hidden"
                 >
-                  <button onClick={() => { onEdit(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"><EditIcon className="w-4 h-4 me-2"/> {t('edit')}</button>
-                  <button onClick={() => { onDuplicate(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"><DuplicateIcon className="w-4 h-4 me-2"/> {t('duplicate')}</button>
-                  <div className="h-px bg-slate-200 dark:bg-slate-700 my-1"></div>
+                  <button onClick={() => { onEdit(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"><EditIcon className="w-4 h-4 me-2"/> {t('edit')}</button>
+                  <button onClick={() => { onDuplicate(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"><DuplicateIcon className="w-4 h-4 me-2"/> {t('duplicate')}</button>
+                  <div className="h-px bg-slate-200 dark:bg-white/10 my-1"></div>
                   <button onClick={() => { onDelete(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-red-500 hover:bg-red-500/10"><DeleteIcon className="w-4 h-4 me-2"/> {t('delete')}</button>
                 </motion.div>
               )}
@@ -94,7 +94,7 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
 };
 
 const Products: React.FC = () => {
-  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t } = useAppContext();
+  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
@@ -103,6 +103,8 @@ const Products: React.FC = () => {
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const productsPerPage = 30;
   
@@ -223,6 +225,88 @@ const Products: React.FC = () => {
     }
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const text = e.target?.result as string;
+            const lines = text.split(/\r?\n/);
+            const header = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            
+            const requiredColumns = ['Handle', 'Title', 'Type', 'Variant Price', 'Variant SKU', 'Image Src'];
+            const missingColumns: string[] = [];
+            const colIndices: Record<string, number> = {};
+            requiredColumns.forEach(col => {
+                const index = header.indexOf(col);
+                if (index === -1) {
+                    missingColumns.push(col);
+                }
+                colIndices[col] = index;
+            });
+            if (missingColumns.length > 0) {
+              throw new Error(`Missing columns: ${missingColumns.join(', ')}`);
+            }
+
+            const newProducts: Omit<Product, 'id' | 'status' | 'createdAt'>[] = [];
+            const processedHandles = new Set<string>();
+            const csvRegex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i]) continue;
+                const data = lines[i].split(csvRegex).map(d => d.trim().replace(/^"|"$/g, ''));
+                
+                const handle = data[colIndices['Handle']];
+                if (handle && !processedHandles.has(handle)) {
+                    processedHandles.add(handle);
+                    
+                    const name = data[colIndices['Title']];
+                    const category = data[colIndices['Type']];
+                    const sellPrice = parseFloat(data[colIndices['Variant Price']]);
+                    const stockStr = data[colIndices['Variant SKU']] || '';
+                    const stock = parseInt(stockStr.replace(/'/g, ''), 10) || 0;
+                    const imageUrl = data[colIndices['Image Src']];
+
+                    if (name && category && !isNaN(sellPrice)) {
+                        newProducts.push({
+                            name,
+                            category,
+                            supplier: 'Shopify',
+                            buyPrice: 0,
+                            sellPrice,
+                            stock,
+                            imageUrl: imageUrl || undefined,
+                        });
+                    }
+                }
+            }
+
+            if (newProducts.length > 0) {
+                await addMultipleProducts(newProducts);
+                alert(t('products.import.success', { count: newProducts.length }));
+            }
+        } catch (error) {
+            console.error("Import error:", error);
+            if ((error as Error).message.startsWith('Missing columns')) {
+                alert(t('products.import.error_format', { columns: (error as Error).message.replace('Missing columns: ', '') }));
+            } else {
+                alert(t('products.import.error_file'));
+            }
+        } finally {
+            setIsImporting(false);
+            if (event.target) event.target.value = '';
+        }
+    };
+    reader.readAsText(file);
+  };
+
   const numSelected = selectedProducts.length;
   const numOnPage = paginatedProducts.length;
   const isAllSelected = numSelected === numOnPage && numOnPage > 0;
@@ -233,13 +317,24 @@ const Products: React.FC = () => {
     <div className="pb-16 md:pb-0">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-slate-800 dark:text-white">{t('products.title')}</h2>
-        <button
-          onClick={() => handleOpenModal()}
-          className="flex items-center text-white bg-gradient-to-r from-cyan-400 to-blue-500 hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5 transform transition-all duration-200 font-semibold rounded-lg px-4 py-2"
-        >
-          <AddIcon className="w-5 h-5 me-2" />
-          <span className="hidden sm:inline">{t('products.add_product')}</span>
-        </button>
+        <div className="flex items-center space-x-2">
+            <button
+                onClick={handleImportClick}
+                disabled={isImporting}
+                className="flex items-center bg-white/50 dark:bg-white/10 text-slate-700 dark:text-white border border-white/30 dark:border-white/20 hover:bg-white/80 dark:hover:bg-white/20 hover:-translate-y-0.5 transform transition-all duration-200 font-semibold rounded-lg px-4 py-2 disabled:opacity-50"
+            >
+                {isImporting ? <LoaderIcon className="w-5 h-5 me-2 animate-spin" /> : <UploadIcon className="w-5 h-5 me-2" />}
+                <span className="hidden sm:inline">{t('products.import_shopify')}</span>
+            </button>
+            <button
+              onClick={() => handleOpenModal()}
+              className="flex items-center text-white bg-gradient-to-r from-cyan-400 to-blue-500 hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5 transform transition-all duration-200 font-semibold rounded-lg px-4 py-2"
+            >
+              <AddIcon className="w-5 h-5 me-2" />
+              <span className="hidden sm:inline">{t('products.add_product')}</span>
+            </button>
+        </div>
+        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".csv" className="hidden" />
       </div>
 
       <div className="mb-4 relative">
@@ -251,7 +346,7 @@ const Products: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('products.search_placeholder')}
-            className="w-full ps-10 pr-4 py-2 bg-white dark:bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+            className="w-full ps-10 pr-4 py-2 bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-lg text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
         />
       </div>
 
@@ -284,10 +379,10 @@ const Products: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="bg-white dark:bg-secondary rounded-2xl shadow-lg overflow-hidden">
+        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left rtl:text-right text-slate-500 dark:text-slate-400">
-              <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-800 dark:text-slate-300">
+              <thead className="text-xs text-slate-700 uppercase bg-white/10 dark:bg-white/5 dark:text-slate-300">
                 <tr>
                   <th scope="col" className="p-4">
                       <div className="flex items-center">
@@ -308,7 +403,7 @@ const Products: React.FC = () => {
               </thead>
               <tbody>
                 {paginatedProducts.length > 0 ? paginatedProducts.map(product => (
-                  <tr key={product.id} className={`bg-white dark:bg-secondary border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 ${selectedProducts.includes(product.id) ? 'bg-cyan-50 dark:bg-cyan-900/20' : ''}`}>
+                  <tr key={product.id} className={`border-b border-white/20 dark:border-white/10 hover:bg-white/10 dark:hover:bg-white/5 ${selectedProducts.includes(product.id) ? 'bg-cyan-500/10' : ''}`}>
                     <td className="w-4 p-4">
                           <div className="flex items-center">
                               <input 
@@ -325,7 +420,7 @@ const Products: React.FC = () => {
                       {product.imageUrl ? (
                         <img src={product.imageUrl} alt={product.name} className="w-12 h-12 object-cover rounded-md" />
                       ) : (
-                        <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-md flex items-center justify-center">
+                        <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center">
                           <ProductsIcon className="w-6 h-6 text-slate-400" />
                         </div>
                       )}
@@ -337,7 +432,7 @@ const Products: React.FC = () => {
                     <td className="px-6 py-4">{product.stock}</td>
                     <td className="px-6 py-4">{calculateMargin(product)}%</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'}`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
                         {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
                       </span>
                     </td>
@@ -392,11 +487,11 @@ const Products: React.FC = () => {
       
       {totalPages > 1 && (
         <div className="flex justify-center items-center mt-6">
-            <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-secondary">
+            <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-white/10">
                 <ChevronLeftIcon className="w-5 h-5 text-slate-500 dark:text-slate-300"/>
             </button>
             <span className="mx-4 text-slate-700 dark:text-slate-200">{t('products.pagination', { currentPage, totalPages })}</span>
-            <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-secondary">
+            <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-white/10">
                 <ChevronRightIcon className="w-5 h-5 text-slate-500 dark:text-slate-300"/>
             </button>
         </div>
@@ -405,7 +500,7 @@ const Products: React.FC = () => {
       <AnimatePresence>
         {isMobile && numSelected > 0 && (
           <motion.div
-            className="fixed bottom-20 left-4 right-4 z-10 bg-dark p-3 rounded-xl shadow-lg flex items-center justify-between"
+            className="fixed bottom-20 left-4 right-4 z-10 bg-slate-900/80 backdrop-blur-lg border border-white/10 p-3 rounded-xl shadow-lg flex items-center justify-between"
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}

@@ -58,12 +58,12 @@ const SaleModal: React.FC<SaleModalProps> = ({ isOpen, onClose, onConfirm, produ
         <AnimatePresence>
             {isOpen && (
                 <motion.div 
-                    className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center p-4"
+                    className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4"
                     initial="hidden" animate="visible" exit="hidden" variants={backdropVariants}
                     onClick={onClose}
                 >
                     <motion.div 
-                        className="bg-white dark:bg-secondary rounded-2xl shadow-xl w-full max-w-md relative p-8"
+                        className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 rounded-2xl shadow-xl w-full max-w-md relative p-8"
                         variants={modalVariants}
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -79,7 +79,7 @@ const SaleModal: React.FC<SaleModalProps> = ({ isOpen, onClose, onConfirm, produ
                                     type="number" id="quantity" name="quantity" 
                                     value={quantity}
                                     onChange={handleQuantityChange}
-                                    className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" 
+                                    className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" 
                                     required min="1" max={product.stock} step="1" 
                                 />
                                 {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
@@ -87,7 +87,7 @@ const SaleModal: React.FC<SaleModalProps> = ({ isOpen, onClose, onConfirm, produ
                         </div>
 
                         <div className="flex justify-end pt-6 space-x-3">
-                            <button type="button" onClick={onClose} className="bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-white rounded-lg px-4 py-2 hover:bg-slate-300 dark:hover:bg-slate-500 transform transition-all duration-200 hover:-translate-y-0.5">{t('cancel')}</button>
+                            <button type="button" onClick={onClose} className="bg-slate-200 dark:bg-white/10 text-slate-800 dark:text-white rounded-lg px-4 py-2 hover:bg-slate-300 dark:hover:bg-white/20 transform transition-all duration-200 hover:-translate-y-0.5">{t('cancel')}</button>
                             <button onClick={handleSubmit} className="text-white bg-gradient-to-r from-cyan-400 to-blue-500 hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5 transform transition-all duration-200 font-semibold rounded-lg px-4 py-2">{t('sale_modal.confirm_button')}</button>
                         </div>
                     </motion.div>

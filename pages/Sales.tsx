@@ -13,7 +13,7 @@ const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTim
     const { t, language } = useAppContext();
     const locale = localeMap[language];
     return (
-        <div className="bg-white dark:bg-secondary rounded-xl shadow-md overflow-hidden">
+        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-xl overflow-hidden">
             <div className="p-4">
                 <div className="flex justify-between items-start">
                     <div>
@@ -25,15 +25,15 @@ const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTim
                     </button>
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-                    <div className="bg-slate-50 dark:bg-dark p-2 rounded-lg">
+                    <div className="bg-slate-50 dark:bg-black/20 p-2 rounded-lg">
                         <div className="text-xs text-slate-500 dark:text-slate-400">{t('sales.table.quantity')}</div>
                         <div className="font-semibold text-slate-800 dark:text-white flex items-center justify-center space-x-1"><ArchiveIcon className="w-4 h-4"/><span>{sale.quantity}</span></div>
                     </div>
-                     <div className="bg-slate-50 dark:bg-dark p-2 rounded-lg">
+                     <div className="bg-slate-50 dark:bg-black/20 p-2 rounded-lg">
                         <div className="text-xs text-slate-500 dark:text-slate-400">{t('sales.table.total_price')}</div>
                         <div className="font-semibold text-slate-800 dark:text-white flex items-center justify-center space-x-1"><DollarSignIcon className="w-4 h-4"/><span>{sale.totalPrice.toFixed(0)}</span></div>
                     </div>
-                     <div className="bg-slate-50 dark:bg-dark p-2 rounded-lg">
+                     <div className="bg-slate-50 dark:bg-black/20 p-2 rounded-lg">
                         <div className="text-xs text-slate-500 dark:text-slate-400">{t('sales.table.margin')}</div>
                         <div className="font-semibold text-green-500 flex items-center justify-center space-x-1"><TrendingUpIcon className="w-4 h-4"/><span>{(sale.totalMargin ?? 0).toFixed(0)}</span></div>
                     </div>
@@ -87,10 +87,10 @@ const Sales: React.FC = () => {
                     ))}
                 </div>
             ) : (
-                <div className="bg-white dark:bg-secondary rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-2xl overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left rtl:text-right text-slate-500 dark:text-slate-400">
-                            <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-800 dark:text-slate-300">
+                            <thead className="text-xs text-slate-700 uppercase bg-white/10 dark:bg-white/5 dark:text-slate-300">
                                 <tr>
                                     {tableHeaders.map(header => (
                                         <th key={header} scope="col" className="px-6 py-3">{t(`sales.table.${header}`)}</th>
@@ -99,7 +99,7 @@ const Sales: React.FC = () => {
                             </thead>
                             <tbody>
                                 {sales.map(sale => (
-                                    <tr key={sale.id} className="bg-white dark:bg-secondary border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                    <tr key={sale.id} className="border-b border-white/20 dark:border-white/10 hover:bg-white/10 dark:hover:bg-white/5">
                                         <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{sale.productName}</td>
                                         <td className="px-6 py-4">{sale.quantity}</td>
                                         <td className="px-6 py-4">{sale.sellPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>

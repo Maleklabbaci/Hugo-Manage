@@ -23,7 +23,7 @@ const Header: React.FC<{ onSearchClick: () => void; }> = ({ onSearchClick }) => 
   const title = getPageTitle(location.pathname);
 
   return (
-    <header className="bg-white dark:bg-secondary shadow-md sticky top-0 z-20">
+    <header className="bg-white/80 dark:bg-black/30 backdrop-blur-lg sticky top-0 z-20">
       <div className="flex items-center justify-between h-16 px-4 md:px-8">
         <div className="flex items-center">
           <h1 className="text-xl font-bold text-slate-800 dark:text-white">{title}</h1>
