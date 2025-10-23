@@ -1,50 +1,30 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import { storage } from '../services/storage';
+import React, { createContext, useContext } from 'react';
 
-interface AuthContextType {
+// This context is now deprecated and its logic has been merged into AppContext.
+// This file is kept to avoid breaking imports but should be considered empty.
+
+interface DeprecatedAuthContextType {
   isAuthenticated: boolean;
   login: (email: string, pass: string) => Promise<void>;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<DeprecatedAuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!storage.getToken());
-
-  useEffect(() => {
-    const token = storage.getToken();
-    setIsAuthenticated(!!token);
-  }, []);
-
-  const login = useCallback(async (email: string, pass: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (email === 'admin@chezhugo.com' && pass === 'admin123') {
-          const fakeToken = 'fake-jwt-token';
-          storage.setToken(fakeToken);
-          setIsAuthenticated(true);
-          resolve();
-        } else {
-          reject(new Error("login.error.incorrect_credentials"));
-        }
-      }, 500);
-    });
-  }, []);
-
-  const logout = useCallback(() => {
-    storage.removeToken();
-    setIsAuthenticated(false);
-  }, []);
-
+  const value = {
+      isAuthenticated: false,
+      login: async () => { console.warn("AuthProvider is deprecated."); },
+      logout: () => { console.warn("AuthProvider is deprecated."); },
+  };
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = (): DeprecatedAuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');

@@ -1,35 +1,33 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AlertCircleIcon, LoaderIcon } from '../components/Icons';
 import { useAppContext } from '../context/AppContext';
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('admin@chezhugo.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, isAuthenticated } = useAuth();
-  const { t } = useAppContext();
+  const { login, session, isConfigured, t } = useAppContext();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isConfigured) {
+      setError(t('settings.supabase.unconfigured_prefix'));
+      return;
+    }
     setError('');
     setLoading(true);
-    try {
-      await login(email, password);
-    } catch (err) {
-      // FIX: Instead of trying to translate the raw error message which might not be a key,
-      // log the actual error for debugging and show a generic, user-friendly translated message.
-      console.error("Login failed:", err);
+    const { error: authError } = await login(email, password);
+    if (authError) {
+      console.error("Login failed:", authError);
       setError(t('login.error.incorrect_credentials'));
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
-  if (isAuthenticated) {
+  if (session) {
     return <Navigate to="/dashboard" />;
   }
 
@@ -52,6 +50,22 @@ const Login: React.FC = () => {
           <h1 className="mt-4 text-3xl font-bold text-slate-800 dark:text-white">{t('login.title')}</h1>
           <p className="mt-2 text-base text-slate-500 dark:text-slate-400">{t('login.subtitle')}</p>
         </div>
+        
+        {!isConfigured && (
+            <motion.div 
+              className="flex items-center p-3 text-sm text-amber-700 bg-amber-100 dark:bg-amber-900/50 dark:text-amber-300 rounded-lg"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <AlertCircleIcon className="w-5 h-5 me-2 flex-shrink-0" />
+              <span>
+                  {t('settings.supabase.unconfigured_prefix')}{' '}
+                  <Link to="/settings" className="font-bold underline hover:text-amber-600 dark:hover:text-amber-200">
+                      {t('settings.supabase.unconfigured_link_short')}
+                  </Link>
+              </span>
+            </motion.div>
+        )}
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
@@ -99,8 +113,8 @@ const Login: React.FC = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-cyan-400 to-blue-500 hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5 transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:opacity-50"
+              disabled={loading || !isConfigured}
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-cyan-400 to-blue-500 hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5 transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:-translate-y-0"
             >
                 {loading && <LoaderIcon className="animate-spin w-5 h-5 me-3" />}
               {t('login.submit_button')}

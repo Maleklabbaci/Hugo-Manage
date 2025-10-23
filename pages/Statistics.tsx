@@ -27,7 +27,7 @@ const Statistics: React.FC = () => {
   const monthlyProfitData = useMemo(() => {
     const profitByMonth: { [key: string]: number } = {};
     products.forEach(p => {
-      const date = new Date(p.updatedAt);
+      const date = new Date(p.createdAt); // Use createdAt as updatedAt is not available
       const month = date.toLocaleString(locale, { month: 'short', year: '2-digit' });
       const profit = (p.sellPrice - p.buyPrice) * p.stock;
       profitByMonth[month] = (profitByMonth[month] || 0) + profit;

@@ -160,6 +160,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.error_missing_fields': 'Veuillez remplir les deux champs.',
     'settings.supabase.unconfigured_prefix': "La base de données n'est pas configurée.",
     'settings.supabase.unconfigured_link': "Allez dans les paramètres pour vous connecter.",
+    'settings.supabase.unconfigured_link_short': "Configurez ici.",
 
     // Global Search
     'search.placeholder': 'Rechercher partout...',
@@ -326,6 +327,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.error_missing_fields': 'Please fill in both fields.',
     'settings.supabase.unconfigured_prefix': "Database is not configured.",
     'settings.supabase.unconfigured_link': "Go to settings to connect.",
+    'settings.supabase.unconfigured_link_short': 'Configure here.',
     
     // Global Search
     'search.placeholder': 'Search everywhere...',
@@ -491,6 +493,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.error_missing_fields': 'يرجى ملء كلا الحقلين.',
     'settings.supabase.unconfigured_prefix': 'قاعدة البيانات غير مهيأة.',
     'settings.supabase.unconfigured_link': 'اذهب إلى الإعدادات للاتصال.',
+    'settings.supabase.unconfigured_link_short': 'الإعدادات هنا.',
     
     // Global Search
     'search.placeholder': 'ابحث في كل مكان...',

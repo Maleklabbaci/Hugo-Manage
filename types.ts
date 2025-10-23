@@ -8,8 +8,8 @@ export interface Product {
   stock: number;
   status: 'actif' | 'rupture';
   createdAt: string; // ISO string format
-  updatedAt: string; // ISO string format
   imageUrl?: string;
+  ownerId?: string;
 }
 
 export interface ActivityLog {
@@ -19,6 +19,7 @@ export interface ActivityLog {
   action: 'created' | 'updated' | 'deleted' | 'sold' | 'sale_cancelled';
   details?: string;
   createdAt: string; // ISO string format
+  ownerId?: string;
 }
 
 export interface Sale {
@@ -30,6 +31,7 @@ export interface Sale {
   totalPrice: number;
   totalMargin: number;
   createdAt: string; // ISO string format
+  ownerId?: string;
 }
 
 export type Theme = 'light' | 'dark';

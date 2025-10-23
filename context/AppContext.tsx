@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, Session, User } from '@supabase/supabase-js';
 import type { Product, Theme, Language, ActivityLog, Sale } from '../types';
 import { storage } from '../services/storage';
 import { translations } from '../translations';
@@ -7,84 +7,41 @@ import { MOCK_PRODUCTS } from '../mock/products';
 
 /*
 -- =================================================================
--- SCRIPT SQL DÉFINITIF - À EXÉCUTER DANS SUPABASE
+-- SCRIPT SQL DE SÉCURITÉ - À EXÉCUTER DANS SUPABASE
 -- =================================================================
 --
 -- !! ATTENTION !!
--- POUR QUE L'APPLICATION FONCTIONNE, VOUS DEVEZ IMPÉRATIVEMENT
--- EXÉCUTER CE SCRIPT SQL DANS VOTRE ÉDITEUR SQL SUPABASE.
+-- POUR QUE LA CONNEXION ET LA SÉCURITÉ DES DONNÉES FONCTIONNENT,
+-- VOUS DEVEZ EXÉCUTER CE SCRIPT SQL DANS VOTRE ÉDITEUR SQL SUPABASE.
 --
--- ÉTAPES :
--- 1. (RECOMMANDÉ) Supprimez vos anciennes tables : products, sales, activity_log.
--- 2. Copiez et collez L'INTÉGRALITÉ de ce script ci-dessous.
--- 3. Exécutez-le.
---
--- CE SCRIPT CORRIGE LES ERREURS "column not found" CAR IL UTILISE
--- LES BONS NOMS DE COLONNES (ex: `buy_price`, `created_at`).
+-- CE SCRIPT N'EFFACE PAS VOS DONNÉES.
+-- Il ajoute la sécurité pour que chaque utilisateur ne voie que ses propres données.
 --
 -- =================================================================
 
--- 1. Créer une fonction pour mettre à jour automatiquement la colonne 'updated_at'
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-   NEW.updated_at = NOW();
-   RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- 2. Créer la table des produits (`products`)
-CREATE TABLE products (
-  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  name TEXT NOT NULL,
-  category TEXT NOT NULL,
-  supplier TEXT NOT NULL,
-  buy_price REAL NOT NULL,
-  sell_price REAL NOT NULL,
-  stock INT NOT NULL,
-  status TEXT NOT NULL, -- Doit être 'actif' ou 'rupture'
-  image_url TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 3. Créer la table des ventes (`sales`)
-CREATE TABLE sales (
-  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  product_id BIGINT REFERENCES products(id) ON DELETE SET NULL,
-  product_name TEXT NOT NULL,
-  quantity INT NOT NULL,
-  sell_price REAL NOT NULL,
-  total_price REAL NOT NULL,
-  total_margin REAL NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 4. Créer la table du journal d'activité (`activity_log`)
-CREATE TABLE activity_log (
-  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  product_id BIGINT,
-  product_name TEXT NOT NULL,
-  action TEXT NOT NULL, -- ex: 'created', 'updated', 'sold'
-  details TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 5. Attacher le trigger à la table 'products' pour automatiser 'updated_at'
-CREATE TRIGGER update_products_updated_at
-BEFORE UPDATE ON products
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
-
--- 6. Activer la Sécurité au Niveau des Lignes (Row Level Security - RLS)
+-- 1. Activer la Sécurité au Niveau des Lignes (Row Level Security - RLS)
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sales ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_log ENABLE ROW LEVEL SECURITY;
 
--- 7. Créer des politiques d'accès pour autoriser les opérations
-CREATE POLICY "Public access for all" ON products FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public access for all" ON sales FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Public access for all" ON activity_log FOR ALL USING (true) WITH CHECK (true);
+-- 2. Créer les politiques de sécurité pour que chaque utilisateur gère SES propres données
+-- Supprime les anciennes politiques si elles existent pour éviter les conflits
+DROP POLICY IF EXISTS "Users can manage their own products" ON products;
+DROP POLICY IF EXISTS "Users can manage their own sales" ON sales;
+DROP POLICY IF EXISTS "Users can manage their own activity logs" ON activity_log;
+
+-- Crée les nouvelles politiques
+CREATE POLICY "Users can manage their own products" ON products FOR ALL
+  USING (auth.uid() = owner_id)
+  WITH CHECK (auth.uid() = owner_id);
+
+CREATE POLICY "Users can manage their own sales" ON sales FOR ALL
+  USING (auth.uid() = owner_id)
+  WITH CHECK (auth.uid() = owner_id);
+
+CREATE POLICY "Users can manage their own activity logs" ON activity_log FOR ALL
+  USING (auth.uid() = owner_id)
+  WITH CHECK (auth.uid() = owner_id);
 */
 
 
@@ -97,10 +54,14 @@ interface AppContextType {
   isLoading: boolean;
   isConfigured: boolean;
   supabase: SupabaseClient | null;
+  session: Session | null;
+  user: User | null;
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   t: (key: string, params?: Record<string, string | number>) => string;
-  addProduct: (productData: Omit<Product, 'id' | 'status' | 'createdAt' | 'updatedAt'>) => Promise<Product | null>;
+  login: (email: string, pass: string) => Promise<{ error: Error | null }>;
+  logout: () => Promise<void>;
+  addProduct: (productData: Omit<Product, 'id' | 'status' | 'createdAt'>) => Promise<Product | null>;
   updateProduct: (product: Product) => Promise<Product | null>;
   deleteProduct: (productId: number) => Promise<void>;
   deleteMultipleProducts: (productIds: number[]) => Promise<void>;
@@ -111,9 +72,6 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Helper to convert snake_case to camelCase
-const snakeToCamel = (str: string) => str.replace(/_([a-z])/g, g => g[1].toUpperCase());
-
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
@@ -123,6 +81,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isLoading, setIsLoading] = useState(true);
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
   const [isConfigured, setIsConfigured] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const { supabaseUrl, supabaseAnonKey } = storage.getSupabaseCredentials();
@@ -130,6 +90,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const client = createClient(supabaseUrl, supabaseAnonKey);
       setSupabase(client);
       setIsConfigured(true);
+
+      client.auth.getSession().then(({ data: { session } }) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      });
+
+      const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      });
+
+      return () => subscription.unsubscribe();
     } else {
       setProducts(MOCK_PRODUCTS);
       setIsLoading(false);
@@ -163,7 +135,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [language]);
     
   const fetchData = useCallback(async () => {
-    if (!supabase) return;
+    if (!supabase || !session) return;
     setIsLoading(true);
     try {
       const { data: productsData, error: productsError } = await supabase.from('products').select('*').order('created_at', { ascending: false });
@@ -177,18 +149,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       setProducts(productsData.map((p: any) => ({
         id: p.id, name: p.name, category: p.category, supplier: p.supplier,
-        buyPrice: p.buy_price, sellPrice: p.sell_price, stock: p.stock,
-        status: p.status, createdAt: p.created_at, updatedAt: p.updated_at,
-        imageUrl: p.image_url,
+        buyPrice: p.buyprice, sellPrice: p.sellprice, stock: p.stock,
+        status: p.status, createdAt: p.created_at, imageUrl: p.imageurl,
+        ownerId: p.owner_id
       })));
       setSales(salesData.map((s: any) => ({
-        id: s.id, productId: s.product_id, productName: s.product_name,
-        quantity: s.quantity, sellPrice: s.sell_price, totalPrice: s.total_price,
-        totalMargin: s.total_margin, createdAt: s.created_at,
+        id: s.id, productId: s.product_id, productName: s.productname,
+        quantity: s.quantity, sellPrice: s.sellprice, totalPrice: s.totalprice,
+        totalMargin: s.totalmargin, createdAt: s.created_at, ownerId: s.owner_id
       })));
       setActivityLog(logData.map((l: any) => ({
-        id: l.id, productId: l.product_id, productName: l.product_name,
-        action: l.action, details: l.details, createdAt: l.created_at,
+        id: l.id, productId: l.product_id, productName: l.productname,
+        action: l.action, details: l.details, createdAt: l.created_at, ownerId: l.owner_id
       })));
 
     } catch (error) {
@@ -197,37 +169,55 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } finally {
       setIsLoading(false);
     }
-  }, [supabase]);
+  }, [supabase, session]);
 
   useEffect(() => {
-    if (isConfigured) {
+    if (isConfigured && session) {
       fetchData();
+    } else if (!session) {
+        setIsLoading(false);
+        setProducts([]);
+        setSales([]);
+        setActivityLog([]);
     }
-  }, [isConfigured, fetchData]);
+  }, [isConfigured, session, fetchData]);
 
-  const logActivity = async (action: ActivityLog['action'], product: { id: number; name: string; }, details?: string) => {
+  const login = async (email: string, pass: string) => {
+    if (!supabase) return { error: new Error("Supabase not configured") };
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    return { error };
+  };
+
+  const logout = async () => {
     if (!supabase) return;
+    await supabase.auth.signOut();
+  };
+  
+  const logActivity = async (action: ActivityLog['action'], product: { id: number; name: string; }, details?: string) => {
+    if (!supabase || !user) return;
     const { error } = await supabase.from('activity_log').insert({
       product_id: product.id,
-      product_name: product.name,
+      productname: product.name,
       action: action,
       details: details || null,
+      owner_id: user.id,
     });
     if (error) console.error("Error logging activity:", error);
   };
   
-  const addProduct = async (productData: Omit<Product, 'id' | 'status' | 'createdAt' | 'updatedAt'>): Promise<Product | null> => {
-    if (!supabase) return null;
+  const addProduct = async (productData: Omit<Product, 'id' | 'status' | 'createdAt' >): Promise<Product | null> => {
+    if (!supabase || !user) return null;
     try {
       const newProductPayload = {
         name: productData.name, category: productData.category, supplier: productData.supplier,
-        buy_price: productData.buyPrice, sell_price: productData.sellPrice, stock: productData.stock,
-        image_url: productData.imageUrl, status: productData.stock > 0 ? 'actif' : 'rupture',
+        buyprice: productData.buyPrice, sellprice: productData.sellPrice, stock: productData.stock,
+        imageurl: productData.imageUrl, status: productData.stock > 0 ? 'actif' : 'rupture',
+        owner_id: user.id
       };
       const { data, error } = await supabase.from('products').insert(newProductPayload).select().single();
       if (error) throw error;
       
-      const createdProduct = { ...productData, id: data.id, status: newProductPayload.status as ('actif' | 'rupture'), createdAt: data.created_at, updatedAt: data.updated_at };
+      const createdProduct = { ...productData, id: data.id, status: newProductPayload.status as ('actif' | 'rupture'), createdAt: data.created_at };
       await logActivity('created', createdProduct);
       await fetchData();
       return createdProduct;
@@ -245,30 +235,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const updatedProductPayload = {
         name: product.name, category: product.category, supplier: product.supplier,
-        buy_price: product.buyPrice, sell_price: product.sellPrice, stock: product.stock,
-        image_url: product.imageUrl, status: product.stock > 0 ? 'actif' : 'rupture',
+        buyprice: product.buyPrice, sellprice: product.sellPrice, stock: product.stock,
+        imageurl: product.imageUrl, status: product.stock > 0 ? 'actif' : 'rupture',
       };
       const { data, error } = await supabase.from('products').update(updatedProductPayload).eq('id', product.id).select().single();
       if (error) throw error;
       
       const changes: string[] = [];
-      for (const key of Object.keys(updatedProductPayload) as Array<keyof typeof updatedProductPayload>) {
-          if (key === 'status' || key === 'image_url') continue;
-
-          const camelCaseKey = snakeToCamel(key) as keyof Product;
-          const oldValue = oldProduct[camelCaseKey];
-          const newValue = product[camelCaseKey];
-
-          if (String(oldValue) !== String(newValue)) {
-              changes.push(`${t('log.' + camelCaseKey)}: "${oldValue}" -> "${newValue}"`);
-          }
-      }
-
-      if (updatedProductPayload.image_url !== oldProduct.imageUrl) {
+      const keysToCompare: (keyof Omit<Product, 'id'|'createdAt'|'status'|'imageUrl'|'ownerId'>)[] = ['name', 'category', 'supplier', 'buyPrice', 'sellPrice', 'stock'];
+      keysToCompare.forEach(key => {
+        if(oldProduct[key] !== product[key]) {
+            changes.push(`${t('log.' + key)}: "${oldProduct[key]}" -> "${product[key]}"`);
+        }
+      });
+      if (product.imageUrl !== oldProduct.imageUrl) {
           changes.push(t('history.log.image_updated'));
       }
+      if (changes.length > 0) {
+        await logActivity('updated', product, changes.join(', '));
+      }
 
-      await logActivity('updated', product, changes.join(', '));
       await fetchData();
       return product;
     } catch (error) {
@@ -311,7 +297,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const productToDuplicate = products.find(p => p.id === productId);
     if (!productToDuplicate) return;
 
-    const { id, createdAt, updatedAt, ...newProductData } = productToDuplicate;
+    const { id, createdAt, ...newProductData } = productToDuplicate;
     newProductData.name = `${newProductData.name} (copie)`;
     
     const result = await addProduct(newProductData);
@@ -321,7 +307,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addSale = async (productId: number, quantity: number) => {
-    if (!supabase) return;
+    if (!supabase || !user) return;
     const product = products.find(p => p.id === productId);
     if (!product || product.stock < quantity) return;
 
@@ -335,17 +321,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const sale = {
         product_id: productId,
-        product_name: product.name,
+        productname: product.name,
         quantity: quantity,
-        sell_price: product.sellPrice,
-        total_price: product.sellPrice * quantity,
-        total_margin: (product.sellPrice - product.buyPrice) * quantity,
+        sellprice: product.sellPrice,
+        totalprice: product.sellPrice * quantity,
+        totalmargin: (product.sellPrice - product.buyPrice) * quantity,
+        owner_id: user.id,
     };
     const { error: saleInsertError } = await supabase.from('sales').insert(sale);
 
     if (saleInsertError) {
         alert(saleInsertError.message);
-        // Revert stock
         await supabase.from('products').update({ stock: product.stock }).eq('id', productId);
     } else {
         await logActivity('sold', product, t('history.log.units_sold', {quantity}));
@@ -372,7 +358,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       
       if (stockUpdateError) {
           alert(stockUpdateError.message);
-          // Re-insert sale if stock update failed (tricky...)
       } else {
           await logActivity('sale_cancelled', product, t('history.log.sale_cancelled', { quantity: saleToCancel.quantity }));
           await fetchData();
@@ -381,8 +366,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const value = {
     products, sales, activityLog, theme, language, isLoading, isConfigured, supabase,
-    setTheme, setLanguage, t, addProduct, updateProduct, deleteProduct,
-    deleteMultipleProducts, duplicateProduct, addSale, cancelSale,
+    session, user, setTheme, setLanguage, t, login, logout,
+    addProduct, updateProduct, deleteProduct, deleteMultipleProducts, 
+    duplicateProduct, addSale, cancelSale,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

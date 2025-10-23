@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { useAuth } from '../context/AuthContext';
 import { SunIcon, MoonIcon, LogoutIcon, LanguagesIcon, ServerIcon } from '../components/Icons';
 import type { Language, Theme } from '../types';
 import { storage } from '../services/storage';
 
 const Settings: React.FC = () => {
-  const { theme, setTheme, language, setLanguage, t } = useAppContext();
-  const { logout } = useAuth();
+  const { theme, setTheme, language, setLanguage, t, logout, session } = useAppContext();
   const [supabaseUrl, setSupabaseUrl] = useState('');
   const [supabaseAnonKey, setSupabaseAnonKey] = useState('');
 
@@ -96,15 +94,17 @@ const Settings: React.FC = () => {
         </div>
       </div>
 
-      <div>
-        <button
-          onClick={logout}
-          className="w-full bg-white dark:bg-secondary text-red-500 font-semibold rounded-lg px-4 py-2.5 flex items-center justify-center transition-colors hover:bg-red-500/10 shadow-lg"
-        >
-          <LogoutIcon className="w-5 h-5 me-2"/>
-          {t('settings.logout_button')}
-        </button>
-      </div>
+      {session && (
+        <div>
+          <button
+            onClick={logout}
+            className="w-full bg-white dark:bg-secondary text-red-500 font-semibold rounded-lg px-4 py-2.5 flex items-center justify-center transition-colors hover:bg-red-500/10 shadow-lg"
+          >
+            <LogoutIcon className="w-5 h-5 me-2"/>
+            {t('settings.logout_button')}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
