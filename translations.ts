@@ -197,6 +197,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'log.stock': 'Stock',
     'log.imageUrl': 'Image',
     
+    // Loading Screen
+    'loading.connecting': 'Connexion à la base de données...',
+    'loading.fetching_products': 'Chargement des produits...',
+    'loading.fetching_sales': 'Synchronisation des ventes...',
+    'loading.building_dashboard': 'Préparation du tableau de bord...',
+    'loading.almost_ready': 'Presque prêt...',
+
     // Error handling
     'error.fetch_data': "Erreur lors de la récupération des données : {error}",
     'error.rls_permission_denied': "Permission refusée. Assurez-vous d'avoir exécuté le script de sécurité SQL (RLS) dans votre base de données Supabase.",
@@ -383,6 +390,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'log.sellPrice': 'Sell Price',
     'log.stock': 'Stock',
     'log.imageUrl': 'Image',
+
+    // Loading Screen
+    'loading.connecting': 'Connecting to database...',
+    'loading.fetching_products': 'Loading products...',
+    'loading.fetching_sales': 'Syncing sales data...',
+    'loading.building_dashboard': 'Building your dashboard...',
+    'loading.almost_ready': 'Almost ready...',
     
     'error.fetch_data': 'Error fetching data: {error}',
     'error.rls_permission_denied': 'Permission denied. Make sure you have run the SQL security (RLS) script in your Supabase database.',
@@ -569,6 +583,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'log.sellPrice': 'سعر البيع',
     'log.stock': 'المخزون',
     'log.imageUrl': 'الصورة',
+
+    // Loading Screen
+    'loading.connecting': 'جاري الاتصال بقاعدة البيانات...',
+    'loading.fetching_products': 'جاري تحميل المنتجات...',
+    'loading.fetching_sales': 'مزامنة بيانات المبيعات...',
+    'loading.building_dashboard': 'جاري إعداد لوحة التحكم...',
+    'loading.almost_ready': 'على وشك الانتهاء...',
 
     // Error handling
     'error.fetch_data': 'خطأ في جلب البيانات: {error}',

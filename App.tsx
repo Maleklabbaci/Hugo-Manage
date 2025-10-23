@@ -10,6 +10,7 @@ import History from './pages/History';
 import Sales from './pages/Sales';
 import Layout from './components/Layout';
 import { LoaderIcon } from './components/Icons';
+import LoadingScreen from './components/LoadingScreen';
 
 // This wrapper protects routes that require a logged-in user.
 const AuthWrapper: React.FC = () => {
@@ -66,11 +67,7 @@ const AppContent: React.FC = () => {
 
     // Show a global loader only on the initial app load when Supabase is configured
     if (isLoading && isConfigured) {
-        return (
-            <div className="flex items-center justify-center h-screen bg-slate-100 dark:bg-dark">
-                <LoaderIcon className="w-12 h-12 animate-spin text-cyan-500" />
-            </div>
-        );
+        return <LoadingScreen />;
     }
     
     return <AppRoutes />;

@@ -104,7 +104,8 @@ const Dashboard: React.FC = () => {
 
   const stockByCategoryData = useMemo(() => {
     const categoryMap = products.reduce<Record<string, number>>((acc, p) => {
-      acc[p.category] = (acc[p.category] || 0) + p.stock;
+      const simplifiedCategory = p.category.split(' > ').pop()?.trim() || p.category;
+      acc[simplifiedCategory] = (acc[simplifiedCategory] || 0) + p.stock;
       return acc;
     }, {});
     return Object.entries(categoryMap).map(([name, value]) => ({ name, value }));
@@ -155,13 +156,13 @@ const Dashboard: React.FC = () => {
           <h3 className="text-lg font-semibold mb-4">{t('dashboard.stock_by_category_chart_title')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie data={stockByCategoryData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} fill="#8884d8">
+              <Pie data={stockByCategoryData} dataKey="value" nameKey="name" cx="40%" cy="50%" outerRadius={100} fill="#8884d8">
                 {stockByCategoryData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip formatter={(value) => `${value} ${t('dashboard.chart.units')}`} contentStyle={{ backgroundColor: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.1)'}}/>
-              <Legend />
+              <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ maxHeight: 250, overflowY: 'auto', paddingLeft: '10px' }}/>
             </PieChart>
           </ResponsiveContainer>
         </div>
