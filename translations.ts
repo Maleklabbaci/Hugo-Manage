@@ -159,6 +159,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.unconfigured_prefix': "La base de données n'est pas configurée.",
     'settings.supabase.unconfigured_link': "Allez dans les paramètres pour vous connecter.",
 
+    // Global Search
+    'search.placeholder': 'Rechercher partout...',
+    'search.products': 'Produits',
+    'search.sales': 'Ventes',
+    'search.history': 'Journal',
+    'search.no_results': 'Aucun résultat trouvé',
+    'search.results_for': 'pour la recherche "{query}"',
+    'search.sale_details': 'Qté: {quantity}, Total: {price} DA',
+
     // Activity Log details (in AppContext)
     'log.name': 'Nom',
     'log.category': 'Catégorie',
@@ -314,6 +323,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.unconfigured_prefix': "Database is not configured.",
     'settings.supabase.unconfigured_link': "Go to settings to connect.",
     
+    // Global Search
+    'search.placeholder': 'Search everywhere...',
+    'search.products': 'Products',
+    'search.sales': 'Sales',
+    'search.history': 'History',
+    'search.no_results': 'No results found',
+    'search.results_for': 'for query "{query}"',
+    'search.sale_details': 'Qty: {quantity}, Total: {price} DZD',
+
     'log.name': 'Name',
     'log.category': 'Category',
     'log.supplier': 'Supplier',
@@ -468,6 +486,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.unconfigured_prefix': 'قاعدة البيانات غير مهيأة.',
     'settings.supabase.unconfigured_link': 'اذهب إلى الإعدادات للاتصال.',
     
+    // Global Search
+    'search.placeholder': 'ابحث في كل مكان...',
+    'search.products': 'المنتجات',
+    'search.sales': 'المبيعات',
+    'search.history': 'السجل',
+    'search.no_results': 'لم يتم العثور على نتائج',
+    'search.results_for': 'للبحث "{query}"',
+    'search.sale_details': 'الكمية: {quantity}، الإجمالي: {price} د.ج',
+
     'log.name': 'الاسم',
     'log.category': 'الفئة',
     'log.supplier': 'المورد',

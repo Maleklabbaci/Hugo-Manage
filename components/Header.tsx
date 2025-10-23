@@ -1,9 +1,9 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { MenuIcon } from './Icons';
+import { MenuIcon, SearchIcon } from './Icons';
 import { useAppContext } from '../context/AppContext';
 
-const Header: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }) => {
+const Header: React.FC<{ onMenuClick: () => void; onSearchClick: () => void; }> = ({ onMenuClick, onSearchClick }) => {
   const location = useLocation();
   const { t } = useAppContext();
 
@@ -25,12 +25,16 @@ const Header: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }) => {
   return (
     <header className="bg-white dark:bg-secondary shadow-md sticky top-0 z-20">
       <div className="flex items-center justify-between h-16 px-4 md:px-8">
-        <button onClick={onMenuClick} className="md:hidden text-slate-500 dark:text-slate-300">
-          <MenuIcon className="w-6 h-6" />
-        </button>
-        <h1 className="text-xl font-semibold text-slate-800 dark:text-white">{title}</h1>
-        <div>
-          {/* Future user avatar or actions here */}
+        <div className="flex items-center">
+          <button onClick={onMenuClick} className="md:hidden text-slate-500 dark:text-slate-300 me-4">
+            <MenuIcon className="w-6 h-6" />
+          </button>
+          <h1 className="text-xl font-semibold text-slate-800 dark:text-white">{title}</h1>
+        </div>
+        <div className="flex items-center">
+          <button onClick={onSearchClick} className="p-2 rounded-full text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+            <SearchIcon className="w-6 h-6" />
+          </button>
         </div>
       </div>
     </header>
