@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import { AddIcon, EditIcon, DeleteIcon, ShoppingCartIcon, UndoIcon } from '../components/Icons';
@@ -14,8 +15,8 @@ const History: React.FC = () => {
   const { activityLog, t, language } = useAppContext();
   const locale = localeMap[language];
 
-  const formatTimestamp = (timestamp: number) => {
-    const date = new Date(timestamp);
+  const formatTimestamp = (isoString: string) => {
+    const date = new Date(isoString);
     return date.toLocaleString(locale, {
       day: '2-digit',
       month: '2-digit',
@@ -31,31 +32,31 @@ const History: React.FC = () => {
         return {
           Icon: AddIcon,
           color: 'text-green-500',
-          title: t('history.action.created', { productName: log.product_name }),
+          title: t('history.action.created', { productName: log.productName }),
         };
       case 'updated':
         return {
           Icon: EditIcon,
           color: 'text-blue-500',
-          title: t('history.action.updated', { productName: log.product_name }),
+          title: t('history.action.updated', { productName: log.productName }),
         };
       case 'deleted':
         return {
           Icon: DeleteIcon,
           color: 'text-red-500',
-          title: t('history.action.deleted', { productName: log.product_name }),
+          title: t('history.action.deleted', { productName: log.productName }),
         };
       case 'sold':
         return {
           Icon: ShoppingCartIcon,
           color: 'text-green-500',
-          title: t('history.action.sold', { productName: log.product_name }),
+          title: t('history.action.sold', { productName: log.productName }),
         };
       case 'sale_cancelled':
         return {
           Icon: UndoIcon,
           color: 'text-amber-500',
-          title: t('history.action.sale_cancelled', { productName: log.product_name }),
+          title: t('history.action.sale_cancelled', { productName: log.productName }),
         };
       default:
         return {
@@ -105,19 +106,22 @@ const History: React.FC = () => {
           return (
             <motion.div 
               key={log.id} 
-              className="bg-white dark:bg-secondary p-4 rounded-lg shadow-md flex items-start space-x-4"
+              className="bg-white dark:bg-secondary p-4 rounded-lg shadow-md flex flex-col sm:flex-row items-start sm:space-x-4"
               variants={itemVariants}
             >
-              <div className={`mt-1 p-2 bg-slate-100 dark:bg-dark rounded-full ${color}`}>
-                <Icon className="w-5 h-5" />
+              <div className="flex items-center w-full sm:w-auto mb-2 sm:mb-0">
+                <div className={`p-2 bg-slate-100 dark:bg-dark rounded-full ${color}`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <p className="font-semibold text-slate-800 dark:text-white sm:hidden ms-3">{title}</p>
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-slate-800 dark:text-white">{title}</p>
+                <p className="hidden sm:block font-semibold text-slate-800 dark:text-white">{title}</p>
                 {log.details && (
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('history.details')} : {log.details}</p>
                 )}
               </div>
-              <p className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">{formatTimestamp(log.timestamp)}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap self-end sm:self-center">{formatTimestamp(log.timestamp)}</p>
             </motion.div>
           );
         })}

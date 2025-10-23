@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Product } from '../types';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { XIcon, UploadIcon, DeleteIcon, LoaderIcon } from './Icons';
+import { XIcon } from './Icons';
 import { useAppContext } from '../context/AppContext';
-import { api } from '../services/api';
 
 interface ProductFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (product: Omit<Product, 'id' | 'created_at' | 'owner_id' | 'status'> | Product) => void;
+  onSave: (product: Omit<Product, 'id' | 'status' | 'updatedAt'> | Product) => void;
   productToEdit?: Product | null;
 }
 
@@ -23,26 +22,32 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
     buyPrice: 0,
     sellPrice: 0,
     stock: 0,
-    imageUrl: '',
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
+  const [imageData, setImageData] = useState<string | null>(null);
+
   useEffect(() => {
     if (productToEdit) {
-      const { imageUrl, ...rest } = productToEdit;
       setFormData({
-        ...rest,
-        imageUrl: imageUrl || '',
+        name: productToEdit.name,
+        category: productToEdit.category,
+        supplier: productToEdit.supplier,
+        buyPrice: productToEdit.buyPrice,
+        sellPrice: productToEdit.sellPrice,
+        stock: productToEdit.stock,
       });
-      setImagePreview(imageUrl || null);
+      if (productToEdit.imageUrl) {
+        setImagePreview(productToEdit.imageUrl);
+        setImageData(productToEdit.imageUrl);
+      } else {
+        setImagePreview(null);
+        setImageData(null);
+      }
     } else {
-      setFormData({ name: '', category: '', supplier: '', buyPrice: 0, sellPrice: 0, stock: 0, imageUrl: '' });
+      setFormData({ name: '', category: '', supplier: '', buyPrice: 0, sellPrice: 0, stock: 0 });
       setImagePreview(null);
+      setImageData(null);
     }
-    setImageFile(null); // Reset file on open
   }, [productToEdit, isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -52,49 +57,28 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
       [name]: type === 'number' ? parseFloat(value) || 0 : value,
     }));
   };
-  
-  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setImagePreview(base64String);
+        setImageData(base64String);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleRemoveImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
-    setFormData(prev => ({ ...prev, imageUrl: '' }));
-    if(fileInputRef.current) {
-        fileInputRef.current.value = "";
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsUploading(true);
-    let finalImageUrl = formData.imageUrl;
+    const finalProductData = { ...formData, imageUrl: imageData || undefined };
 
-    try {
-      if (imageFile) {
-        const uploadResponse = await api.uploadImage(imageFile);
-        // Assuming the Xano response for an image upload has a 'url' property.
-        finalImageUrl = uploadResponse.url; 
-      }
-
-      const finalProductData = { ...formData, imageUrl: finalImageUrl || undefined };
-
-      if (productToEdit) {
-          onSave({ ...productToEdit, ...finalProductData });
-      } else {
-          onSave(finalProductData);
-      }
-    } catch (error) {
-        console.error("Failed to upload image or save product", error);
-        alert("Error uploading image. Please try again.");
-    } finally {
-        setIsUploading(false);
+    if (productToEdit) {
+        onSave({ ...productToEdit, ...finalProductData });
+    } else {
+        onSave(finalProductData);
     }
   };
   
@@ -132,7 +116,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                         
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.name_label')}</label>
-                            <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent" required />
+                            <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required />
                         </div>
                         
                         <div>
@@ -142,7 +126,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                                 name="category" 
                                 value={formData.category} 
                                 onChange={handleChange} 
-                                className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent" 
+                                className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" 
                                 required
                             >
                                 <option value="" disabled>{t('product_form.select_category')}</option>
@@ -151,73 +135,42 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                                 ))}
                             </select>
                         </div>
-                        
-                        <div>
-                            <label className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.image_label')}</label>
-                            <div className="flex items-center space-x-4">
-                                <div className="w-24 h-24 rounded-lg bg-slate-100 dark:bg-dark flex items-center justify-center overflow-hidden">
-                                {imagePreview ? (
-                                    <img src={imagePreview} alt="Aperçu" className="w-full h-full object-cover" />
-                                ) : (
-                                    <UploadIcon className="w-8 h-8 text-slate-400" />
-                                )}
-                                </div>
-                                <div className="flex-1">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageFileChange}
-                                        ref={fileInputRef}
-                                        className="hidden"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="w-full mb-2 bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-white rounded-lg px-4 py-2 hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors text-sm"
-                                    >
-                                        {t('product_form.change_image')}
-                                    </button>
-                                    {imagePreview && (
-                                    <button
-                                        type="button"
-                                        onClick={handleRemoveImage}
-                                        className="w-full bg-red-500/10 text-red-500 rounded-lg px-4 py-2 hover:bg-red-500/20 transition-colors text-sm"
-                                    >
-                                        {t('product_form.remove_image')}
-                                    </button>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
 
+                        <div>
+                            <label htmlFor="image" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.image_label')}</label>
+                            <input type="file" id="image" name="image" accept="image/*" onChange={handleImageChange} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-500/10 file:text-cyan-500 hover:file:bg-cyan-500/20" />
+                        </div>
+                        {imagePreview && (
+                            <div className="my-4 flex justify-center">
+                                <img src={imagePreview} alt="Aperçu du produit" className="w-32 h-32 object-cover rounded-lg" />
+                            </div>
+                        )}
+                        
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                            <div>
                                 <label htmlFor="supplier" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.supplier_label')}</label>
-                                <input type="text" id="supplier" name="supplier" value={formData.supplier} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent" required />
+                                <input type="text" id="supplier" name="supplier" value={formData.supplier} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required />
                             </div>
                             <div>
                                 <label htmlFor="stock" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.stock_label')}</label>
-                                <input type="number" id="stock" name="stock" value={formData.stock} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent" required min="0" step="1" />
+                                <input type="number" id="stock" name="stock" value={formData.stock} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="1" />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="buyPrice" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.buy_price_label')}</label>
-                                <input type="number" id="buyPrice" name="buyPrice" value={formData.buyPrice} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent" required min="0" step="0.01" />
+                                <input type="number" id="buyPrice" name="buyPrice" value={formData.buyPrice} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="0.01" />
                             </div>
                             <div>
                                 <label htmlFor="sellPrice" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.sell_price_label')}</label>
-                                <input type="number" id="sellPrice" name="sellPrice" value={formData.sellPrice} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent" required min="0" step="0.01" />
+                                <input type="number" id="sellPrice" name="sellPrice" value={formData.sellPrice} onChange={handleChange} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="0.01" />
                             </div>
                         </div>
 
                         <div className="flex justify-end pt-4 space-x-3">
-                            <button type="button" onClick={onClose} className="bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-white rounded-lg px-4 py-2 hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors">{t('cancel')}</button>
-                            <button type="submit" disabled={isUploading} className="bg-accent hover:bg-accent-hover text-dark font-semibold rounded-lg px-4 py-2 transition-colors flex items-center justify-center disabled:opacity-50">
-                                {isUploading && <LoaderIcon className="w-5 h-5 me-2 animate-spin"/>}
-                                {t('save')}
-                            </button>
+                            <button type="button" onClick={onClose} className="bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-white rounded-lg px-4 py-2 hover:bg-slate-300 dark:hover:bg-slate-500 transform transition-all duration-200 hover:-translate-y-0.5">{t('cancel')}</button>
+                            <button type="submit" className="text-white bg-gradient-to-r from-cyan-400 to-blue-500 hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5 transform transition-all duration-200 font-semibold rounded-lg px-4 py-2">{t('save')}</button>
                         </div>
                     </form>
                 </motion.div>

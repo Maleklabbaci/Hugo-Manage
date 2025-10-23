@@ -1,9 +1,10 @@
-import React, { useMemo, useState, useEffect } from 'react';
+
+
+import React, { useMemo, useState } from 'react';
 import StatCard from '../components/StatCard';
 import { useAppContext } from '../context/AppContext';
-import { useAuth } from '../context/AuthContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import type { Language } from '../types';
+import type { Product, Language } from '../types';
 import { ShoppingBagIcon, DollarSignIcon, TrendingUpIcon, PackageXIcon, ShoppingCartIcon, ArchiveIcon, CreditCardIcon, PiggyBankIcon, AlertCircleIcon, XIcon } from '../components/Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -26,22 +27,8 @@ const localeMap: Record<Language, string> = {
 
 const Dashboard: React.FC = () => {
   const { products, sales, t, language } = useAppContext();
-  // FIX: Define locale from language context for number and date formatting.
+  const [dismissedNotifications, setDismissedNotifications] = useState<number[]>([]);
   const locale = localeMap[language];
-  const { currentUser } = useAuth();
-  const storageKey = `dismissedNotifications_${currentUser?.id}`;
-
-  const [dismissedNotifications, setDismissedNotifications] = useState<number[]>(() => {
-    if (!currentUser) return [];
-    const stored = localStorage.getItem(storageKey);
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  useEffect(() => {
-    if (!currentUser) return;
-    localStorage.setItem(storageKey, JSON.stringify(dismissedNotifications));
-  }, [dismissedNotifications, storageKey, currentUser]);
-
 
   const notifications = useMemo(() => {
     const lowStockAlerts = products
@@ -121,7 +108,7 @@ const Dashboard: React.FC = () => {
       return (
         <div className="bg-secondary p-2 border border-slate-700 rounded-md shadow-lg">
           <p className="label text-white">{`${label}`}</p>
-          <p className="text-accent">{`${t('dashboard.chart.profit')}: ${payload[0].value.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`}</p>
+          <p className="text-cyan-400">{`${t('dashboard.chart.profit')}: ${payload[0].value.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`}</p>
         </div>
       );
     }

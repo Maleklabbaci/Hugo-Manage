@@ -8,12 +8,12 @@ const NavItem: React.FC<{ to: string; icon: React.ElementType; label: string; on
         to={to}
         onClick={onClick}
         className={({ isActive }) =>
-            `flex items-center px-4 py-3 text-slate-300 hover:bg-secondary hover:text-white rounded-lg transition-all duration-200 ${
-            isActive ? 'bg-accent text-dark font-bold' : ''
+            `flex items-center px-4 py-3 text-slate-300 hover:bg-secondary hover:text-white rounded-lg transition-all duration-200 group ${
+            isActive ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold shadow-lg shadow-cyan-500/30' : ''
             }`
         }
     >
-        <Icon className="w-6 h-6 me-4" />
+        <Icon className="w-6 h-6 me-4 transition-transform duration-200 group-hover:scale-110" />
         <span className="text-md">{label}</span>
     </NavLink>
 );
@@ -27,7 +27,7 @@ const Sidebar: React.FC<{ isOpen: boolean; toggle: () => void }> = ({ isOpen, to
       <div className={`fixed inset-0 bg-black/60 z-30 md:hidden ${isOpen ? 'block' : 'hidden'}`} onClick={toggle}></div>
       <aside className={`fixed top-0 h-full bg-dark text-white w-64 p-4 z-40 transform transition-transform duration-300 ease-in-out ${isRtl ? 'right-0' : 'left-0'} ${isOpen ? 'translate-x-0' : (isRtl ? 'translate-x-full' : '-translate-x-full')} md:translate-x-0`}>
         <div className="flex items-center mb-10 px-2">
-            <svg className="w-10 h-10 text-accent" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-10 h-10 text-cyan-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M2 7L12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M12 22V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

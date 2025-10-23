@@ -16,7 +16,7 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, descripti
       whileHover={{ scale: 1.02 }}
     >
       <div className="bg-cyan-500/10 p-3 rounded-full">
-        <Icon className="w-8 h-8 text-accent" />
+        <Icon className="w-8 h-8 text-cyan-500" />
       </div>
       <div>
         <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>

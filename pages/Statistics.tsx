@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -25,7 +26,7 @@ const Statistics: React.FC = () => {
   const monthlyProfitData = useMemo(() => {
     const profitByMonth: { [key: string]: number } = {};
     products.forEach(p => {
-      const date = new Date(p.created_at);
+      const date = new Date(p.updatedAt);
       const month = date.toLocaleString(locale, { month: 'short', year: '2-digit' });
       const profit = (p.sellPrice - p.buyPrice) * p.stock;
       profitByMonth[month] = (profitByMonth[month] || 0) + profit;
@@ -68,7 +69,6 @@ const Statistics: React.FC = () => {
   }, [products]);
 
   const indicators = useMemo(() => {
-    if (products.length === 0) return { avgMargin: 0, ruptureRate: 0 };
     const totalMargin = products.reduce((acc, p) => acc + calculateMargin(p), 0);
     const avgMargin = products.length > 0 ? totalMargin / products.length : 0;
     const outOfStockCount = products.filter(p => p.stock === 0).length;

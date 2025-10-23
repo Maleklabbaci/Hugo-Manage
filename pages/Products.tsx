@@ -3,11 +3,59 @@ import { useAppContext } from '../context/AppContext';
 import type { Product } from '../types';
 import ProductForm from '../components/ProductForm';
 import SaleModal from '../components/SaleModal';
-import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, LoaderIcon } from '../components/Icons';
+import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon } from '../components/Icons';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const calculateMargin = (product: Product) => {
-  if (product.sellPrice === 0) return 0;
+  if (product.sellPrice <= 0) return 0;
   return (((product.sellPrice - product.buyPrice) / product.sellPrice) * 100).toFixed(1);
+};
+
+const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, isSelected: boolean, onEdit: (p: Product) => void, onSell: (p: Product) => void, onDuplicate: (id: number) => void, onDelete: (id: number) => void, timeAgo: (iso: string) => string }> = 
+({ product, onSelect, isSelected, onEdit, onSell, onDuplicate, onDelete, timeAgo }) => {
+  const { t } = useAppContext();
+  return (
+    <div className={`bg-white dark:bg-secondary rounded-lg shadow-md overflow-hidden transition-all duration-200 ${isSelected ? 'ring-2 ring-cyan-500' : ''}`}>
+      <div className="flex items-start p-4">
+        <div className="flex-shrink-0 flex items-center space-x-4">
+            <input 
+                type="checkbox"
+                className="w-4 h-4 text-cyan-500 bg-slate-100 border-slate-300 rounded focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
+                checked={isSelected}
+                onChange={() => onSelect(product.id)}
+            />
+            {product.imageUrl ? (
+              <img src={product.imageUrl} alt={product.name} className="w-16 h-16 object-cover rounded-md" />
+            ) : (
+              <div className="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-md flex items-center justify-center">
+                <ProductsIcon className="w-8 h-8 text-slate-400" />
+              </div>
+            )}
+        </div>
+        <div className="flex-grow ms-4">
+          <h3 className="font-bold text-slate-800 dark:text-white">{product.name}</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{product.category}</p>
+          <div className="mt-2 flex items-center space-x-2">
+            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'}`}>
+              {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
+            </span>
+             <p className="text-xs text-slate-400 dark:text-slate-500">{timeAgo(product.updatedAt)}</p>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-px bg-slate-100 dark:bg-dark text-center">
+          <div className="bg-white dark:bg-secondary p-2"><div className="text-xs text-slate-500 dark:text-slate-400">{t('products.table.sell_price')}</div><div className="font-semibold">{product.sellPrice.toFixed(2)} DA</div></div>
+          <div className="bg-white dark:bg-secondary p-2"><div className="text-xs text-slate-500 dark:text-slate-400">{t('products.table.stock')}</div><div className="font-semibold">{product.stock}</div></div>
+          <div className="bg-white dark:bg-secondary p-2"><div className="text-xs text-slate-500 dark:text-slate-400">{t('products.table.margin')}</div><div className="font-semibold">{calculateMargin(product)}%</div></div>
+      </div>
+      <div className="p-2 flex justify-end space-x-2 bg-slate-50 dark:bg-secondary/50">
+           <button onClick={() => onSell(product)} className="p-2 rounded-md transition-colors bg-green-500/10 hover:bg-green-500/20 text-green-500 disabled:opacity-50" disabled={product.stock === 0} title={t('sell')}><ShoppingCartIcon className="w-5 h-5" /></button>
+           <button onClick={() => onEdit(product)} className="p-2 rounded-md transition-colors bg-blue-500/10 hover:bg-blue-500/20 text-blue-500" title={t('edit')}><EditIcon className="w-5 h-5" /></button>
+           <button onClick={() => onDuplicate(product.id)} className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500" title={t('duplicate')}><DuplicateIcon className="w-5 h-5" /></button>
+           <button onClick={() => onDelete(product.id)} className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" title={t('delete')}><DeleteIcon className="w-5 h-5" /></button>
+      </div>
+    </div>
+  );
 };
 
 const Products: React.FC = () => {
@@ -18,25 +66,13 @@ const Products: React.FC = () => {
   const [productToSell, setProductToSell] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const [searchTerm, setSearchTerm] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const productsPerPage = 30;
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setSearchQuery(searchTerm);
-    }, 300);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   
-  const timeAgo = (timestamp: number | undefined): string => {
-    if (!timestamp) return '-';
-    const seconds = Math.floor((new Date().getTime() - timestamp) / 1000);
+  const productsPerPage = 30;
+  
+  const timeAgo = (isoDate: string): string => {
+    const seconds = Math.floor((new Date().getTime() - new Date(isoDate).getTime()) / 1000);
     if (seconds < 60) return t('products.time_ago.now');
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return t('products.time_ago.minutes', { count: minutes });
@@ -45,6 +81,12 @@ const Products: React.FC = () => {
     const days = Math.floor(hours / 24);
     return t('products.time_ago.days', { count: days });
   };
+  
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const filteredProducts = useMemo(() => {
     if (!searchQuery) {
@@ -80,26 +122,18 @@ const Products: React.FC = () => {
     setProductToEdit(null);
   };
 
-  const handleSaveProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'owner_id' | 'status'> | Product) => {
-    setIsLoading(true);
-    try {
-      if ('id' in productData) {
-        await updateProduct(productData as Product);
-      } else {
-        await addProduct(productData as Omit<Product, 'id' | 'created_at' | 'owner_id'>);
-      }
-    } catch (error) {
-      console.error("Failed to save product:", error);
+  const handleSaveProduct = (productData: Omit<Product, 'id'| 'status' | 'updatedAt'> | Product) => {
+    if ('id' in productData) {
+      updateProduct(productData as Product);
+    } else {
+      addProduct(productData);
     }
-    setIsLoading(false);
     handleCloseModal();
   };
   
-  const handleDelete = async (productId: number) => {
+  const handleDelete = (productId: number) => {
     if (window.confirm(t('products.confirm_delete'))) {
-        setIsLoading(true);
-        await deleteProduct(productId);
-        setIsLoading(false);
+        deleteProduct(productId);
     }
   }
 
@@ -113,10 +147,8 @@ const Products: React.FC = () => {
       setProductToSell(null);
   };
 
-  const handleConfirmSale = async (product: Product, quantity: number) => {
-      setIsLoading(true);
-      await addSale(product, quantity);
-      setIsLoading(false);
+  const handleConfirmSale = (productId: number, quantity: number) => {
+      addSale(productId, quantity);
       handleCloseSaleModal();
   };
 
@@ -144,20 +176,12 @@ const Products: React.FC = () => {
     }
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     if (window.confirm(t('products.confirm_delete_multiple', { count: selectedProducts.length }))) {
-        setIsLoading(true);
-        await deleteMultipleProducts(selectedProducts);
+        deleteMultipleProducts(selectedProducts);
         setSelectedProducts([]);
-        setIsLoading(false);
     }
   };
-  
-  const handleDuplicate = async (productId: number) => {
-    setIsLoading(true);
-    await duplicateProduct(productId);
-    setIsLoading(false);
-  }
 
   const numSelected = selectedProducts.length;
   const numOnPage = paginatedProducts.length;
@@ -166,15 +190,15 @@ const Products: React.FC = () => {
   const tableHeaderKeys = ["image", "name", "category", "buy_price", "sell_price", "stock", "margin", "status", "last_updated", "actions"];
 
   return (
-    <>
+    <div className="pb-16 md:pb-0">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-slate-800 dark:text-white">{t('products.title')}</h2>
         <button
           onClick={() => handleOpenModal()}
-          className="flex items-center bg-accent hover:bg-accent-hover text-dark font-semibold rounded-lg px-4 py-2 transition-colors"
+          className="flex items-center text-white bg-gradient-to-r from-cyan-400 to-blue-500 hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5 transform transition-all duration-200 font-semibold rounded-lg px-4 py-2"
         >
           <AddIcon className="w-5 h-5 me-2" />
-          {t('products.add_product')}
+          <span className="hidden sm:inline">{t('products.add_product')}</span>
         </button>
       </div>
 
@@ -184,19 +208,19 @@ const Products: React.FC = () => {
         </div>
         <input
             type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('products.search_placeholder')}
-            className="w-full ps-10 pr-4 py-2 bg-white dark:bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-white focus:ring-2 focus:ring-accent focus:border-accent"
+            className="w-full ps-10 pr-4 py-2 bg-white dark:bg-secondary border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
         />
       </div>
 
-      {numSelected > 0 && (
+      {numSelected > 0 && !isMobile && (
         <div className="bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 p-3 rounded-lg mb-4 flex items-center justify-between shadow-md">
             <span className="font-semibold">{t('products.selected_text', { count: numSelected })}</span>
             <button
                 onClick={handleBulkDelete}
-                className="flex items-center bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg px-3 py-1.5 text-sm transition-colors"
+                className="flex items-center bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold rounded-lg px-3 py-1.5 text-sm transform transition-all duration-200 hover:shadow-lg hover:shadow-red-500/50 hover:-translate-y-0.5"
             >
                 <DeleteIcon className="w-4 h-4 me-2" />
                 {t('products.delete_selected')}
@@ -204,111 +228,128 @@ const Products: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white dark:bg-secondary rounded-2xl shadow-lg overflow-hidden relative">
-        {isLoading && <div className="absolute inset-0 bg-secondary/50 flex items-center justify-center z-10"><LoaderIcon className="w-8 h-8 animate-spin text-accent"/></div>}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left rtl:text-right text-slate-500 dark:text-slate-400">
-            <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-800 dark:text-slate-300">
-              <tr>
-                <th scope="col" className="p-4">
-                    <div className="flex items-center">
-                        <input 
-                          id="checkbox-all-search" 
-                          type="checkbox" 
-                          className="w-4 h-4 text-accent bg-slate-100 border-slate-300 rounded focus:ring-accent dark:focus:ring-accent dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
-                          checked={isAllSelected}
-                          onChange={handleSelectAll}
-                        />
-                        <label htmlFor="checkbox-all-search" className="sr-only">checkbox</label>
-                    </div>
-                </th>
-                {tableHeaderKeys.map(key => (
-                  <th key={key} scope="col" className="px-6 py-3">{t(`products.table.${key}`)}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedProducts.length > 0 ? paginatedProducts.map(product => (
-                <tr key={product.id} className={`bg-white dark:bg-secondary border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 ${selectedProducts.includes(product.id) ? 'bg-cyan-50 dark:bg-cyan-900/20' : ''}`}>
-                   <td className="w-4 p-4">
-                        <div className="flex items-center">
-                            <input 
-                              id={`checkbox-table-search-${product.id}`}
-                              type="checkbox"
-                              className="w-4 h-4 text-accent bg-slate-100 border-slate-300 rounded focus:ring-accent dark:focus:ring-accent dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
-                              checked={selectedProducts.includes(product.id)}
-                              onChange={() => handleSelectOne(product.id)}
-                            />
-                            <label htmlFor={`checkbox-table-search-${product.id}`} className="sr-only">checkbox</label>
-                        </div>
-                    </td>
-                  <td className="px-6 py-4">
-                    {product.imageUrl ? (
-                      <img src={product.imageUrl} alt={product.name} className="w-12 h-12 object-cover rounded-md" />
-                    ) : (
-                      <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-md flex items-center justify-center">
-                        <ProductsIcon className="w-6 h-6 text-slate-400" />
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{product.name}</td>
-                  <td className="px-6 py-4">{product.category}</td>
-                  <td className="px-6 py-4">{product.buyPrice.toFixed(2)} DA</td>
-                  <td className="px-6 py-4">{product.sellPrice.toFixed(2)} DA</td>
-                  <td className="px-6 py-4">{product.stock}</td>
-                  <td className="px-6 py-4">{calculateMargin(product)}%</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'}`}>
-                      {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-xs whitespace-nowrap">{timeAgo(product.updated_at || product.created_at)}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-2">
-                        <button 
-                            onClick={() => handleOpenSaleModal(product)} 
-                            className="p-2 rounded-md transition-colors bg-green-500/10 hover:bg-green-500/20 text-green-500 disabled:bg-slate-500/10 disabled:text-slate-500 disabled:cursor-not-allowed"
-                            disabled={product.stock === 0}
-                            title={t('sell')}
-                        >
-                            <ShoppingCartIcon className="w-5 h-5" />
-                        </button>
-                        <button 
-                            onClick={() => handleOpenModal(product)} 
-                            className="p-2 rounded-md transition-colors bg-blue-500/10 hover:bg-blue-500/20 text-blue-500" 
-                            title={t('edit')}
-                        >
-                            <EditIcon className="w-5 h-5" />
-                        </button>
-                        <button 
-                            onClick={() => handleDuplicate(product.id)}
-                            className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500"
-                            title={t('duplicate')}
-                        >
-                            <DuplicateIcon className="w-5 h-5" />
-                        </button>
-                        <button 
-                            onClick={() => handleDelete(product.id)} 
-                            className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" 
-                            title={t('delete')}
-                        >
-                            <DeleteIcon className="w-5 h-5" />
-                        </button>
-                    </div>
-                  </td>
-                </tr>
-              )) : (
-                <tr>
-                    <td colSpan={tableHeaderKeys.length + 2} className="text-center py-10">
-                        <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">{t('products.no_results_title')}</h3>
-                        <p className="text-slate-500 dark:text-slate-400">{t('products.no_results_subtitle')}</p>
-                    </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {isMobile ? (
+        <div className="grid grid-cols-1 gap-4">
+          {paginatedProducts.map(p => (
+            <ProductCard 
+              key={p.id}
+              product={p}
+              isSelected={selectedProducts.includes(p.id)}
+              onSelect={handleSelectOne}
+              onEdit={handleOpenModal}
+              onSell={handleOpenSaleModal}
+              onDuplicate={duplicateProduct}
+              onDelete={handleDelete}
+              timeAgo={timeAgo}
+            />
+          ))}
         </div>
-      </div>
+      ) : (
+        <div className="bg-white dark:bg-secondary rounded-2xl shadow-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left rtl:text-right text-slate-500 dark:text-slate-400">
+              <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-800 dark:text-slate-300">
+                <tr>
+                  <th scope="col" className="p-4">
+                      <div className="flex items-center">
+                          <input 
+                            id="checkbox-all-search" 
+                            type="checkbox" 
+                            className="w-4 h-4 text-cyan-500 bg-slate-100 border-slate-300 rounded focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
+                            checked={isAllSelected}
+                            onChange={handleSelectAll}
+                          />
+                          <label htmlFor="checkbox-all-search" className="sr-only">checkbox</label>
+                      </div>
+                  </th>
+                  {tableHeaderKeys.map(key => (
+                    <th key={key} scope="col" className="px-6 py-3">{t(`products.table.${key}`)}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedProducts.length > 0 ? paginatedProducts.map(product => (
+                  <tr key={product.id} className={`bg-white dark:bg-secondary border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 ${selectedProducts.includes(product.id) ? 'bg-cyan-50 dark:bg-cyan-900/20' : ''}`}>
+                    <td className="w-4 p-4">
+                          <div className="flex items-center">
+                              <input 
+                                id={`checkbox-table-search-${product.id}`}
+                                type="checkbox"
+                                className="w-4 h-4 text-cyan-500 bg-slate-100 border-slate-300 rounded focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
+                                checked={selectedProducts.includes(product.id)}
+                                onChange={() => handleSelectOne(product.id)}
+                              />
+                              <label htmlFor={`checkbox-table-search-${product.id}`} className="sr-only">checkbox</label>
+                          </div>
+                      </td>
+                    <td className="px-6 py-4">
+                      {product.imageUrl ? (
+                        <img src={product.imageUrl} alt={product.name} className="w-12 h-12 object-cover rounded-md" />
+                      ) : (
+                        <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-md flex items-center justify-center">
+                          <ProductsIcon className="w-6 h-6 text-slate-400" />
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{product.name}</td>
+                    <td className="px-6 py-4">{product.category}</td>
+                    <td className="px-6 py-4">{product.buyPrice.toFixed(2)} DA</td>
+                    <td className="px-6 py-4">{product.sellPrice.toFixed(2)} DA</td>
+                    <td className="px-6 py-4">{product.stock}</td>
+                    <td className="px-6 py-4">{calculateMargin(product)}%</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'}`}>
+                        {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-xs whitespace-nowrap">{timeAgo(product.updatedAt)}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-2">
+                          <button 
+                              onClick={() => handleOpenSaleModal(product)} 
+                              className="p-2 rounded-md transition-colors bg-green-500/10 hover:bg-green-500/20 text-green-500 disabled:bg-slate-500/10 disabled:text-slate-500 disabled:cursor-not-allowed"
+                              disabled={product.stock === 0}
+                              title={t('sell')}
+                          >
+                              <ShoppingCartIcon className="w-5 h-5" />
+                          </button>
+                          <button 
+                              onClick={() => handleOpenModal(product)} 
+                              className="p-2 rounded-md transition-colors bg-blue-500/10 hover:bg-blue-500/20 text-blue-500" 
+                              title={t('edit')}
+                          >
+                              <EditIcon className="w-5 h-5" />
+                          </button>
+                          <button 
+                              onClick={() => duplicateProduct(product.id)}
+                              className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500"
+                              title={t('duplicate')}
+                          >
+                              <DuplicateIcon className="w-5 h-5" />
+                          </button>
+                          <button 
+                              onClick={() => handleDelete(product.id)} 
+                              className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" 
+                              title={t('delete')}
+                          >
+                              <DeleteIcon className="w-5 h-5" />
+                          </button>
+                      </div>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                      <td colSpan={tableHeaderKeys.length + 2} className="text-center py-10">
+                          <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">{t('products.no_results_title')}</h3>
+                          <p className="text-slate-500 dark:text-slate-400">{t('products.no_results_subtitle')}</p>
+                      </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
       
       {totalPages > 1 && (
         <div className="flex justify-center items-center mt-6">
@@ -322,9 +363,29 @@ const Products: React.FC = () => {
         </div>
       )}
 
+      <AnimatePresence>
+        {isMobile && numSelected > 0 && (
+          <motion.div
+            className="fixed bottom-4 left-4 right-4 z-10 bg-dark p-3 rounded-xl shadow-lg flex items-center justify-between"
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            exit={{ y: 100 }}
+          >
+            <span className="font-semibold text-white">{t('products.selected_text', { count: numSelected })}</span>
+            <button
+              onClick={handleBulkDelete}
+              className="flex items-center bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold rounded-lg px-3 py-1.5 text-sm"
+            >
+              <DeleteIcon className="w-4 h-4 me-2" />
+              {t('products.delete_selected')}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <ProductForm isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveProduct} productToEdit={productToEdit} />
       <SaleModal isOpen={isSaleModalOpen} onClose={handleCloseSaleModal} onConfirm={handleConfirmSale} product={productToSell} />
-    </>
+    </div>
   );
 };
 
