@@ -20,7 +20,10 @@ const Login: React.FC = () => {
     try {
       await login(email, password);
     } catch (err) {
-      setError(t((err as Error).message));
+      // FIX: Instead of trying to translate the raw error message which might not be a key,
+      // log the actual error for debugging and show a generic, user-friendly translated message.
+      console.error("Login failed:", err);
+      setError(t('login.error.incorrect_credentials'));
     } finally {
       setLoading(false);
     }
