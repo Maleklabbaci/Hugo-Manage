@@ -34,6 +34,7 @@ import {
   Database,
   Upload,
   Download,
+  Server,
 } from 'lucide-react';
 
 export {
@@ -71,4 +72,5 @@ export {
   Database as DatabaseIcon,
   Upload as UploadIcon,
   Download as DownloadIcon,
+  Server as ServerIcon,
 };

@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { AppProvider } from './context/AppContext';
+import { AppProvider, useAppContext } from './context/AppContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
@@ -11,6 +10,7 @@ import Settings from './pages/Settings';
 import History from './pages/History';
 import Sales from './pages/Sales';
 import Layout from './components/Layout';
+import { LoaderIcon } from './components/Icons';
 
 const ProtectedRoute: React.FC = () => {
     const { isAuthenticated } = useAuth();
@@ -40,11 +40,25 @@ const AppRoutes: React.FC = () => {
     );
 };
 
+const AppContent: React.FC = () => {
+    const { isLoading, isConfigured } = useAppContext();
+
+    if (isLoading && isConfigured) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-slate-100 dark:bg-dark">
+                <LoaderIcon className="w-12 h-12 animate-spin text-cyan-500" />
+            </div>
+        );
+    }
+    
+    return <AppRoutes />;
+}
+
 const App: React.FC = () => {
   return (
     <AuthProvider>
         <AppProvider>
-            <AppRoutes />
+            <AppContent />
         </AppProvider>
     </AuthProvider>
   );

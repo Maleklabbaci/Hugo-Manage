@@ -1,13 +1,21 @@
-import React, { useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
-import { SunIcon, MoonIcon, LogoutIcon, LanguagesIcon, DatabaseIcon, UploadIcon, DownloadIcon, RefreshCwIcon } from '../components/Icons';
+import { SunIcon, MoonIcon, LogoutIcon, LanguagesIcon, ServerIcon } from '../components/Icons';
 import type { Language, Theme } from '../types';
+import { storage } from '../services/storage';
 
 const Settings: React.FC = () => {
-  const { theme, setTheme, language, setLanguage, t, products, sales, activityLog, importData, exportData, resetData } = useAppContext();
+  const { theme, setTheme, language, setLanguage, t } = useAppContext();
   const { logout } = useAuth();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [supabaseUrl, setSupabaseUrl] = useState('');
+  const [supabaseAnonKey, setSupabaseAnonKey] = useState('');
+
+  useEffect(() => {
+    const { supabaseUrl, supabaseAnonKey } = storage.getSupabaseCredentials();
+    setSupabaseUrl(supabaseUrl || '');
+    setSupabaseAnonKey(supabaseAnonKey || '');
+  }, []);
   
   const handleThemeChange = (newTheme: Theme) => {
     setTheme(newTheme);
@@ -17,56 +25,44 @@ const Settings: React.FC = () => {
       setLanguage(e.target.value as Language);
   }
 
-  const handleExport = () => {
-    const jsonData = exportData();
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const date = new Date().toISOString().slice(0, 10);
-    a.download = `chez-hugo-backup-${date}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImportClick = () => {
-      fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-          if (window.confirm(t('settings.confirm_import_text'))) {
-              const reader = new FileReader();
-              reader.onload = async (event) => {
-                  try {
-                      const content = event.target?.result as string;
-                      await importData(content);
-                      alert(t('settings.import_success'));
-                  } catch (err) {
-                      console.error(err);
-                      alert(t('settings.import_error_format'));
-                  }
-              };
-              reader.onerror = () => {
-                  alert(t('settings.import_error_read'));
-              }
-              reader.readAsText(file);
-          }
-      }
-      if(e.target) e.target.value = '';
-  };
-
-  const handleReset = () => {
-      if (window.confirm(t('settings.confirm_reset_text'))) {
-          resetData();
-      }
-  };
+  const handleSaveSupabase = () => {
+    if (supabaseUrl && supabaseAnonKey) {
+      storage.setSupabaseCredentials(supabaseUrl, supabaseAnonKey);
+      alert(t('settings.supabase.saved_message'));
+      window.location.reload();
+    } else {
+      alert(t('settings.supabase.error_missing_fields'));
+    }
+  }
   
   return (
     <div className="max-w-2xl mx-auto space-y-8 text-slate-800 dark:text-white">
+
+      <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 border-b pb-2 dark:border-slate-700 flex items-center">
+              <ServerIcon className="w-5 h-5 me-2"/> {t('settings.supabase.title')}
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+              {t('settings.supabase.description')}
+          </p>
+          <div className="space-y-4">
+              <div>
+                  <label htmlFor="supabaseUrl" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('settings.supabase.url_label')}</label>
+                  <input type="url" id="supabaseUrl" value={supabaseUrl} onChange={e => setSupabaseUrl(e.target.value)} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="https://xxxxxxxx.supabase.co" />
+              </div>
+              <div>
+                  <label htmlFor="supabaseAnonKey" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('settings.supabase.anon_key_label')}</label>
+                  <input type="password" id="supabaseAnonKey" value={supabaseAnonKey} onChange={e => setSupabaseAnonKey(e.target.value)} className="w-full bg-slate-100 dark:bg-dark border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="ey..." />
+              </div>
+              <button
+                  onClick={handleSaveSupabase}
+                  className="flex items-center justify-center bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold rounded-lg px-4 py-2 transform transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/50 hover:-translate-y-0.5 w-full"
+              >
+                  {t('settings.supabase.save_button')}
+              </button>
+          </div>
+      </div>
+
       <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
         <h3 className="text-lg font-semibold mb-4 border-b pb-2 dark:border-slate-700">{t('settings.theme_title')}</h3>
         <div className="flex items-center space-x-4">
@@ -98,39 +94,6 @@ const Settings: React.FC = () => {
                 <option value="ar">العربية</option>
             </select>
         </div>
-      </div>
-
-       <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 border-b pb-2 dark:border-slate-700 flex items-center">
-              <DatabaseIcon className="w-5 h-5 me-2"/> {t('settings.data_title')}
-          </h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-              {t('settings.data_stats', { products: products.length, sales: sales.length, activities: activityLog.length })}
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button
-                  onClick={handleExport}
-                  className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold rounded-lg px-4 py-2 transform transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/50 hover:-translate-y-0.5"
-              >
-                  <DownloadIcon className="w-5 h-5 me-2"/>
-                  {t('settings.data_export')}
-              </button>
-              <button
-                  onClick={handleImportClick}
-                  className="flex items-center justify-center bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-lg px-4 py-2 transform transition-all duration-200 hover:shadow-lg hover:shadow-green-500/50 hover:-translate-y-0.5"
-              >
-                  <UploadIcon className="w-5 h-5 me-2"/>
-                  {t('settings.data_import')}
-              </button>
-              <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="application/json" />
-              <button
-                  onClick={handleReset}
-                  className="flex items-center justify-center bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg px-4 py-2 transform transition-all duration-200 hover:shadow-lg hover:shadow-amber-500/50 hover:-translate-y-0.5"
-              >
-                  <RefreshCwIcon className="w-5 h-5 me-2"/>
-                  {t('settings.data_reset')}
-              </button>
-          </div>
       </div>
 
       <div className="bg-white dark:bg-secondary p-6 rounded-2xl shadow-lg">
