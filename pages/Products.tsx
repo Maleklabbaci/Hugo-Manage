@@ -21,25 +21,25 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
   return (
     <motion.div 
         layout
-        className={`bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-xl overflow-hidden transition-all duration-200 relative ${isSelected ? 'ring-2 ring-cyan-500' : 'ring-1 ring-transparent'}`}
+        className={`bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden transition-all duration-200 relative ${isSelected ? 'ring-2 ring-cyan-500' : 'ring-1 ring-transparent'}`}
     >
       <div className="flex items-start p-4 space-x-4">
         {product.imageUrl ? (
           <img src={product.imageUrl} alt={product.name} className="w-20 h-20 object-cover rounded-lg" />
         ) : (
-          <div className="w-20 h-20 bg-slate-200 dark:bg-slate-700/50 rounded-lg flex items-center justify-center">
-            <ProductsIcon className="w-10 h-10 text-slate-400" />
+          <div className="w-20 h-20 bg-gray-200 dark:bg-slate-700/50 rounded-lg flex items-center justify-center">
+            <ProductsIcon className="w-10 h-10 text-gray-400" />
           </div>
         )}
         <div className="flex-1">
           <div className="flex justify-between items-start">
               <div>
-                  <h3 className="font-bold text-slate-800 dark:text-white leading-tight">{product.name}</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">{product.category}</p>
+                  <h3 className="font-bold text-gray-900 dark:text-white leading-tight">{product.name}</h3>
+                  <p className="text-sm text-gray-600 dark:text-slate-400">{product.category}</p>
               </div>
               <input 
                   type="checkbox"
-                  className="w-5 h-5 text-cyan-500 bg-slate-100 border-slate-300 rounded-md focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-secondary focus:ring-2 dark:bg-slate-600 dark:border-slate-500 flex-shrink-0"
+                  className="w-5 h-5 text-cyan-500 bg-gray-100 border-gray-300 rounded-md focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-secondary focus:ring-2 dark:bg-slate-600 dark:border-slate-500 flex-shrink-0"
                   checked={isSelected}
                   onChange={() => onSelect(product.id)}
               />
@@ -48,18 +48,18 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
             <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
               {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
             </span>
-            <p className="text-xs text-slate-400 dark:text-slate-500">Stock: {product.stock}</p>
+            <p className="text-xs text-gray-500 dark:text-slate-500">Stock: {product.stock}</p>
           </div>
         </div>
       </div>
       <div className="px-4 pb-4">
         <div className="flex items-center justify-between">
            <div className="text-left">
-             <div className="text-xs text-slate-500 dark:text-slate-400">{t('products.table.sell_price')}</div>
-             <div className="font-semibold text-lg text-slate-800 dark:text-white">{product.sellPrice.toFixed(2)} DA</div>
+             <div className="text-xs text-gray-600 dark:text-slate-400">{t('products.table.sell_price')}</div>
+             <div className="font-semibold text-lg text-gray-900 dark:text-white">{product.sellPrice.toFixed(2)} DA</div>
            </div>
            <div className="text-right">
-             <div className="text-xs text-slate-500 dark:text-slate-400">{t('products.table.margin')}</div>
+             <div className="text-xs text-gray-600 dark:text-slate-400">{t('products.table.margin')}</div>
              <div className={`font-semibold text-lg ${parseFloat(margin) > 0 ? 'text-green-500' : 'text-red-500'}`}>{margin}%</div>
            </div>
         </div>
@@ -75,7 +75,7 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
              <ShoppingCartIcon className="w-4 h-4 me-2"/> {t('sell')}
            </motion.button>
            <div className="relative">
-             <button onClick={() => setMenuOpen(!menuOpen)} onBlur={() => setTimeout(() => setMenuOpen(false), 100)} className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20">
+             <button onClick={() => setMenuOpen(!menuOpen)} onBlur={() => setTimeout(() => setMenuOpen(false), 100)} className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-white/20">
                <MoreVerticalIcon className="w-5 h-5"/>
              </button>
              <AnimatePresence>
@@ -84,11 +84,11 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
                   initial={{ opacity: 0, scale: 0.9, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  className="absolute bottom-12 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-lg shadow-lg w-40 z-10 overflow-hidden"
+                  className="absolute bottom-12 right-0 bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-lg shadow-lg w-40 z-10 overflow-hidden"
                 >
-                  <button onClick={() => { onEdit(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"><EditIcon className="w-4 h-4 me-2"/> {t('edit')}</button>
-                  <button onClick={() => { onDuplicate(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"><DuplicateIcon className="w-4 h-4 me-2"/> {t('duplicate')}</button>
-                  <div className="h-px bg-slate-200 dark:bg-white/10 my-1"></div>
+                  <button onClick={() => { onEdit(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><EditIcon className="w-4 h-4 me-2"/> {t('edit')}</button>
+                  <button onClick={() => { onDuplicate(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><DuplicateIcon className="w-4 h-4 me-2"/> {t('duplicate')}</button>
+                  <div className="h-px bg-gray-200 dark:bg-white/10 my-1"></div>
                   <button onClick={() => { onDelete(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-red-500 hover:bg-red-500/10"><DeleteIcon className="w-4 h-4 me-2"/> {t('delete')}</button>
                 </motion.div>
               )}
@@ -327,12 +327,12 @@ const Products: React.FC = () => {
   return (
     <div className="pb-16 md:pb-0">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-white">{t('products.title')}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('products.title')}</h2>
         <div className="flex items-center space-x-2">
             <motion.button
                 onClick={handleImportClick}
                 disabled={isImporting}
-                className="flex items-center bg-white/50 dark:bg-white/10 text-slate-700 dark:text-white border border-white/30 dark:border-white/20 hover:bg-white/80 dark:hover:bg-white/20 font-semibold rounded-lg px-4 py-2 disabled:opacity-50"
+                className="flex items-center bg-white dark:bg-white/10 text-gray-700 dark:text-white border border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/20 font-semibold rounded-lg px-4 py-2 disabled:opacity-50"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
             >
@@ -355,14 +355,14 @@ const Products: React.FC = () => {
 
       <div className="mb-4 relative">
         <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-            <SearchIcon className="w-5 h-5 text-slate-400" />
+            <SearchIcon className="w-5 h-5 text-gray-400" />
         </div>
         <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('products.search_placeholder')}
-            className="w-full ps-10 pr-4 py-2 bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-lg text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+            className="w-full ps-10 pr-4 py-2 bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
         />
       </div>
 
@@ -398,17 +398,17 @@ const Products: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-2xl overflow-hidden">
+        <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left rtl:text-right text-slate-500 dark:text-slate-400">
-              <thead className="text-xs text-slate-700 uppercase bg-white/10 dark:bg-white/5 dark:text-slate-300">
+            <table className="w-full text-sm text-left rtl:text-right text-gray-600 dark:text-slate-400">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-white/5 dark:text-slate-300">
                 <tr>
                   <th scope="col" className="p-4">
                       <div className="flex items-center">
                           <input 
                             id="checkbox-all-search" 
                             type="checkbox" 
-                            className="w-4 h-4 text-cyan-500 bg-slate-100 border-slate-300 rounded focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
+                            className="w-4 h-4 text-cyan-500 bg-gray-100 border-gray-300 rounded focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
                             checked={isAllSelected}
                             onChange={handleSelectAll}
                           />
@@ -422,13 +422,13 @@ const Products: React.FC = () => {
               </thead>
               <tbody>
                 {paginatedProducts.length > 0 ? paginatedProducts.map(product => (
-                  <tr key={product.id} className={`border-b border-white/20 dark:border-white/10 hover:bg-white/10 dark:hover:bg-white/5 ${selectedProducts.includes(product.id) ? 'bg-cyan-500/10' : ''}`}>
+                  <tr key={product.id} className={`border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 ${selectedProducts.includes(product.id) ? 'bg-cyan-500/10' : ''}`}>
                     <td className="w-4 p-4">
                           <div className="flex items-center">
                               <input 
                                 id={`checkbox-table-search-${product.id}`}
                                 type="checkbox"
-                                className="w-4 h-4 text-cyan-500 bg-slate-100 border-slate-300 rounded focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
+                                className="w-4 h-4 text-cyan-500 bg-gray-100 border-gray-300 rounded focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
                                 checked={selectedProducts.includes(product.id)}
                                 onChange={() => handleSelectOne(product.id)}
                               />
@@ -439,12 +439,12 @@ const Products: React.FC = () => {
                       {product.imageUrl ? (
                         <img src={product.imageUrl} alt={product.name} className="w-12 h-12 object-cover rounded-md" />
                       ) : (
-                        <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center">
-                          <ProductsIcon className="w-6 h-6 text-slate-400" />
+                        <div className="w-12 h-12 bg-gray-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center">
+                          <ProductsIcon className="w-6 h-6 text-gray-400" />
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{product.name}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">{product.name}</td>
                     <td className="px-6 py-4">{product.category}</td>
                     <td className="px-6 py-4">{product.buyPrice.toFixed(2)} DA</td>
                     <td className="px-6 py-4">{product.sellPrice.toFixed(2)} DA</td>
@@ -497,8 +497,8 @@ const Products: React.FC = () => {
                 )) : (
                   <tr>
                       <td colSpan={tableHeaderKeys.length + 2} className="text-center py-10">
-                          <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">{t('products.no_results_title')}</h3>
-                          <p className="text-slate-500 dark:text-slate-400">{t('products.no_results_subtitle')}</p>
+                          <h3 className="text-lg font-semibold text-gray-700 dark:text-slate-300">{t('products.no_results_title')}</h3>
+                          <p className="text-gray-600 dark:text-slate-400">{t('products.no_results_subtitle')}</p>
                       </td>
                   </tr>
                 )}
@@ -510,12 +510,12 @@ const Products: React.FC = () => {
       
       {totalPages > 1 && (
         <div className="flex justify-center items-center mt-6">
-            <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-white/10">
-                <ChevronLeftIcon className="w-5 h-5 text-slate-500 dark:text-slate-300"/>
+            <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-gray-100 dark:enabled:hover:bg-white/10">
+                <ChevronLeftIcon className="w-5 h-5 text-gray-600 dark:text-slate-300"/>
             </button>
-            <span className="mx-4 text-slate-700 dark:text-slate-200">{t('products.pagination', { currentPage, totalPages })}</span>
-            <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-white/10">
-                <ChevronRightIcon className="w-5 h-5 text-slate-500 dark:text-slate-300"/>
+            <span className="mx-4 text-gray-700 dark:text-slate-200">{t('products.pagination', { currentPage, totalPages })}</span>
+            <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-gray-100 dark:enabled:hover:bg-white/10">
+                <ChevronRightIcon className="w-5 h-5 text-gray-600 dark:text-slate-300"/>
             </button>
         </div>
       )}

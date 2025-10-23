@@ -14,12 +14,12 @@ const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTim
     const { t, language } = useAppContext();
     const locale = localeMap[language];
     return (
-        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden">
             <div className="p-4">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h3 className="font-bold text-slate-800 dark:text-white leading-tight">{sale.productName}</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">{formatTimestamp(sale.createdAt)}</p>
+                        <h3 className="font-bold text-gray-900 dark:text-white leading-tight">{sale.productName}</h3>
+                        <p className="text-sm text-gray-600 dark:text-slate-400">{formatTimestamp(sale.createdAt)}</p>
                     </div>
                     <motion.button 
                         onClick={() => onCancel(sale.id)} 
@@ -32,16 +32,16 @@ const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTim
                     </motion.button>
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-                    <div className="bg-slate-50 dark:bg-black/20 p-2 rounded-lg">
-                        <div className="text-xs text-slate-500 dark:text-slate-400">{t('sales.table.quantity')}</div>
-                        <div className="font-semibold text-slate-800 dark:text-white flex items-center justify-center space-x-1"><ArchiveIcon className="w-4 h-4"/><span>{sale.quantity}</span></div>
+                    <div className="bg-gray-100 dark:bg-black/20 p-2 rounded-lg">
+                        <div className="text-xs text-gray-600 dark:text-slate-400">{t('sales.table.quantity')}</div>
+                        <div className="font-semibold text-gray-900 dark:text-white flex items-center justify-center space-x-1"><ArchiveIcon className="w-4 h-4"/><span>{sale.quantity}</span></div>
                     </div>
-                     <div className="bg-slate-50 dark:bg-black/20 p-2 rounded-lg">
-                        <div className="text-xs text-slate-500 dark:text-slate-400">{t('sales.table.total_price')}</div>
-                        <div className="font-semibold text-slate-800 dark:text-white flex items-center justify-center space-x-1"><DollarSignIcon className="w-4 h-4"/><span>{sale.totalPrice.toFixed(0)}</span></div>
+                     <div className="bg-gray-100 dark:bg-black/20 p-2 rounded-lg">
+                        <div className="text-xs text-gray-600 dark:text-slate-400">{t('sales.table.total_price')}</div>
+                        <div className="font-semibold text-gray-900 dark:text-white flex items-center justify-center space-x-1"><DollarSignIcon className="w-4 h-4"/><span>{sale.totalPrice.toFixed(0)}</span></div>
                     </div>
-                     <div className="bg-slate-50 dark:bg-black/20 p-2 rounded-lg">
-                        <div className="text-xs text-slate-500 dark:text-slate-400">{t('sales.table.margin')}</div>
+                     <div className="bg-gray-100 dark:bg-black/20 p-2 rounded-lg">
+                        <div className="text-xs text-gray-600 dark:text-slate-400">{t('sales.table.margin')}</div>
                         <div className="font-semibold text-green-500 flex items-center justify-center space-x-1"><TrendingUpIcon className="w-4 h-4"/><span>{(sale.totalMargin ?? 0).toFixed(0)}</span></div>
                     </div>
                 </div>
@@ -75,9 +75,9 @@ const Sales: React.FC = () => {
     if (sales.length === 0) {
         return (
             <div className="text-center py-10">
-                <ShoppingCartIcon className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4" />
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">{t('sales.empty.title')}</h2>
-                <p className="text-slate-500 dark:text-slate-400">{t('sales.empty.subtitle')}</p>
+                <ShoppingCartIcon className="w-16 h-16 mx-auto text-gray-400 dark:text-slate-500 mb-4" />
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('sales.empty.title')}</h2>
+                <p className="text-gray-600 dark:text-slate-400">{t('sales.empty.subtitle')}</p>
             </div>
         )
     }
@@ -86,7 +86,7 @@ const Sales: React.FC = () => {
 
     return (
         <div>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">{t('sales.title')}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('sales.title')}</h2>
             {isMobile ? (
                 <div className="grid grid-cols-1 gap-4">
                     {sales.map(sale => (
@@ -94,10 +94,10 @@ const Sales: React.FC = () => {
                     ))}
                 </div>
             ) : (
-                <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-2xl overflow-hidden">
+                <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left rtl:text-right text-slate-500 dark:text-slate-400">
-                            <thead className="text-xs text-slate-700 uppercase bg-white/10 dark:bg-white/5 dark:text-slate-300">
+                        <table className="w-full text-sm text-left rtl:text-right text-gray-600 dark:text-slate-400">
+                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-white/5 dark:text-slate-300">
                                 <tr>
                                     {tableHeaders.map(header => (
                                         <th key={header} scope="col" className="px-6 py-3">{t(`sales.table.${header}`)}</th>
@@ -106,8 +106,8 @@ const Sales: React.FC = () => {
                             </thead>
                             <tbody>
                                 {sales.map(sale => (
-                                    <tr key={sale.id} className="border-b border-white/20 dark:border-white/10 hover:bg-white/10 dark:hover:bg-white/5">
-                                        <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{sale.productName}</td>
+                                    <tr key={sale.id} className="border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5">
+                                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">{sale.productName}</td>
                                         <td className="px-6 py-4">{sale.quantity}</td>
                                         <td className="px-6 py-4">{sale.sellPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>
                                         <td className="px-6 py-4 font-semibold">{sale.totalPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>

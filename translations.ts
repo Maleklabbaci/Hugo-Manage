@@ -28,10 +28,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.statistics': 'Statistiques',
     'header.history': "Journal d'activité",
     'header.settings': 'Paramètres',
-    'header.default': 'Chez Hugo',
+    'header.default': 'Manager',
 
     // Login Page
-    'login.title': 'Chez Hugo Manager',
+    'login.title': 'Manager',
     'login.subtitle': 'Accédez à votre tableau de bord de gestion',
     'login.email_placeholder': 'Email',
     'login.password_placeholder': 'Mot de passe',
@@ -232,9 +232,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.statistics': 'Statistics',
     'header.history': 'Activity Log',
     'header.settings': 'Settings',
-    'header.default': 'Chez Hugo',
+    'header.default': 'Manager',
 
-    'login.title': 'Chez Hugo Manager',
+    'login.title': 'Manager',
     'login.subtitle': 'Login to your management dashboard',
     'login.email_placeholder': 'Email',
     'login.password_placeholder': 'Password',
@@ -425,9 +425,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.statistics': 'الإحصائيات',
     'header.history': 'سجل النشاط',
     'header.settings': 'الإعدادات',
-    'header.default': 'Chez Hugo',
+    'header.default': 'المدير',
 
-    'login.title': 'Chez Hugo Manager',
+    'login.title': 'المدير',
     'login.subtitle': 'الوصول إلى لوحة التحكم الخاصة بك',
     'login.email_placeholder': 'البريد الإلكتروني',
     'login.password_placeholder': 'كلمة المرور',

@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -33,7 +29,7 @@ const localeMap: Record<Language, string> = {
 };
 
 const Statistics: React.FC = () => {
-  const { products, sales, t, language } = useAppContext();
+  const { products, sales, t, language, theme } = useAppContext();
   const locale = localeMap[language];
 
   const monthlyProfitData = useMemo(() => {
@@ -132,8 +128,8 @@ const Statistics: React.FC = () => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-slate-900/80 p-2 border border-white/10 rounded-md shadow-lg">
-          <p className="label text-white">{`${label} : ${payload[0].value.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`}</p>
+        <div className="bg-white/80 dark:bg-slate-900/80 p-2 border border-gray-200 dark:border-white/10 rounded-md shadow-lg">
+          <p className="label text-gray-700 dark:text-white">{`${label} : ${payload[0].value.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`}</p>
         </div>
       );
     }
@@ -141,21 +137,21 @@ const Statistics: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 text-slate-800 dark:text-white">
+    <div className="space-y-8 text-gray-900 dark:text-white">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatCard icon={TrendingUpIcon} title={t('statistics.avg_margin')} value={`${indicators.avgMargin.toFixed(1)}%`} />
             <StatCard icon={PackageXIcon} title={t('statistics.out_of_stock_rate')} value={`${indicators.ruptureRate.toFixed(1)}%`} />
             <StatCard icon={TrendingUpIcon} title={t('statistics.weekly_sales_growth')} value={formatGrowth(indicators.weeklySalesGrowth)} description={t('dashboard.this_week')} />
         </div>
-        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 p-6 rounded-2xl">
+        <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-6 rounded-2xl">
             <h3 className="text-lg font-semibold mb-4">{t('statistics.monthly_revenue_chart_title')}</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={monthlySalesData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
-                    <XAxis dataKey="name" tick={{ fill: '#94a3b8' }} fontSize={12} />
-                    <YAxis tick={{ fill: '#94a3b8' }} tickFormatter={(value) => `${(value/1000)}k`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? "rgba(255, 255, 255, 0.1)" : "rgba(0,0,0,0.1)"} />
+                    <XAxis dataKey="name" tick={{ fill: theme === 'dark' ? '#94a3b8' : '#64748b' }} fontSize={12} />
+                    <YAxis tick={{ fill: theme === 'dark' ? '#94a3b8' : '#64748b' }} tickFormatter={(value) => `${(value/1000)}k`} />
                     <Tooltip
-                        contentStyle={{ backgroundColor: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }}
+                        contentStyle={{ backgroundColor: theme === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255,255,255,0.8)', border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`}}
                         formatter={(value: number) => [value.toLocaleString(locale, { style: 'currency', currency: 'DZD' }), t('statistics.chart.revenue')]}
                     />
                     <Legend />
@@ -163,20 +159,20 @@ const Statistics: React.FC = () => {
                 </BarChart>
             </ResponsiveContainer>
         </div>
-        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 p-6 rounded-2xl">
+        <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-6 rounded-2xl">
             <h3 className="text-lg font-semibold mb-4">{t('statistics.potential_profit_chart_title')}</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={monthlyProfitData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
-                    <XAxis dataKey="name" tick={{ fill: '#94a3b8' }}/>
-                    <YAxis tick={{ fill: '#94a3b8' }} tickFormatter={(value) => `${(value/1000)}k DA`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? "rgba(255, 255, 255, 0.1)" : "rgba(0,0,0,0.1)"} />
+                    <XAxis dataKey="name" tick={{ fill: theme === 'dark' ? '#94a3b8' : '#64748b' }}/>
+                    <YAxis tick={{ fill: theme === 'dark' ? '#94a3b8' : '#64748b' }} tickFormatter={(value) => `${(value/1000)}k DA`} />
                     <Tooltip content={<CustomTooltip/>}/>
                     <Legend />
                     <Line type="monotone" dataKey="profit" name={t('statistics.chart.potential_profit')} stroke="#22D3EE" strokeWidth={2} activeDot={{ r: 8 }} />
                 </LineChart>
             </ResponsiveContainer>
         </div>
-        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-lg border border-white/20 dark:border-white/10 p-6 rounded-2xl">
+        <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-6 rounded-2xl">
             <h3 className="text-lg font-semibold mb-4">{t('statistics.category_distribution_chart_title')}</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -185,7 +181,7 @@ const Statistics: React.FC = () => {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                     </Pie>
-                    <Tooltip formatter={(value) => `${value} ${t('dashboard.chart.units')}`} contentStyle={{ backgroundColor: 'rgba(30, 41, 59, 0.8)', border: '1px solid rgba(255,255,255,0.1)'}}/>
+                    <Tooltip formatter={(value) => `${value} ${t('dashboard.chart.units')}`} contentStyle={{ backgroundColor: theme === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255,255,255,0.8)', border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`}}/>
                     <Legend wrapperStyle={{ overflow: "hidden", textOverflow: "ellipsis", width: "100%"}}/>
                 </PieChart>
             </ResponsiveContainer>

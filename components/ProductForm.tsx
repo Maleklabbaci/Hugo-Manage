@@ -107,29 +107,29 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                 onClick={onClose}
             >
                 <motion.div 
-                    className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 rounded-2xl shadow-xl w-full max-w-lg relative p-8 max-h-[90vh] overflow-y-auto"
+                    className="bg-white dark:bg-slate-900/80 backdrop-blur-2xl border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl w-full max-w-lg relative p-8 max-h-[90vh] overflow-y-auto"
                     variants={modalVariants}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-white">
+                    <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:text-slate-400 dark:hover:text-white">
                         <XIcon />
                     </button>
-                    <h2 className="text-2xl font-bold mb-6 text-slate-800 dark:text-white">{productToEdit ? t('product_form.edit_title') : t('product_form.add_title')}</h2>
+                    <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">{productToEdit ? t('product_form.edit_title') : t('product_form.add_title')}</h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         
                         <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.name_label')}</label>
-                            <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required />
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">{t('product_form.name_label')}</label>
+                            <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required />
                         </div>
                         
                         <div>
-                            <label htmlFor="category" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.category_label')}</label>
+                            <label htmlFor="category" className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">{t('product_form.category_label')}</label>
                             <select 
                                 id="category" 
                                 name="category" 
                                 value={formData.category} 
                                 onChange={handleChange} 
-                                className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" 
+                                className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" 
                                 required
                             >
                                 <option value="" disabled>{t('product_form.select_category')}</option>
@@ -140,8 +140,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                         </div>
 
                         <div>
-                            <label htmlFor="image" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.image_label')}</label>
-                            <input type="file" id="image" name="image" accept="image/*" onChange={handleImageChange} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-500/10 file:text-cyan-500 hover:file:bg-cyan-500/20" />
+                            <label htmlFor="image" className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">{t('product_form.image_label')}</label>
+                            <input type="file" id="image" name="image" accept="image/*" onChange={handleImageChange} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-500/10 file:text-cyan-500 hover:file:bg-cyan-500/20" />
                         </div>
                         {imagePreview && (
                             <div className="my-4 flex justify-center">
@@ -151,23 +151,23 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                            <div>
-                                <label htmlFor="supplier" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.supplier_label')}</label>
-                                <input type="text" id="supplier" name="supplier" value={formData.supplier} onChange={handleChange} className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required />
+                                <label htmlFor="supplier" className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">{t('product_form.supplier_label')}</label>
+                                <input type="text" id="supplier" name="supplier" value={formData.supplier} onChange={handleChange} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required />
                             </div>
                             <div>
-                                <label htmlFor="stock" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.stock_label')}</label>
-                                <input type="number" id="stock" name="stock" value={formData.stock} onChange={handleChange} className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="1" />
+                                <label htmlFor="stock" className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">{t('product_form.stock_label')}</label>
+                                <input type="number" id="stock" name="stock" value={formData.stock} onChange={handleChange} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="1" />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label htmlFor="buyPrice" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.buy_price_label')}</label>
-                                <input type="number" id="buyPrice" name="buyPrice" value={formData.buyPrice} onChange={handleChange} className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="0.01" />
+                                <label htmlFor="buyPrice" className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">{t('product_form.buy_price_label')}</label>
+                                <input type="number" id="buyPrice" name="buyPrice" value={formData.buyPrice} onChange={handleChange} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="0.01" />
                             </div>
                             <div>
-                                <label htmlFor="sellPrice" className="block text-sm font-medium text-slate-500 dark:text-slate-300 mb-1">{t('product_form.sell_price_label')}</label>
-                                <input type="number" id="sellPrice" name="sellPrice" value={formData.sellPrice} onChange={handleChange} className="w-full bg-white/50 dark:bg-black/20 border border-white/30 dark:border-white/10 rounded-lg p-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="0.01" />
+                                <label htmlFor="sellPrice" className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">{t('product_form.sell_price_label')}</label>
+                                <input type="number" id="sellPrice" name="sellPrice" value={formData.sellPrice} onChange={handleChange} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required min="0" step="0.01" />
                             </div>
                         </div>
 
@@ -175,7 +175,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                             <motion.button
                                 type="button"
                                 onClick={onClose}
-                                className="bg-slate-200 dark:bg-white/10 text-slate-800 dark:text-white rounded-lg px-4 py-2 font-semibold"
+                                className="bg-gray-200 dark:bg-white/10 text-gray-800 dark:text-white rounded-lg px-4 py-2 font-semibold"
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                             >

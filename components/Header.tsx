@@ -25,15 +25,15 @@ const Header: React.FC<{ onSearchClick: () => void; onNotificationClick: () => v
   const notificationCount = notifications.length;
 
   return (
-    <header className="bg-white/80 dark:bg-black/30 backdrop-blur-lg sticky top-0 z-20">
+    <header className="bg-white/80 dark:bg-black/30 backdrop-blur-lg sticky top-0 z-20 border-b border-gray-200 dark:border-white/10">
       <div className="flex items-center justify-between h-16 px-4 md:px-8">
         <div className="flex items-center">
-          <h1 className="text-xl font-bold text-slate-800 dark:text-white">{title}</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h1>
         </div>
         <div className="flex items-center space-x-2">
           <motion.button 
             onClick={onSearchClick} 
-            className="p-2 rounded-full text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10"
+            className="p-2 rounded-full text-gray-500 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-white/10"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
@@ -41,13 +41,13 @@ const Header: React.FC<{ onSearchClick: () => void; onNotificationClick: () => v
           </motion.button>
           <motion.button 
             onClick={onNotificationClick} 
-            className="p-2 rounded-full text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 relative"
+            className="p-2 rounded-full text-gray-500 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-white/10 relative"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
             <NotificationIcon className="w-6 h-6" />
             {notificationCount > 0 && (
-              <span className="absolute top-0 right-0 flex items-center justify-center h-5 w-5 text-[10px] rounded-full bg-red-500 text-white font-bold border-2 border-white dark:border-slate-800">
+              <span className="absolute top-0 right-0 flex items-center justify-center h-5 w-5 text-[10px] rounded-full bg-red-500 text-white font-bold border-2 border-white dark:border-gray-50">
                 {notificationCount > 9 ? '9+' : notificationCount}
               </span>
             )}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { AlertCircleIcon, LoaderIcon } from '../components/Icons';
+import { AlertCircleIcon, LoaderIcon, ChezHugoLogo } from '../components/Icons';
 import { useAppContext } from '../context/AppContext';
 
 const Login: React.FC = () => {
@@ -40,15 +40,10 @@ const Login: React.FC = () => {
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <div className="text-center">
-            <svg className="w-12 h-12 text-cyan-400 mx-auto" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M2 7L12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M12 22V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M22 7L12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M17 4.5L7 9.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          <h1 className="mt-4 text-3xl font-bold text-white">{t('login.title')}</h1>
-          <p className="mt-2 text-base text-slate-300">{t('login.subtitle')}</p>
+            <div className="flex justify-center mb-4">
+               <ChezHugoLogo />
+            </div>
+          <p className="text-base text-slate-300">{t('login.subtitle')}</p>
         </div>
         
         {!isConfigured && (

@@ -11,7 +11,7 @@ import NotificationPanel from './NotificationPanel';
 const SupabaseBanner = () => {
     const { t } = useAppContext();
     return (
-        <div className="bg-amber-100/80 dark:bg-amber-900/40 backdrop-blur-md text-amber-800 dark:text-amber-300 p-3 text-sm text-center flex items-center justify-center border-b border-amber-300/50">
+        <div className="bg-amber-100 dark:bg-amber-900/40 backdrop-blur-md text-amber-800 dark:text-amber-300 p-3 text-sm text-center flex items-center justify-center border-b border-amber-300/50">
             <ServerIcon className="w-5 h-5 me-3 flex-shrink-0" />
             <span className="font-medium">{t('settings.supabase.unconfigured_prefix')}</span>
             <Link to="/settings" className="font-bold underline ms-1 hover:text-amber-600 dark:hover:text-amber-200">

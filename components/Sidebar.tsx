@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { DashboardIcon, ProductsIcon, SettingsIcon, HistoryIcon, ShoppingCartIcon, StatsIcon } from './Icons';
+import { DashboardIcon, ProductsIcon, SettingsIcon, HistoryIcon, ShoppingCartIcon, StatsIcon, ChezHugoLogo } from './Icons';
 import { useAppContext } from '../context/AppContext';
 
 // Reusable NavItem for both sidebar and bottom nav
@@ -70,15 +70,8 @@ const Sidebar: React.FC = () => {
     <>
       {/* Desktop Sidebar */}
       <aside className={`fixed top-0 h-full bg-black/30 backdrop-blur-xl border-r border-white/10 text-white w-64 p-4 z-40 transform transition-transform duration-300 ease-in-out ${isRtl ? 'right-0' : 'left-0'} hidden md:block md:translate-x-0`}>
-        <div className="flex items-center mb-10 px-2">
-            <svg className="w-10 h-10 text-cyan-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M2 7L12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M12 22V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M22 7L12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M17 4.5L7 9.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <h1 className="text-2xl font-bold ms-3">Chez Hugo</h1>
+        <div className="flex items-center justify-center h-16 mb-10 px-2">
+            <ChezHugoLogo />
         </div>
         <nav className="flex flex-col space-y-2">
             {desktopNavLinks.map(link => <NavItem key={link.to} {...link} isMobile={false} />)}

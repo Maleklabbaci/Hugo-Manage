@@ -74,40 +74,40 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                     onClick={onClose}
                 >
                     <motion.div
-                        className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 rounded-2xl shadow-xl w-full max-w-2xl relative max-h-[70vh] flex flex-col"
+                        className="bg-white dark:bg-slate-900/80 backdrop-blur-2xl border border-gray-200 dark:border-white/10 rounded-2xl shadow-xl w-full max-w-2xl relative max-h-[70vh] flex flex-col"
                         variants={modalVariants}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="p-4 border-b dark:border-white/10 flex items-center">
-                           <SearchIcon className="w-5 h-5 text-slate-400 me-3"/>
+                        <div className="p-4 border-b border-gray-200 dark:border-white/10 flex items-center">
+                           <SearchIcon className="w-5 h-5 text-gray-400 me-3"/>
                            <input
                                 ref={inputRef}
                                 type="text"
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder={t('search.placeholder')}
-                                className="w-full bg-transparent text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none"
+                                className="w-full bg-transparent text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none"
                            />
-                           <button onClick={onClose} className="p-1 rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"><XIcon /></button>
+                           <button onClick={onClose} className="p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700"><XIcon /></button>
                         </div>
                         <div className="overflow-y-auto">
                             {query.trim() && !hasResults && (
                                 <div className="text-center p-16">
-                                    <p className="text-slate-600 dark:text-slate-300 font-semibold">{t('search.no_results')}</p>
-                                    <p className="text-sm text-slate-400">{t('search.results_for', {query})}</p>
+                                    <p className="text-gray-700 dark:text-slate-300 font-semibold">{t('search.no_results')}</p>
+                                    <p className="text-sm text-gray-500">{t('search.results_for', {query})}</p>
                                 </div>
                             )}
                             {hasResults && (
                                 <div className="p-2">
                                     {searchResults.products.length > 0 && (
                                         <div className="mb-2">
-                                            <h3 className="text-xs font-bold uppercase text-slate-400 px-3 py-2">{t('search.products')}</h3>
+                                            <h3 className="text-xs font-bold uppercase text-gray-500 px-3 py-2">{t('search.products')}</h3>
                                             <ul>{searchResults.products.map(p => (
-                                                <li key={`prod-${p.id}`}><Link to="/products" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5">
+                                                <li key={`prod-${p.id}`}><Link to="/products" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
                                                     <ProductsIcon className="w-5 h-5 text-cyan-500 me-4"/>
                                                     <div>
-                                                        <p className="font-semibold text-slate-800 dark:text-white">{p.name}</p>
-                                                        <p className="text-sm text-slate-500 dark:text-slate-400">{p.category}</p>
+                                                        <p className="font-semibold text-gray-900 dark:text-white">{p.name}</p>
+                                                        <p className="text-sm text-gray-600 dark:text-slate-400">{p.category}</p>
                                                     </div>
                                                 </Link></li>
                                             ))}</ul>
@@ -115,13 +115,13 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                                     )}
                                     {searchResults.sales.length > 0 && (
                                         <div className="mb-2">
-                                            <h3 className="text-xs font-bold uppercase text-slate-400 px-3 py-2">{t('search.sales')}</h3>
+                                            <h3 className="text-xs font-bold uppercase text-gray-500 px-3 py-2">{t('search.sales')}</h3>
                                             <ul>{searchResults.sales.map(s => (
-                                                <li key={`sale-${s.id}`}><Link to="/sales" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5">
+                                                <li key={`sale-${s.id}`}><Link to="/sales" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
                                                     <ShoppingCartIcon className="w-5 h-5 text-green-500 me-4"/>
                                                      <div>
-                                                        <p className="font-semibold text-slate-800 dark:text-white">{s.productName}</p>
-                                                        <p className="text-sm text-slate-500 dark:text-slate-400">{t('search.sale_details', { quantity: s.quantity, price: s.totalPrice.toFixed(2) })}</p>
+                                                        <p className="font-semibold text-gray-900 dark:text-white">{s.productName}</p>
+                                                        <p className="text-sm text-gray-600 dark:text-slate-400">{t('search.sale_details', { quantity: s.quantity, price: s.totalPrice.toFixed(2) })}</p>
                                                     </div>
                                                 </Link></li>
                                             ))}</ul>
@@ -129,13 +129,13 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                                     )}
                                     {searchResults.activityLog.length > 0 && (
                                         <div className="mb-2">
-                                            <h3 className="text-xs font-bold uppercase text-slate-400 px-3 py-2">{t('search.history')}</h3>
+                                            <h3 className="text-xs font-bold uppercase text-gray-500 px-3 py-2">{t('search.history')}</h3>
                                             <ul>{searchResults.activityLog.map(l => (
-                                                <li key={`log-${l.id}`}><Link to="/history" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5">
+                                                <li key={`log-${l.id}`}><Link to="/history" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
                                                     <HistoryIcon className="w-5 h-5 text-amber-500 me-4"/>
                                                      <div>
-                                                        <p className="font-semibold text-slate-800 dark:text-white">{l.productName}</p>
-                                                        <p className="text-sm text-slate-500 dark:text-slate-400">{l.action}: {l.details || ''}</p>
+                                                        <p className="font-semibold text-gray-900 dark:text-white">{l.productName}</p>
+                                                        <p className="text-sm text-gray-600 dark:text-slate-400">{l.action}: {l.details || ''}</p>
                                                     </div>
                                                 </Link></li>
                                             ))}</ul>
