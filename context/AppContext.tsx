@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import { createClient, SupabaseClient, Session, User } from '@supabase/supabase-js';
-import type { Product, Theme, Language, ActivityLog, Sale } from '../types';
+import type { Product, Theme, Language, ActivityLog, Sale, BulkUpdatePayload, BulkUpdateMode } from '../types';
 import { storage } from '../services/storage';
 import { translations } from '../translations';
 import { MOCK_PRODUCTS } from '../mock/products';
@@ -71,6 +71,7 @@ interface AppContextType {
   addProduct: (productData: Omit<Product, 'id' | 'status' | 'createdAt'>) => Promise<Product | null>;
   addMultipleProducts: (productsData: Omit<Product, 'id' | 'status' | 'createdAt'>[]) => Promise<void>;
   updateProduct: (product: Product) => Promise<Product | null>;
+  updateMultipleProducts: (productIds: number[], updates: BulkUpdatePayload) => Promise<void>;
   deleteProduct: (productId: number) => Promise<void>;
   deleteMultipleProducts: (productIds: number[]) => Promise<void>;
   duplicateProduct: (productId: number) => Promise<void>;
@@ -354,6 +355,63 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const calculateNewValue = (currentValue: number, mode: BulkUpdateMode, changeValue: number): number => {
+    switch (mode) {
+        case 'set': return changeValue;
+        case 'increase': return currentValue + changeValue;
+        case 'decrease': return currentValue - changeValue;
+        default: return currentValue;
+    }
+  };
+
+  const updateMultipleProducts = async (productIds: number[], updates: BulkUpdatePayload) => {
+    if (!supabase || !user) return;
+
+    const productsToUpdate = products.filter(p => productIds.includes(p.id));
+    if (productsToUpdate.length === 0) return;
+
+    try {
+        for (const product of productsToUpdate) {
+            const payload: any = {};
+            const changes: string[] = [];
+            
+            if (updates.category) {
+                payload.category = updates.category;
+                changes.push(`${t('log.category')}: "${product.category}" -> "${updates.category}"`);
+            }
+            if (updates.supplier) {
+                payload.supplier = updates.supplier;
+                changes.push(`${t('log.supplier')}: "${product.supplier}" -> "${updates.supplier}"`);
+            }
+            if (updates.buyPrice) {
+                const newValue = calculateNewValue(product.buyPrice, updates.buyPrice.mode, updates.buyPrice.value);
+                payload.buyprice = newValue;
+                changes.push(`${t('log.buyPrice')}: "${product.buyPrice}" -> "${newValue.toFixed(2)}"`);
+            }
+            if (updates.sellPrice) {
+                const newValue = calculateNewValue(product.sellPrice, updates.sellPrice.mode, updates.sellPrice.value);
+                payload.sellprice = newValue;
+                changes.push(`${t('log.sellPrice')}: "${product.sellPrice}" -> "${newValue.toFixed(2)}"`);
+            }
+            if (updates.stock) {
+                const newValue = calculateNewValue(product.stock, updates.stock.mode, updates.stock.value);
+                payload.stock = Math.max(0, Math.floor(newValue)); // Stock must be integer and can't be negative
+                payload.status = payload.stock > 0 ? 'actif' : 'rupture';
+                changes.push(`${t('log.stock')}: "${product.stock}" -> "${payload.stock}"`);
+            }
+            
+            if (Object.keys(payload).length > 0) {
+                 const { error } = await supabase.from('products').update(payload).eq('id', product.id);
+                 if (error) throw error;
+                 await logActivity('updated', product, `${t('history.log.bulk_update')}: ${changes.join(', ')}`);
+            }
+        }
+        await fetchData();
+    } catch (error) {
+        alert(t('bulk_edit_form.error', { error: (error as Error).message }));
+    }
+  };
+
   const deleteProduct = async (productId: number) => {
     if (!supabase) return;
     const productToDelete = products.find(p => p.id === productId);
@@ -468,7 +526,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const value = {
     products, sales, activityLog, theme, language, isLoading, isConfigured, supabase,
     session, user, notifications, setTheme, setLanguage, t, login, logout,
-    addProduct, addMultipleProducts, updateProduct, deleteProduct, deleteMultipleProducts, 
+    addProduct, addMultipleProducts, updateProduct, updateMultipleProducts, deleteProduct, deleteMultipleProducts, 
     duplicateProduct, addSale, cancelSale, markNotificationAsRead, markAllNotificationsAsRead,
   };
 

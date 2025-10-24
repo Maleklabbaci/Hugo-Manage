@@ -37,6 +37,7 @@ import {
   Download,
   Server,
   Bell,
+  ClipboardEdit,
 } from 'lucide-react';
 
 export const ChezHugoLogo: React.FC<{ className?: string }> = ({ className }) => {
@@ -92,4 +93,5 @@ export {
   Download as DownloadIcon,
   Server as ServerIcon,
   Bell as NotificationIcon,
+  ClipboardEdit as BulkEditIcon,
 };

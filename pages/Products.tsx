@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
-import type { Product } from '../types';
+import type { Product, BulkUpdatePayload } from '../types';
 import ProductForm from '../components/ProductForm';
 import SaleModal from '../components/SaleModal';
-import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, MoreVerticalIcon, UploadIcon, LoaderIcon } from '../components/Icons';
+import BulkEditForm from '../components/BulkEditForm';
+import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, MoreVerticalIcon, UploadIcon, LoaderIcon, BulkEditIcon } from '../components/Icons';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const calculateMargin = (product: Product) => {
@@ -101,10 +102,11 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
 };
 
 const Products: React.FC = () => {
-  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts } = useAppContext();
+  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts, updateMultipleProducts } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
+  const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
   const [productToSell, setProductToSell] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
@@ -178,6 +180,15 @@ const Products: React.FC = () => {
     if (result) {
       handleCloseModal();
     }
+  };
+
+  const handleSaveBulkEdit = async (updates: BulkUpdatePayload) => {
+    if (Object.keys(updates).length > 0 && selectedProducts.length > 0) {
+        await updateMultipleProducts(selectedProducts, updates);
+        alert(t('bulk_edit_form.success', { count: selectedProducts.length }));
+    }
+    setIsBulkEditModalOpen(false);
+    setSelectedProducts([]);
   };
   
   const handleDelete = (productId: number) => {
@@ -369,16 +380,26 @@ const Products: React.FC = () => {
       {numSelected > 0 && !isMobile && (
         <div className="bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 p-3 rounded-lg mb-4 flex items-center justify-between shadow-md">
             <span className="font-semibold">{t('products.selected_text', { count: numSelected })}</span>
-            <motion.button
-                onClick={handleBulkDelete}
-                className="flex items-center bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold rounded-lg px-3 py-1.5 text-sm"
-                whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.3), 0 4px 6px -2px rgba(239, 68, 68, 0.2)' }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-            >
-                <DeleteIcon className="w-4 h-4 me-2" />
-                {t('products.delete_selected')}
-            </motion.button>
+            <div className="flex items-center space-x-2">
+                <motion.button
+                    onClick={() => setIsBulkEditModalOpen(true)}
+                    className="flex items-center bg-white dark:bg-slate-900/40 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-500/50 font-semibold rounded-lg px-3 py-1.5 text-sm"
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                >
+                    <BulkEditIcon className="w-4 h-4 me-2" />
+                    {t('products.bulk_edit')}
+                </motion.button>
+                <motion.button
+                    onClick={handleBulkDelete}
+                    className="flex items-center bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold rounded-lg px-3 py-1.5 text-sm"
+                    whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.3), 0 4px 6px -2px rgba(239, 68, 68, 0.2)' }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                >
+                    <DeleteIcon className="w-4 h-4 me-2" />
+                    {t('products.delete_selected')}
+                </motion.button>
+            </div>
         </div>
       )}
 
@@ -529,22 +550,29 @@ const Products: React.FC = () => {
             exit={{ y: 100 }}
           >
             <span className="font-semibold text-white">{t('products.selected_text', { count: numSelected })}</span>
-            <motion.button
-              onClick={handleBulkDelete}
-              className="flex items-center bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold rounded-lg px-3 py-1.5 text-sm"
-              whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.3), 0 4px 6px -2px rgba(239, 68, 68, 0.2)' }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-            >
-              <DeleteIcon className="w-4 h-4 me-2" />
-              {t('products.delete_selected')}
-            </motion.button>
+            <div className="flex items-center space-x-2">
+                <motion.button
+                    onClick={() => setIsBulkEditModalOpen(true)}
+                    className="p-2 rounded-lg bg-white/10 text-white"
+                    whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
+                >
+                    <BulkEditIcon className="w-5 h-5" />
+                </motion.button>
+                <motion.button
+                  onClick={handleBulkDelete}
+                  className="p-2 rounded-lg bg-red-500/80 text-white"
+                  whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
+                >
+                  <DeleteIcon className="w-5 h-5" />
+                </motion.button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       <ProductForm isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveProduct} productToEdit={productToEdit} />
-      <SaleModal isOpen={isSaleModalOpen} onClose={handleCloseSaleModal} onConfirm={handleConfirmSale} product={productToSell} />
+      <SaleModal isOpen={isSaleModalOpen} onClose={handleCloseModal} onConfirm={handleConfirmSale} product={productToSell} />
+      <BulkEditForm isOpen={isBulkEditModalOpen} onClose={() => setIsBulkEditModalOpen(false)} onSave={handleSaveBulkEdit} productCount={selectedProducts.length} />
     </div>
   );
 };

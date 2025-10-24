@@ -37,3 +37,13 @@ export interface Sale {
 export type Theme = 'light' | 'dark';
 
 export type Language = 'fr' | 'en' | 'ar';
+
+export type BulkUpdateMode = 'set' | 'increase' | 'decrease';
+
+export interface BulkUpdatePayload {
+  category?: string;
+  supplier?: string;
+  buyPrice?: { mode: BulkUpdateMode; value: number };
+  sellPrice?: { mode: BulkUpdateMode; value: number };
+  stock?: { mode: BulkUpdateMode; value: number };
+}
