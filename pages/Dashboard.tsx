@@ -3,7 +3,7 @@ import StatCard from '../components/StatCard';
 import { useAppContext } from '../context/AppContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import type { Language } from '../types';
-import { ShoppingBagIcon, DollarSignIcon, TrendingUpIcon, PackageXIcon, ShoppingCartIcon, ArchiveIcon, CreditCardIcon, PiggyBankIcon } from '../components/Icons';
+import { ShoppingBagIcon, DollarSignIcon, PackageXIcon, ShoppingCartIcon, ArchiveIcon, CreditCardIcon, PiggyBankIcon, DeliveryIcon, TrendingUpIcon } from '../components/Icons';
 
 const COLORS = ['#22D3EE', '#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
 
@@ -45,44 +45,10 @@ const Dashboard: React.FC = () => {
     const unitsSold = sales.reduce((acc, s) => acc + s.quantity, 0);
     const salesProfit = sales.reduce((acc, s) => acc + (s.totalMargin || 0), 0);
     
-    // Weekly Sales Growth Calculation
-    const today = new Date();
-    const startOfThisWeek = getWeekStart(today);
-    const startOfLastWeek = new Date(startOfThisWeek);
-    startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+    const unitsInDelivery = products.filter(p => p.status === 'en livraison').length;
 
-    const thisWeekRevenue = sales
-      .filter(s => new Date(s.createdAt) >= startOfThisWeek)
-      .reduce((acc, s) => acc + s.totalPrice, 0);
-
-    const lastWeekRevenue = sales
-      .filter(s => {
-        const saleDate = new Date(s.createdAt);
-        return saleDate >= startOfLastWeek && saleDate < startOfThisWeek;
-      })
-      .reduce((acc, s) => acc + s.totalPrice, 0);
-      
-    let weeklySalesGrowth: number;
-    if (lastWeekRevenue > 0) {
-        weeklySalesGrowth = ((thisWeekRevenue - lastWeekRevenue) / lastWeekRevenue) * 100;
-    } else if (thisWeekRevenue > 0) {
-        weeklySalesGrowth = Infinity;
-    } else {
-        weeklySalesGrowth = 0;
-    }
-
-
-    return { totalProducts, stockValue, totalProfit, outOfStock, salesRevenue, unitsSold, salesProfit, weeklySalesGrowth };
+    return { totalProducts, stockValue, totalProfit, outOfStock, salesRevenue, unitsSold, salesProfit, unitsInDelivery };
   }, [products, sales]);
-
-  const formatGrowth = (growth: number): string => {
-    if (growth === Infinity) {
-      return '🔺 +∞%';
-    }
-    const sign = growth >= 0 ? '+' : '';
-    const arrow = growth >= 0 ? '🔺' : '🔻';
-    return `${arrow} ${sign}${growth.toFixed(0)} %`;
-  };
 
   const weeklyProfitData = useMemo(() => {
     const profitByWeek: { [key: string]: number } = {};
@@ -138,7 +104,7 @@ const Dashboard: React.FC = () => {
         <StatCard icon={CreditCardIcon} title={t('dashboard.sales_revenue')} value={`${stats.salesRevenue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={PiggyBankIcon} title={t('dashboard.sales_profit')} value={`${stats.salesProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={ShoppingCartIcon} title={t('dashboard.units_sold')} value={stats.unitsSold} />
-        <StatCard icon={TrendingUpIcon} title={t('dashboard.weekly_sales_growth')} value={formatGrowth(stats.weeklySalesGrowth)} description={t('dashboard.this_week')} />
+        <StatCard icon={DeliveryIcon} title={t('dashboard.units_in_delivery')} value={stats.unitsInDelivery} />
         <StatCard icon={TrendingUpIcon} title={t('dashboard.potential_profit')} value={`${stats.totalProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={ArchiveIcon} title={t('dashboard.stock_value')} value={`${stats.stockValue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={ShoppingBagIcon} title={t('dashboard.total_products')} value={stats.totalProducts} />

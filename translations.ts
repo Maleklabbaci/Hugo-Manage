@@ -54,7 +54,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.chart.units': 'unités',
     'dashboard.notifications.low_stock': '{productName} est en stock faible ({count} articles restants).',
     'dashboard.notifications.out_of_stock': '{productName} est en rupture de stock.',
-    'dashboard.weekly_sales_growth': 'Croissance Ventes (hebdo)',
+    'dashboard.units_in_delivery': 'Unités en livraison',
     'dashboard.this_week': 'cette semaine',
 
     // Products Page
@@ -303,7 +303,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.chart.units': 'units',
     'dashboard.notifications.low_stock': '{productName} is low on stock ({count} items left).',
     'dashboard.notifications.out_of_stock': '{productName} is out of stock.',
-    'dashboard.weekly_sales_growth': 'Weekly Sales Growth',
+    'dashboard.units_in_delivery': 'Units in Delivery',
     'dashboard.this_week': 'this week',
 
     'products.title': 'Product List',
@@ -542,7 +542,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.chart.units': 'وحدات',
     'dashboard.notifications.low_stock': 'مخزون {productName} منخفض ({count} قطع متبقية).',
     'dashboard.notifications.out_of_stock': 'نفد مخزون {productName}.',
-    'dashboard.weekly_sales_growth': 'نمو المبيعات (أسبوعي)',
+    'dashboard.units_in_delivery': 'وحدات قيد التوصيل',
     'dashboard.this_week': 'هذا الأسبوع',
 
     'products.title': 'قائمة المنتجات',
