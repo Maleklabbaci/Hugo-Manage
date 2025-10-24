@@ -1,10 +1,12 @@
+
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
-import type { Product, BulkUpdatePayload } from '../types';
+import type { Product, BulkUpdatePayload, ProductFormData } from '../types';
 import ProductForm from '../components/ProductForm';
 import SaleModal from '../components/SaleModal';
 import BulkEditForm from '../components/BulkEditForm';
-import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, MoreVerticalIcon, UploadIcon, LoaderIcon, BulkEditIcon } from '../components/Icons';
+import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, MoreVerticalIcon, UploadIcon, LoaderIcon, BulkEditIcon, SortAscIcon, SortDescIcon } from '../components/Icons';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const calculateMargin = (product: Product) => {
@@ -46,7 +48,7 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
               />
           </div>
           <div className="mt-2 flex items-center space-x-2">
-            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300'}`}>
               {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
             </span>
             <p className="text-xs text-gray-500 dark:text-slate-500">Stock: {product.stock}</p>
@@ -61,7 +63,7 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
            </div>
            <div className="text-right">
              <div className="text-xs text-gray-600 dark:text-slate-400">{t('products.table.margin')}</div>
-             <div className={`font-semibold text-lg ${parseFloat(margin) > 0 ? 'text-green-500' : 'text-red-500'}`}>{margin}%</div>
+             <div className={`font-semibold text-lg ${parseFloat(margin) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{margin}%</div>
            </div>
         </div>
         <div className="mt-4 flex items-center space-x-2">
@@ -102,6 +104,8 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
 };
 
 const Products: React.FC = () => {
+  type SortKey = 'name' | 'sellPrice' | 'stock' | 'createdAt';
+  
   const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts, updateMultipleProducts } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
@@ -113,6 +117,8 @@ const Products: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isImporting, setIsImporting] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>('createdAt');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const productsPerPage = 30;
@@ -135,16 +141,36 @@ const Products: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const sortedProducts = useMemo(() => {
+    const sortable = [...products];
+    sortable.sort((a, b) => {
+        const aVal = a[sortKey];
+        const bVal = b[sortKey];
+
+        let comparison = 0;
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+            comparison = aVal.localeCompare(bVal);
+        } else if (typeof aVal === 'number' && typeof bVal === 'number') {
+            comparison = aVal - bVal;
+        } else if (sortKey === 'createdAt') {
+            comparison = new Date(aVal).getTime() - new Date(bVal).getTime();
+        }
+
+        return sortDirection === 'asc' ? comparison : -comparison;
+    });
+    return sortable;
+  }, [products, sortKey, sortDirection]);
+
   const filteredProducts = useMemo(() => {
     if (!searchQuery) {
-        return products;
+        return sortedProducts;
     }
-    return products.filter(product =>
+    return sortedProducts.filter(product =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.supplier.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [products, searchQuery]);
+  }, [sortedProducts, searchQuery]);
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * productsPerPage;
@@ -153,11 +179,11 @@ const Products: React.FC = () => {
   
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
+  }, [searchQuery, sortKey, sortDirection]);
 
   useEffect(() => {
     setSelectedProducts([]);
-  }, [currentPage, products, searchQuery]);
+  }, [currentPage, products, searchQuery, sortKey, sortDirection]);
 
   const handleOpenModal = (product?: Product) => {
     setProductToEdit(product || null);
@@ -169,18 +195,19 @@ const Products: React.FC = () => {
     setProductToEdit(null);
   };
 
-  const handleSaveProduct = async (productData: Omit<Product, 'id'| 'status' | 'createdAt' | 'updatedAt'> | Product) => {
+  const handleSaveProduct = async (data: ProductFormData | (Product & { productData: ProductFormData })) => {
     let result: Product | null;
-    if ('id' in productData) {
-      result = await updateProduct(productData as Product);
+    if ('id' in data) {
+      result = await updateProduct(data as Product, data.productData);
     } else {
-      result = await addProduct(productData);
+      result = await addProduct(data as ProductFormData);
     }
 
     if (result) {
       handleCloseModal();
     }
   };
+
 
   const handleSaveBulkEdit = async (updates: BulkUpdatePayload) => {
     if (Object.keys(updates).length > 0 && selectedProducts.length > 0) {
@@ -329,11 +356,29 @@ const Products: React.FC = () => {
     reader.readAsText(file);
   };
 
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+        setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+        setSortKey(key);
+        setSortDirection('asc'); // Default to ascending when changing column
+    }
+  };
+
   const numSelected = selectedProducts.length;
   const numOnPage = paginatedProducts.length;
   const isAllSelected = numSelected === numOnPage && numOnPage > 0;
 
-  const tableHeaderKeys = ["image", "name", "category", "buy_price", "sell_price", "stock", "margin", "status", "last_updated", "actions"];
+  const SortableHeader: React.FC<{ sortableKey: SortKey, children: React.ReactNode }> = ({ sortableKey, children }) => (
+    <th scope="col" className="px-6 py-3">
+        <button className="flex items-center space-x-1" onClick={() => handleSort(sortableKey)}>
+            <span>{children}</span>
+            {sortKey === sortableKey && (
+                sortDirection === 'asc' ? <SortAscIcon className="w-4 h-4" /> : <SortDescIcon className="w-4 h-4" />
+            )}
+        </button>
+    </th>
+  );
 
   return (
     <div className="pb-16 md:pb-0">
@@ -364,18 +409,41 @@ const Products: React.FC = () => {
         <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".csv" className="hidden" />
       </div>
 
-      <div className="mb-4 relative">
-        <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-            <SearchIcon className="w-5 h-5 text-gray-400" />
+      <div className="mb-4 flex flex-col md:flex-row md:items-center gap-4">
+        <div className="relative flex-grow">
+            <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
+                <SearchIcon className="w-5 h-5 text-gray-400" />
+            </div>
+            <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t('products.search_placeholder')}
+                className="w-full ps-10 pr-4 py-2 bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+            />
         </div>
-        <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t('products.search_placeholder')}
-            className="w-full ps-10 pr-4 py-2 bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-        />
+        {isMobile && (
+            <select
+                value={`${sortKey}_${sortDirection}`}
+                onChange={(e) => {
+                    const [key, dir] = e.target.value.split('_');
+                    setSortKey(key as SortKey);
+                    setSortDirection(dir as 'asc' | 'desc');
+                }}
+                className="w-full md:w-auto bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 p-2 text-sm font-medium"
+            >
+                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="createdAt_desc">{t('products.sort.created_at_desc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="createdAt_asc">{t('products.sort.created_at_asc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="name_asc">{t('products.sort.name_asc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="name_desc">{t('products.sort.name_desc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="sellPrice_asc">{t('products.sort.sell_price_asc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="sellPrice_desc">{t('products.sort.sell_price_desc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="stock_desc">{t('products.sort.stock_desc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="stock_asc">{t('products.sort.stock_asc')}</option>
+            </select>
+        )}
       </div>
+
 
       {numSelected > 0 && !isMobile && (
         <div className="bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 p-3 rounded-lg mb-4 flex items-center justify-between shadow-md">
@@ -436,9 +504,16 @@ const Products: React.FC = () => {
                           <label htmlFor="checkbox-all-search" className="sr-only">checkbox</label>
                       </div>
                   </th>
-                  {tableHeaderKeys.map(key => (
-                    <th key={key} scope="col" className="px-6 py-3">{t(`products.table.${key}`)}</th>
-                  ))}
+                  <th scope="col" className="px-6 py-3">{t('products.table.image')}</th>
+                  <SortableHeader sortableKey="name">{t('products.table.name')}</SortableHeader>
+                  <th scope="col" className="px-6 py-3">{t('products.table.category')}</th>
+                  <th scope="col" className="px-6 py-3">{t('products.table.buy_price')}</th>
+                  <SortableHeader sortableKey="sellPrice">{t('products.table.sell_price')}</SortableHeader>
+                  <SortableHeader sortableKey="stock">{t('products.table.stock')}</SortableHeader>
+                  <th scope="col" className="px-6 py-3">{t('products.table.margin')}</th>
+                  <th scope="col" className="px-6 py-3">{t('products.table.status')}</th>
+                  <SortableHeader sortableKey="createdAt">{t('products.table.last_updated')}</SortableHeader>
+                  <th scope="col" className="px-6 py-3">{t('actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -470,9 +545,9 @@ const Products: React.FC = () => {
                     <td className="px-6 py-4">{product.buyPrice.toFixed(2)} DA</td>
                     <td className="px-6 py-4">{product.sellPrice.toFixed(2)} DA</td>
                     <td className="px-6 py-4">{product.stock}</td>
-                    <td className="px-6 py-4">{calculateMargin(product)}%</td>
+                    <td className={`px-6 py-4 font-semibold ${parseFloat(calculateMargin(product)) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{calculateMargin(product)}%</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300'}`}>
                         {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
                       </span>
                     </td>
@@ -517,7 +592,7 @@ const Products: React.FC = () => {
                   </tr>
                 )) : (
                   <tr>
-                      <td colSpan={tableHeaderKeys.length + 2} className="text-center py-10">
+                      <td colSpan={12} className="text-center py-10">
                           <h3 className="text-lg font-semibold text-gray-700 dark:text-slate-300">{t('products.no_results_title')}</h3>
                           <p className="text-gray-600 dark:text-slate-400">{t('products.no_results_subtitle')}</p>
                       </td>
@@ -571,7 +646,7 @@ const Products: React.FC = () => {
       </AnimatePresence>
 
       <ProductForm isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveProduct} productToEdit={productToEdit} />
-      <SaleModal isOpen={isSaleModalOpen} onClose={handleCloseModal} onConfirm={handleConfirmSale} product={productToSell} />
+      <SaleModal isOpen={isSaleModalOpen} onClose={handleCloseSaleModal} onConfirm={handleConfirmSale} product={productToSell} />
       <BulkEditForm isOpen={isBulkEditModalOpen} onClose={() => setIsBulkEditModalOpen(false)} onSave={handleSaveBulkEdit} productCount={selectedProducts.length} />
     </div>
   );

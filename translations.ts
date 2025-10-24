@@ -1,3 +1,4 @@
+
 import type { Language } from './types';
 
 export const translations: Record<Language, Record<string, string>> = {
@@ -89,6 +90,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.time_ago.hours': 'Il y a {count} h',
     'products.time_ago.days': 'Il y a {count} j',
     'products.uncategorized': 'Non classé',
+    'products.sort.sort_by': 'Trier par',
+    'products.sort.name_asc': 'Nom (A-Z)',
+    'products.sort.name_desc': 'Nom (Z-A)',
+    'products.sort.sell_price_asc': 'Prix (Bas-Haut)',
+    'products.sort.sell_price_desc': 'Prix (Haut-Bas)',
+    'products.sort.stock_asc': 'Stock (Bas-Haut)',
+    'products.sort.stock_desc': 'Stock (Haut-Bas)',
+    'products.sort.created_at_asc': 'Date (Ancien)',
+    'products.sort.created_at_desc': 'Date (Récent)',
 
     // Product Form
     'product_form.edit_title': 'Modifier le produit',
@@ -307,6 +317,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.time_ago.hours': '{count}h ago',
     'products.time_ago.days': '{count}d ago',
     'products.uncategorized': 'Uncategorized',
+    'products.sort.sort_by': 'Sort by',
+    'products.sort.name_asc': 'Name (A-Z)',
+    'products.sort.name_desc': 'Name (Z-A)',
+    'products.sort.sell_price_asc': 'Sell Price (Low-High)',
+    'products.sort.sell_price_desc': 'Sell Price (High-Low)',
+    'products.sort.stock_asc': 'Stock (Low-High)',
+    'products.sort.stock_desc': 'Stock (High-Low)',
+    'products.sort.created_at_asc': 'Date (Oldest)',
+    'products.sort.created_at_desc': 'Date (Newest)',
 
     'product_form.edit_title': 'Edit Product',
     'product_form.add_title': 'Add Product',
@@ -517,6 +536,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.time_ago.hours': 'منذ {count} ساعة',
     'products.time_ago.days': 'منذ {count} يوم',
     'products.uncategorized': 'غير مصنف',
+    'products.sort.sort_by': 'فرز حسب',
+    'products.sort.name_asc': 'الاسم (أ-ي)',
+    'products.sort.name_desc': 'الاسم (ي-أ)',
+    'products.sort.sell_price_asc': 'السعر (منخفض-مرتفع)',
+    'products.sort.sell_price_desc': 'السعر (مرتفع-منخفض)',
+    'products.sort.stock_asc': 'المخزون (منخفض-مرتفع)',
+    'products.sort.stock_desc': 'المخزون (مرتفع-منخفض)',
+    'products.sort.created_at_asc': 'التاريخ (الأقدم)',
+    'products.sort.created_at_desc': 'التاريخ (الأحدث)',
 
     'product_form.edit_title': 'تعديل المنتج',
     'product_form.add_title': 'إضافة منتج',

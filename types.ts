@@ -12,6 +12,11 @@ export interface Product {
   ownerId?: string;
 }
 
+export type ProductFormData = Omit<Product, 'id' | 'status' | 'createdAt'> & {
+  imageFile?: File | null;
+};
+
+
 export interface ActivityLog {
   id: number;
   productId: number;

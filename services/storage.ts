@@ -18,18 +18,6 @@ export const storage = {
     localStorage.removeItem(TOKEN_KEY);
   },
 
-  // Supabase Credentials
-  getSupabaseCredentials: (): { supabaseUrl: string | null, supabaseAnonKey: string | null } => {
-    return {
-      supabaseUrl: localStorage.getItem(SUPABASE_URL_KEY),
-      supabaseAnonKey: localStorage.getItem(SUPABASE_ANON_KEY),
-    };
-  },
-  setSupabaseCredentials: (url: string, key: string): void => {
-    localStorage.setItem(SUPABASE_URL_KEY, url);
-    localStorage.setItem(SUPABASE_ANON_KEY, key);
-  },
-
   // Theme
   getTheme: (): Theme => {
     const theme = localStorage.getItem(THEME_KEY) as Theme;
@@ -50,5 +38,17 @@ export const storage = {
   },
   setLanguage: (language: Language): void => {
     localStorage.setItem(LANGUAGE_KEY, language);
+  },
+
+  // Supabase Credentials
+  getSupabaseCredentials: (): { url: string | null; anonKey: string | null } => {
+    return {
+      url: localStorage.getItem(SUPABASE_URL_KEY),
+      anonKey: localStorage.getItem(SUPABASE_ANON_KEY),
+    };
+  },
+  setSupabaseCredentials: (url: string, anonKey: string): void => {
+    localStorage.setItem(SUPABASE_URL_KEY, url);
+    localStorage.setItem(SUPABASE_ANON_KEY, anonKey);
   },
 };

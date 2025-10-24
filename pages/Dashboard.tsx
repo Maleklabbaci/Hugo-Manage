@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import StatCard from '../components/StatCard';
 import { useAppContext } from '../context/AppContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -25,6 +25,14 @@ const localeMap: Record<Language, string> = {
 const Dashboard: React.FC = () => {
   const { products, sales, t, language, theme } = useAppContext();
   const locale = localeMap[language];
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
 
   const stats = useMemo(() => {
     const totalProducts = products.length;
@@ -126,7 +134,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 text-gray-900 dark:text-white">
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
         <StatCard icon={CreditCardIcon} title={t('dashboard.sales_revenue')} value={`${stats.salesRevenue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={PiggyBankIcon} title={t('dashboard.sales_profit')} value={`${stats.salesProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={ShoppingCartIcon} title={t('dashboard.units_sold')} value={stats.unitsSold} />
@@ -156,13 +164,18 @@ const Dashboard: React.FC = () => {
           <h3 className="text-lg font-semibold mb-4">{t('dashboard.stock_by_category_chart_title')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie data={stockByCategoryData} dataKey="value" nameKey="name" cx="40%" cy="50%" outerRadius={100} fill="#8884d8">
+              <Pie data={stockByCategoryData} dataKey="value" nameKey="name" cx={isMobile ? '50%' : '40%'} cy="50%" outerRadius={isMobile ? 80 : 100} fill="#8884d8">
                 {stockByCategoryData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip formatter={(value) => `${value} ${t('dashboard.chart.units')}`} contentStyle={{ backgroundColor: theme === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255,255,255,0.8)', border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`}}/>
-              <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ maxHeight: 250, overflowY: 'auto', paddingLeft: '10px' }}/>
+              <Legend 
+                layout={isMobile ? 'horizontal' : 'vertical'} 
+                verticalAlign={isMobile ? 'bottom' : 'middle'} 
+                align={isMobile ? 'center' : 'right'} 
+                wrapperStyle={isMobile ? { paddingTop: '20px' } : { maxHeight: 250, overflowY: 'auto', paddingLeft: '10px' }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>

@@ -38,6 +38,8 @@ import {
   Server,
   Bell,
   ClipboardEdit,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 
 export const ChezHugoLogo: React.FC<{ className?: string }> = ({ className }) => {
@@ -94,4 +96,6 @@ export {
   Server as ServerIcon,
   Bell as NotificationIcon,
   ClipboardEdit as BulkEditIcon,
+  ArrowUp as SortAscIcon,
+  ArrowDown as SortDescIcon,
 };

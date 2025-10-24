@@ -42,7 +42,7 @@ const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTim
                     </div>
                      <div className="bg-gray-100 dark:bg-black/20 p-2 rounded-lg">
                         <div className="text-xs text-gray-600 dark:text-slate-400">{t('sales.table.margin')}</div>
-                        <div className="font-semibold text-green-500 flex items-center justify-center space-x-1"><TrendingUpIcon className="w-4 h-4"/><span>{(sale.totalMargin ?? 0).toFixed(0)}</span></div>
+                        <div className="font-semibold text-green-600 dark:text-green-400 flex items-center justify-center space-x-1"><TrendingUpIcon className="w-4 h-4"/><span>{(sale.totalMargin ?? 0).toFixed(0)}</span></div>
                     </div>
                 </div>
             </div>
@@ -111,7 +111,7 @@ const Sales: React.FC = () => {
                                         <td className="px-6 py-4">{sale.quantity}</td>
                                         <td className="px-6 py-4">{sale.sellPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>
                                         <td className="px-6 py-4 font-semibold">{sale.totalPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>
-                                        <td className="px-6 py-4 text-green-500 font-semibold">
+                                        <td className="px-6 py-4 text-green-600 dark:text-green-400 font-semibold">
                                             {(sale.totalMargin ?? 0).toLocaleString(locale, { style: 'currency', currency: 'DZD' })}
                                         </td>
                                         <td className="px-6 py-4">{formatTimestamp(sale.createdAt)}</td>

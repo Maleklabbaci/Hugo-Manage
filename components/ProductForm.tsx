@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Product } from '../types';
+import type { Product, ProductFormData } from '../types';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { XIcon, LoaderIcon } from './Icons';
 import { useAppContext } from '../context/AppContext';
@@ -7,9 +7,10 @@ import { useAppContext } from '../context/AppContext';
 interface ProductFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (product: Omit<Product, 'id' | 'status' | 'updatedAt'> | Product) => Promise<void>;
+  onSave: (data: ProductFormData | (Product & { productData: ProductFormData })) => Promise<void>;
   productToEdit?: Product | null;
 }
+
 
 const categories = ["Lunettes", "Montres", "Sacoches & Porte feuille", "Casquette", "Bracelet", "Ceintures", "Écharpes"];
 
@@ -24,7 +25,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
     stock: 0,
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageData, setImageData] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -37,18 +38,15 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
         sellPrice: productToEdit.sellPrice,
         stock: productToEdit.stock,
       });
-      if (productToEdit.imageUrl) {
-        setImagePreview(productToEdit.imageUrl);
-        setImageData(productToEdit.imageUrl);
-      } else {
-        setImagePreview(null);
-        setImageData(null);
-      }
+      setImagePreview(productToEdit.imageUrl || null);
     } else {
       setFormData({ name: '', category: '', supplier: '', buyPrice: 0, sellPrice: 0, stock: 0 });
-      setImagePreview(null);
-      setImageData(null);
     }
+    
+    // Reset image file and preview for both edit and new
+    setImageFile(null);
+    if (!productToEdit) setImagePreview(null);
+
   }, [productToEdit, isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -62,23 +60,23 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setImagePreview(base64String);
-        setImageData(base64String);
-      };
-      reader.readAsDataURL(file);
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const finalProductData = { ...formData, imageUrl: imageData || undefined };
+    
+    const finalProductData: ProductFormData = { 
+        ...formData,
+        imageUrl: productToEdit?.imageUrl, // Keep old imageUrl for context
+        imageFile: imageFile 
+    };
 
     if (productToEdit) {
-        await onSave({ ...productToEdit, ...finalProductData });
+        await onSave({ ...productToEdit, productData: finalProductData });
     } else {
         await onSave(finalProductData);
     }

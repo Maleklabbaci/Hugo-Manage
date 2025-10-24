@@ -3,29 +3,16 @@ import { Outlet, useLocation, Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAppContext } from '../context/AppContext';
-import { ServerIcon } from './Icons';
 import GlobalSearch from './GlobalSearch';
 import NotificationPanel from './NotificationPanel';
+import { useAppContext } from '../context/AppContext';
 
-const SupabaseBanner = () => {
-    const { t } = useAppContext();
-    return (
-        <div className="bg-amber-100 dark:bg-amber-900/40 backdrop-blur-md text-amber-800 dark:text-amber-300 p-3 text-sm text-center flex items-center justify-center border-b border-amber-300/50">
-            <ServerIcon className="w-5 h-5 me-3 flex-shrink-0" />
-            <span className="font-medium">{t('settings.supabase.unconfigured_prefix')}</span>
-            <Link to="/settings" className="font-bold underline ms-1 hover:text-amber-600 dark:hover:text-amber-200">
-                {t('settings.supabase.unconfigured_link')}
-            </Link>
-        </div>
-    )
-}
 
 const Layout: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const location = useLocation();
-  const { isConfigured } = useAppContext();
+  const { isConfigured, t } = useAppContext();
 
   return (
     <div className="flex h-screen">
@@ -37,7 +24,14 @@ const Layout: React.FC = () => {
             onSearchClick={() => setIsSearchOpen(true)}
             onNotificationClick={() => setIsNotificationsOpen(prev => !prev)}
         />
-        {!isConfigured && <SupabaseBanner />}
+        {!isConfigured && location.pathname !== '/settings' && (
+            <div className="bg-amber-500/20 text-amber-700 dark:text-amber-300 p-3 text-center text-sm font-medium">
+                {t('settings.supabase.unconfigured_prefix')}{' '}
+                <Link to="/settings" className="font-bold underline hover:text-amber-600 dark:hover:text-amber-200">
+                    {t('settings.supabase.unconfigured_link')}
+                </Link>
+            </div>
+        )}
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8 pb-20 md:pb-8">
             <AnimatePresence mode="wait">
                 <motion.div
