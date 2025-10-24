@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ShoppingCartIcon, UndoIcon, DollarSignIcon, ArchiveIcon, TrendingUpIcon } from '../components/Icons';
-import type { Language, Sale } from '../types';
+import { ShoppingCartIcon, UndoIcon, DollarSignIcon, ArchiveIcon, TrendingUpIcon, ViewDetailsIcon } from '../components/Icons';
+import type { Language, Sale, Product } from '../types';
 import { motion } from 'framer-motion';
+import ProductDetailsModal from '../components/ProductDetailsModal';
 
 const localeMap: Record<Language, string> = {
     fr: 'fr-FR',
@@ -10,7 +11,7 @@ const localeMap: Record<Language, string> = {
     ar: 'ar-SA-u-nu-latn',
 };
 
-const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTimestamp: (iso: string) => string }> = ({ sale, onCancel, formatTimestamp }) => {
+const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTimestamp: (iso: string) => string, onViewDetails: (p: Product) => void, product: Product | undefined }> = ({ sale, onCancel, formatTimestamp, onViewDetails, product }) => {
     const { t, language } = useAppContext();
     const locale = localeMap[language];
     return (
@@ -21,15 +22,28 @@ const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTim
                         <h3 className="font-bold text-gray-900 dark:text-white leading-tight">{sale.productName}</h3>
                         <p className="text-sm text-gray-600 dark:text-slate-400">{formatTimestamp(sale.createdAt)}</p>
                     </div>
-                    <motion.button 
-                        onClick={() => onCancel(sale.id)} 
-                        className="p-2 -mt-1 -me-1 rounded-full transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500" 
-                        title={t('sales.cancel_sale')}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                    >
-                        <UndoIcon className="w-5 h-5" />
-                    </motion.button>
+                    <div className="flex items-center space-x-2 -mt-1 -me-1">
+                        {product && (
+                             <motion.button 
+                                onClick={() => onViewDetails(product)} 
+                                className="p-2 rounded-full transition-colors bg-gray-500/10 hover:bg-gray-500/20 text-gray-500" 
+                                title={t('product_details.view_button')}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                            >
+                                <ViewDetailsIcon className="w-5 h-5" />
+                            </motion.button>
+                        )}
+                        <motion.button 
+                            onClick={() => onCancel(sale.id)} 
+                            className="p-2 rounded-full transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" 
+                            title={t('sales.cancel_sale')}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            <UndoIcon className="w-5 h-5" />
+                        </motion.button>
+                    </div>
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-3 text-center">
                     <div className="bg-gray-100 dark:bg-black/20 p-2 rounded-lg">
@@ -51,8 +65,10 @@ const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTim
 }
 
 const Sales: React.FC = () => {
-    const { sales, cancelSale, t, language } = useAppContext();
+    const { sales, cancelSale, t, language, products } = useAppContext();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [productToShow, setProductToShow] = useState<Product | null>(null);
     const locale = localeMap[language];
 
     useEffect(() => {
@@ -60,6 +76,11 @@ const Sales: React.FC = () => {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    const handleViewDetails = (product: Product) => {
+        setProductToShow(product);
+        setIsDetailsModalOpen(true);
+    };
 
     const formatTimestamp = (isoString: string) => {
       const date = new Date(isoString);
@@ -89,9 +110,10 @@ const Sales: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('sales.title')}</h2>
             {isMobile ? (
                 <div className="grid grid-cols-1 gap-4">
-                    {sales.map(sale => (
-                        <SaleCard key={sale.id} sale={sale} onCancel={handleCancelSale} formatTimestamp={formatTimestamp} />
-                    ))}
+                    {sales.map(sale => {
+                        const product = products.find(p => p.id === sale.productId);
+                        return <SaleCard key={sale.id} sale={sale} onCancel={handleCancelSale} formatTimestamp={formatTimestamp} onViewDetails={handleViewDetails} product={product} />
+                    })}
                 </div>
             ) : (
                 <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden">
@@ -105,32 +127,47 @@ const Sales: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {sales.map(sale => (
-                                    <tr key={sale.id} className="border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5">
-                                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">{sale.productName}</td>
-                                        <td className="px-6 py-4">{sale.quantity}</td>
-                                        <td className="px-6 py-4">{sale.sellPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>
-                                        <td className="px-6 py-4 font-semibold">{sale.totalPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>
-                                        <td className="px-6 py-4 text-green-600 dark:text-green-400 font-semibold">
-                                            {(sale.totalMargin ?? 0).toLocaleString(locale, { style: 'currency', currency: 'DZD' })}
-                                        </td>
-                                        <td className="px-6 py-4">{formatTimestamp(sale.createdAt)}</td>
-                                        <td className="px-6 py-4">
-                                            <motion.button 
-                                                onClick={() => handleCancelSale(sale.id)} 
-                                                className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500" 
-                                                title={t('sales.cancel_sale')}
-                                                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                                                <UndoIcon className="w-5 h-5" />
-                                            </motion.button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {sales.map(sale => {
+                                    const product = products.find(p => p.id === sale.productId);
+                                    return (
+                                        <tr key={sale.id} className="border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5">
+                                            <td className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">{sale.productName}</td>
+                                            <td className="px-6 py-4">{sale.quantity}</td>
+                                            <td className="px-6 py-4">{sale.sellPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>
+                                            <td className="px-6 py-4 font-semibold">{sale.totalPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>
+                                            <td className="px-6 py-4 text-green-600 dark:text-green-400 font-semibold">
+                                                {(sale.totalMargin ?? 0).toLocaleString(locale, { style: 'currency', currency: 'DZD' })}
+                                            </td>
+                                            <td className="px-6 py-4">{formatTimestamp(sale.createdAt)}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center space-x-2">
+                                                    {product && (
+                                                        <motion.button 
+                                                            onClick={() => handleViewDetails(product)} 
+                                                            className="p-2 rounded-md transition-colors bg-gray-500/10 hover:bg-gray-500/20 text-gray-500" 
+                                                            title={t('product_details.view_button')}
+                                                            whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                                            <ViewDetailsIcon className="w-5 h-5" />
+                                                        </motion.button>
+                                                    )}
+                                                    <motion.button 
+                                                        onClick={() => handleCancelSale(sale.id)} 
+                                                        className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" 
+                                                        title={t('sales.cancel_sale')}
+                                                        whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                                        <UndoIcon className="w-5 h-5" />
+                                                    </motion.button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
                 </div>
             )}
+            <ProductDetailsModal isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} product={productToShow} />
         </div>
     );
 };

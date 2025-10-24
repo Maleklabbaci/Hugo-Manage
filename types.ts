@@ -6,7 +6,7 @@ export interface Product {
   buyPrice: number;
   sellPrice: number;
   stock: number;
-  status: 'actif' | 'rupture';
+  status: 'actif' | 'rupture' | 'en livraison';
   createdAt: string; // ISO string format
   imageUrl?: string;
   ownerId?: string;
@@ -21,7 +21,7 @@ export interface ActivityLog {
   id: number;
   productId: number;
   productName: string;
-  action: 'created' | 'updated' | 'deleted' | 'sold' | 'sale_cancelled';
+  action: 'created' | 'updated' | 'deleted' | 'sold' | 'sale_cancelled' | 'delivery_set' | 'delivery_cancelled';
   details?: string;
   createdAt: string; // ISO string format
   ownerId?: string;

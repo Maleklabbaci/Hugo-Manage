@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import {
   LayoutDashboard,
@@ -40,6 +41,9 @@ import {
   ClipboardEdit,
   ArrowUp,
   ArrowDown,
+  Truck,
+  CheckCircle2,
+  Eye,
 } from 'lucide-react';
 
 export const ChezHugoLogo: React.FC<{ className?: string }> = ({ className }) => {
@@ -98,4 +102,7 @@ export {
   ClipboardEdit as BulkEditIcon,
   ArrowUp as SortAscIcon,
   ArrowDown as SortDescIcon,
+  Truck as DeliveryIcon,
+  CheckCircle2 as MarkDeliveredIcon,
+  Eye as ViewDetailsIcon,
 };

@@ -1,12 +1,14 @@
 
 
+
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import type { Product, BulkUpdatePayload, ProductFormData } from '../types';
 import ProductForm from '../components/ProductForm';
 import SaleModal from '../components/SaleModal';
 import BulkEditForm from '../components/BulkEditForm';
-import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, MoreVerticalIcon, UploadIcon, LoaderIcon, BulkEditIcon, SortAscIcon, SortDescIcon } from '../components/Icons';
+import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, MoreVerticalIcon, UploadIcon, LoaderIcon, BulkEditIcon, SortAscIcon, SortDescIcon, DeliveryIcon } from '../components/Icons';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const calculateMargin = (product: Product) => {
@@ -14,8 +16,8 @@ const calculateMargin = (product: Product) => {
   return (((product.sellPrice - product.buyPrice) / product.sellPrice) * 100).toFixed(1);
 };
 
-const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, isSelected: boolean, onEdit: (p: Product) => void, onSell: (p: Product) => void, onDuplicate: (id: number) => void, onDelete: (id: number) => void }> = 
-({ product, onSelect, isSelected, onEdit, onSell, onDuplicate, onDelete }) => {
+const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, isSelected: boolean, onEdit: (p: Product) => void, onSell: (p: Product) => void, onDuplicate: (id: number) => void, onDelete: (id: number) => void, onSetDelivery: (id: number) => void }> = 
+({ product, onSelect, isSelected, onEdit, onSell, onDuplicate, onDelete, onSetDelivery }) => {
   const { t } = useAppContext();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -87,9 +89,10 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
                   initial={{ opacity: 0, scale: 0.9, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  className="absolute bottom-12 right-0 bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-lg shadow-lg w-40 z-10 overflow-hidden"
+                  className="absolute bottom-12 right-0 bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-lg shadow-lg w-48 z-10 overflow-hidden"
                 >
                   <button onClick={() => { onEdit(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><EditIcon className="w-4 h-4 me-2"/> {t('edit')}</button>
+                  <button onClick={() => { onSetDelivery(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><DeliveryIcon className="w-4 h-4 me-2"/> {t('products.actions.set_delivery')}</button>
                   <button onClick={() => { onDuplicate(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><DuplicateIcon className="w-4 h-4 me-2"/> {t('duplicate')}</button>
                   <div className="h-px bg-gray-200 dark:bg-white/10 my-1"></div>
                   <button onClick={() => { onDelete(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-red-500 hover:bg-red-500/10"><DeleteIcon className="w-4 h-4 me-2"/> {t('delete')}</button>
@@ -104,9 +107,9 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
 };
 
 const Products: React.FC = () => {
-  type SortKey = 'name' | 'sellPrice' | 'stock' | 'createdAt';
+  type SortKey = 'name' | 'buyPrice' | 'sellPrice' | 'stock' | 'createdAt';
   
-  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts, updateMultipleProducts } = useAppContext();
+  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts, updateMultipleProducts, setProductToDelivery } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
@@ -161,16 +164,18 @@ const Products: React.FC = () => {
     return sortable;
   }, [products, sortKey, sortDirection]);
 
+  const availableProducts = useMemo(() => sortedProducts.filter(p => p.status !== 'en livraison'), [sortedProducts]);
+
   const filteredProducts = useMemo(() => {
     if (!searchQuery) {
-        return sortedProducts;
+        return availableProducts;
     }
-    return sortedProducts.filter(product =>
+    return availableProducts.filter(product =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.supplier.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [sortedProducts, searchQuery]);
+  }, [availableProducts, searchQuery]);
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * productsPerPage;
@@ -371,7 +376,10 @@ const Products: React.FC = () => {
 
   const SortableHeader: React.FC<{ sortableKey: SortKey, children: React.ReactNode }> = ({ sortableKey, children }) => (
     <th scope="col" className="px-6 py-3">
-        <button className="flex items-center space-x-1" onClick={() => handleSort(sortableKey)}>
+        <button 
+            className="flex items-center space-x-1 hover:bg-gray-100 dark:hover:bg-white/10 px-2 py-1 -mx-2 -my-1 rounded-md transition-colors" 
+            onClick={() => handleSort(sortableKey)}
+        >
             <span>{children}</span>
             {sortKey === sortableKey && (
                 sortDirection === 'asc' ? <SortAscIcon className="w-4 h-4" /> : <SortDescIcon className="w-4 h-4" />
@@ -436,6 +444,8 @@ const Products: React.FC = () => {
                 <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="createdAt_asc">{t('products.sort.created_at_asc')}</option>
                 <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="name_asc">{t('products.sort.name_asc')}</option>
                 <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="name_desc">{t('products.sort.name_desc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="buyPrice_asc">{t('products.sort.buy_price_asc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="buyPrice_desc">{t('products.sort.buy_price_desc')}</option>
                 <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="sellPrice_asc">{t('products.sort.sell_price_asc')}</option>
                 <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="sellPrice_desc">{t('products.sort.sell_price_desc')}</option>
                 <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="stock_desc">{t('products.sort.stock_desc')}</option>
@@ -483,6 +493,7 @@ const Products: React.FC = () => {
               onSell={handleOpenSaleModal}
               onDuplicate={duplicateProduct}
               onDelete={handleDelete}
+              onSetDelivery={setProductToDelivery}
             />
           ))}
         </div>
@@ -490,7 +501,7 @@ const Products: React.FC = () => {
         <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left rtl:text-right text-gray-600 dark:text-slate-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-white/5 dark:text-slate-300">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-900/50 dark:text-slate-300">
                 <tr>
                   <th scope="col" className="p-4">
                       <div className="flex items-center">
@@ -507,7 +518,7 @@ const Products: React.FC = () => {
                   <th scope="col" className="px-6 py-3">{t('products.table.image')}</th>
                   <SortableHeader sortableKey="name">{t('products.table.name')}</SortableHeader>
                   <th scope="col" className="px-6 py-3">{t('products.table.category')}</th>
-                  <th scope="col" className="px-6 py-3">{t('products.table.buy_price')}</th>
+                  <SortableHeader sortableKey="buyPrice">{t('products.table.buy_price')}</SortableHeader>
                   <SortableHeader sortableKey="sellPrice">{t('products.table.sell_price')}</SortableHeader>
                   <SortableHeader sortableKey="stock">{t('products.table.stock')}</SortableHeader>
                   <th scope="col" className="px-6 py-3">{t('products.table.margin')}</th>
@@ -554,6 +565,14 @@ const Products: React.FC = () => {
                     <td className="px-6 py-4 text-xs whitespace-nowrap">{timeAgo(product.createdAt)}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
+                          <motion.button 
+                              onClick={() => setProductToDelivery(product.id)}
+                              className="p-2 rounded-md transition-colors bg-sky-500/10 hover:bg-sky-500/20 text-sky-500"
+                              title={t('products.actions.set_delivery')}
+                              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                          >
+                            <DeliveryIcon className="w-5 h-5" />
+                          </motion.button>
                           <motion.button 
                               onClick={() => handleOpenSaleModal(product)} 
                               className="p-2 rounded-md transition-colors bg-green-500/10 hover:bg-green-500/20 text-green-500 disabled:bg-slate-500/10 disabled:text-slate-500 disabled:cursor-not-allowed"

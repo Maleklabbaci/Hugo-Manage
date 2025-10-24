@@ -26,6 +26,18 @@ const mapSupabaseRecordToProduct = (p: any): Product => ({
   ownerId: p.owner_id
 });
 
+const mapSupabaseRecordToSale = (s: any): Sale => ({
+  id: s.id,
+  productId: s.product_id,
+  productName: s.productname || '',
+  quantity: s.quantity ?? 0,
+  sellPrice: s.sellprice ?? 0,
+  totalPrice: s.totalprice ?? 0,
+  totalMargin: s.totalmargin ?? 0,
+  createdAt: s.created_at,
+  ownerId: s.owner_id
+});
+
 interface AppContextType {
   products: Product[];
   sales: Sale[];
@@ -49,6 +61,9 @@ interface AppContextType {
   deleteProduct: (productId: number) => Promise<void>;
   deleteMultipleProducts: (productIds: number[]) => Promise<void>;
   duplicateProduct: (productId: number) => Promise<void>;
+  setProductToDelivery: (productId: number) => Promise<void>;
+  confirmSaleFromDelivery: (productId: number) => Promise<void>;
+  cancelDelivery: (productId: number) => Promise<void>;
   addSale: (productId: number, quantity: number) => Promise<void>;
   cancelSale: (saleId: number) => Promise<void>;
   markNotificationAsRead: (productId: number) => void;
@@ -159,11 +174,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (logRes.error) throw logRes.error;
 
       setProducts(productsRes.data.map(mapSupabaseRecordToProduct));
-      setSales((salesRes.data || []).map((s: any) => ({
-        id: s.id, productId: s.product_id, productName: s.productname || '', quantity: s.quantity ?? 0,
-        sellPrice: s.sellprice ?? 0, totalPrice: s.totalprice ?? 0, totalMargin: s.totalmargin ?? 0,
-        createdAt: s.created_at, ownerId: s.owner_id
-      })));
+      setSales((salesRes.data || []).map(mapSupabaseRecordToSale));
       setActivityLog((logRes.data || []).map((l: any) => ({
         id: l.id, productId: l.product_id, productName: l.productname || '', action: l.action,
         details: l.details, createdAt: l.created_at, ownerId: l.owner_id
@@ -290,7 +301,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setProducts(prev => prev.map(p => p.id === product.id ? updatedProduct : p));
 
       const changes: string[] = [];
-      const keysToCompare: (keyof Omit<Product, 'id'|'createdAt'|'status'|'imageUrl'|'ownerId'>)[] = ['name', 'category', 'supplier', 'buyPrice', 'sellPrice', 'stock'];
+      const keysToCompare: (keyof Omit<Product, 'id'|'createdAt'|'status'|'imageUrl'|'ownerId'|'en livraison'>)[] = ['name', 'category', 'supplier', 'buyPrice', 'sellPrice', 'stock'];
       keysToCompare.forEach(key => {
         if (product[key] !== updatedProduct[key]) {
           changes.push(`${t('log.' + key)}: "${product[key]}" -> "${updatedProduct[key]}"`);
@@ -403,7 +414,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         await logActivity('created', result, t('history.log.duplicated', { productName: productToDuplicate.name }));
     }
   };
-
+  
   const addSale = async (productId: number, quantity: number) => {
     if (!supabaseClient || !user) return;
     const product = products.find(p => p.id === productId);
@@ -429,10 +440,86 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else {
         const updatedProduct = mapSupabaseRecordToProduct(updatedProductData);
         setProducts(prev => prev.map(p => p.id === productId ? updatedProduct : p));
-        setSales(prev => [saleData, ...prev]);
+        setSales(prev => [mapSupabaseRecordToSale(saleData), ...prev]);
         await logActivity('sold', product, t('history.log.units_sold', {quantity}));
     }
   };
+  
+  const setProductToDelivery = async (productId: number) => {
+    if (!supabaseClient) return;
+    const productToUpdate = products.find(p => p.id === productId);
+    if (!productToUpdate) return;
+
+    const { data, error } = await supabaseClient.from('products').update({ status: 'en livraison' }).eq('id', productId).select().single();
+
+    if (error) {
+      alert(error.message);
+    } else {
+      const updatedProduct = mapSupabaseRecordToProduct(data);
+      setProducts(prev => prev.map(p => (p.id === productId ? updatedProduct : p)));
+      await logActivity('delivery_set', updatedProduct);
+    }
+  };
+
+  const confirmSaleFromDelivery = async (productId: number) => {
+    if (!supabaseClient || !user) return;
+    const product = products.find(p => p.id === productId);
+    if (!product || product.status !== 'en livraison') {
+      console.warn("Attempted to confirm sale for a product not in delivery.", productId);
+      return;
+    }
+
+    const newStock = product.stock - 1;
+    const newStatus = newStock > 0 ? 'actif' : 'rupture';
+
+    const { data: updatedProductData, error: stockUpdateError } = await supabaseClient.from('products')
+      .update({ stock: newStock, status: newStatus })
+      .eq('id', productId).select().single();
+    
+    if (stockUpdateError) { 
+      alert(stockUpdateError.message); 
+      return; 
+    }
+
+    const salePayload = {
+        product_id: productId,
+        productname: product.name,
+        quantity: 1,
+        sellprice: product.sellPrice,
+        totalprice: product.sellPrice * 1,
+        totalmargin: (product.sellPrice - product.buyPrice) * 1,
+        owner_id: user.id,
+    };
+    const { data: saleData, error: saleInsertError } = await supabaseClient.from('sales').insert(salePayload).select().single();
+
+    if (saleInsertError) {
+        alert(saleInsertError.message);
+        await supabaseClient.from('products').update({ stock: product.stock, status: product.status }).eq('id', productId);
+    } else {
+        const updatedProduct = mapSupabaseRecordToProduct(updatedProductData);
+        setProducts(prev => prev.map(p => p.id === productId ? updatedProduct : p));
+        setSales(prev => [mapSupabaseRecordToSale(saleData), ...prev]);
+        await logActivity('sold', product, t('history.log.units_sold_from_delivery', { quantity: 1 }));
+    }
+  };
+  
+  const cancelDelivery = async (productId: number) => {
+    if (!supabaseClient) return;
+    const productToUpdate = products.find(p => p.id === productId);
+    if (!productToUpdate) return;
+    
+    const newStatus = productToUpdate.stock > 0 ? 'actif' : 'rupture';
+    const { data, error } = await supabaseClient.from('products').update({ status: newStatus }).eq('id', productId).select().single();
+    
+    if(error) {
+        alert(error.message);
+    } else {
+      const updatedProduct = mapSupabaseRecordToProduct(data);
+      setProducts(prev => prev.map(p => (p.id === productId ? updatedProduct : p)));
+      await logActivity('delivery_cancelled', updatedProduct);
+    }
+  };
+
 
   const cancelSale = async (saleId: number) => {
     if (!supabaseClient) return;
@@ -447,8 +534,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const product = products.find(p => p.id === saleToCancel.productId);
     if (product) {
       const newStock = product.stock + saleToCancel.quantity;
+      const newStatus = newStock > 0 ? 'actif' : 'rupture';
       const { data, error: stockUpdateError } = await supabaseClient.from('products')
-        .update({ stock: newStock, status: 'actif' }).eq('id', product.id).select().single();
+        .update({ stock: newStock, status: newStatus }).eq('id', product.id).select().single();
 
       if (stockUpdateError) {
         alert(t('sales.error_restoring_stock'));
@@ -472,7 +560,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     products, sales, activityLog, theme, language, isLoading,
     session, user, notifications, setTheme, setLanguage, t, login, logout,
     addProduct, addMultipleProducts, updateProduct, updateMultipleProducts, deleteProduct, deleteMultipleProducts, 
-    duplicateProduct, addSale, cancelSale, markNotificationAsRead, markAllNotificationsAsRead,
+    duplicateProduct, setProductToDelivery, confirmSaleFromDelivery, cancelDelivery, addSale, cancelSale, markNotificationAsRead, markAllNotificationsAsRead,
     isConfigured, saveSupabaseCredentials,
   };
 

@@ -1,4 +1,3 @@
-
 import type { Language } from './types';
 
 export const translations: Record<Language, Record<string, string>> = {
@@ -17,6 +16,7 @@ export const translations: Record<Language, Record<string, string>> = {
     // Sidebar
     'sidebar.dashboard': 'Dashboard',
     'sidebar.products': 'Produits',
+    'sidebar.delivery': 'Livraison',
     'sidebar.sales': 'Ventes',
     'sidebar.statistics': 'Statistiques',
     'sidebar.history': 'Journal',
@@ -25,6 +25,7 @@ export const translations: Record<Language, Record<string, string>> = {
     // Header
     'header.dashboard': 'Dashboard',
     'header.products': 'Gestion des Produits',
+    'header.delivery': 'Suivi des Livraisons',
     'header.sales': 'Historique des Ventes',
     'header.statistics': 'Statistiques',
     'header.history': "Journal d'activité",
@@ -84,6 +85,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.table.last_updated': 'Date Création',
     'products.status.active': 'actif',
     'products.status.out_of_stock': 'rupture',
+    'products.status.delivery': 'en livraison',
+    'products.actions.set_delivery': 'Mettre en livraison',
     'products.pagination': 'Page {currentPage} sur {totalPages}',
     'products.time_ago.now': "à l'instant",
     'products.time_ago.minutes': 'Il y a {count} min',
@@ -93,6 +96,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.sort.sort_by': 'Trier par',
     'products.sort.name_asc': 'Nom (A-Z)',
     'products.sort.name_desc': 'Nom (Z-A)',
+    'products.sort.buy_price_asc': "Prix d'achat (Bas-Haut)",
+    'products.sort.buy_price_desc': "Prix d'achat (Haut-Bas)",
     'products.sort.sell_price_asc': 'Prix (Bas-Haut)',
     'products.sort.sell_price_desc': 'Prix (Haut-Bas)',
     'products.sort.stock_asc': 'Stock (Bas-Haut)',
@@ -113,6 +118,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'product_form.sell_price_label': 'Prix de vente',
     'product_form.error_add': "Erreur lors de l'ajout du produit : {error}",
     'product_form.error_update': 'Erreur lors de la mise à jour du produit : {error}',
+    
+    // Product Details Modal
+    'product_details.view_button': 'Voir les détails',
 
     // Bulk Edit Form
     'bulk_edit_form.title': 'Édition groupée de {count} produits',
@@ -162,8 +170,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'history.action.deleted': 'Produit "{productName}" supprimé',
     'history.action.sold': 'Vente: {productName}',
     'history.action.sale_cancelled': 'Vente annulée: {productName}',
+    'history.action.delivery_set': 'Produit "{productName}" mis en livraison',
+    'history.action.delivery_cancelled': 'Livraison du produit "{productName}" annulée',
     'history.action.unknown': 'Action inconnue',
     'history.log.units_sold': '{quantity} unité(s) vendue(s)',
+    'history.log.units_sold_from_delivery': 'Vente depuis livraison: {quantity} unité(s) vendue(s)',
     'history.log.sale_cancelled': 'Vente de {quantity} unité(s) annulée.',
     'history.log.sale_cancelled_deleted_product': 'Vente annulée (produit supprimé).',
     'history.log.bulk_delete': 'Supprimé via action groupée',
@@ -183,6 +194,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'statistics.chart.products': 'produits',
     'statistics.weekly_sales_growth': 'Croissance Ventes (hebdo)',
     
+    // Delivery Page
+    'delivery.title': 'Produits en livraison',
+    'delivery.empty.title': 'Aucun produit en livraison',
+    'delivery.empty.subtitle': 'Vous pouvez marquer un produit comme "en livraison" depuis la page des produits.',
+    'delivery.confirm_sale': 'Confirmer la Vente',
+    'delivery.cancel_delivery': 'Annuler la livraison',
+    'delivery.confirm_cancel': 'Êtes-vous sûr de vouloir annuler cette livraison ? Le produit retournera au stock.',
+    'delivery.table.delivered_at': 'Mis en livraison',
+
     // Settings Page
     'settings.theme_title': 'Thème',
     'settings.theme_select': "Choisir le thème de l'application :",
@@ -248,6 +268,7 @@ export const translations: Record<Language, Record<string, string>> = {
 
     'sidebar.dashboard': 'Dashboard',
     'sidebar.products': 'Products',
+    'sidebar.delivery': 'Delivery',
     'sidebar.sales': 'Sales',
     'sidebar.statistics': 'Statistics',
     'sidebar.history': 'History',
@@ -255,6 +276,7 @@ export const translations: Record<Language, Record<string, string>> = {
     
     'header.dashboard': 'Dashboard',
     'header.products': 'Product Management',
+    'header.delivery': 'Delivery Tracking',
     'header.sales': 'Sales History',
     'header.statistics': 'Statistics',
     'header.history': 'Activity Log',
@@ -311,6 +333,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.table.last_updated': 'Date Created',
     'products.status.active': 'active',
     'products.status.out_of_stock': 'out of stock',
+    'products.status.delivery': 'in delivery',
+    'products.actions.set_delivery': 'Set to delivery',
     'products.pagination': 'Page {currentPage} of {totalPages}',
     'products.time_ago.now': 'just now',
     'products.time_ago.minutes': '{count} min ago',
@@ -320,6 +344,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.sort.sort_by': 'Sort by',
     'products.sort.name_asc': 'Name (A-Z)',
     'products.sort.name_desc': 'Name (Z-A)',
+    'products.sort.buy_price_asc': 'Buy Price (Low-High)',
+    'products.sort.buy_price_desc': 'Buy Price (High-Low)',
     'products.sort.sell_price_asc': 'Sell Price (Low-High)',
     'products.sort.sell_price_desc': 'Sell Price (High-Low)',
     'products.sort.stock_asc': 'Stock (Low-High)',
@@ -340,6 +366,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'product_form.error_add': 'Error adding product: {error}',
     'product_form.error_update': 'Error updating product: {error}',
     
+    'product_details.view_button': 'View Details',
+
     // Bulk Edit Form
     'bulk_edit_form.title': 'Bulk Edit {count} Products',
     'bulk_edit_form.description': 'Only checked fields will be updated. Unchecked fields will not be changed.',
@@ -385,8 +413,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'history.action.deleted': 'Product "{productName}" deleted',
     'history.action.sold': 'Sale: {productName}',
     'history.action.sale_cancelled': 'Sale cancelled: {productName}',
+    'history.action.delivery_set': 'Product "{productName}" set to delivery',
+    'history.action.delivery_cancelled': 'Delivery for product "{productName}" cancelled',
     'history.action.unknown': 'Unknown action',
     'history.log.units_sold': '{quantity} unit(s) sold',
+    'history.log.units_sold_from_delivery': 'Sale from delivery: {quantity} unit(s) sold',
     'history.log.sale_cancelled': 'Sale of {quantity} unit(s) cancelled.',
     'history.log.sale_cancelled_deleted_product': 'Sale cancelled (product was deleted).',
     'history.log.bulk_delete': 'Deleted via bulk action',
@@ -404,6 +435,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'statistics.chart.potential_profit': 'Potential Profit',
     'statistics.chart.products': 'products',
     'statistics.weekly_sales_growth': 'Weekly Sales Growth',
+
+    // Delivery Page
+    'delivery.title': 'Products in Delivery',
+    'delivery.empty.title': 'No Products in Delivery',
+    'delivery.empty.subtitle': 'You can mark a product as "in delivery" from the products page.',
+    'delivery.confirm_sale': 'Confirm Sale',
+    'delivery.cancel_delivery': 'Cancel Delivery',
+    'delivery.confirm_cancel': 'Are you sure you want to cancel this delivery? The product will be returned to stock.',
+    'delivery.table.delivered_at': 'Set to delivery at',
 
     'settings.theme_title': 'Theme',
     'settings.theme_select': 'Choose the application theme:',
@@ -467,6 +507,7 @@ export const translations: Record<Language, Record<string, string>> = {
 
     'sidebar.dashboard': 'لوحة التحكم',
     'sidebar.products': 'المنتجات',
+    'sidebar.delivery': 'التوصيل',
     'sidebar.sales': 'المبيعات',
     'sidebar.statistics': 'الإحصائيات',
     'sidebar.history': 'السجل',
@@ -474,6 +515,7 @@ export const translations: Record<Language, Record<string, string>> = {
 
     'header.dashboard': 'لوحة التحكم',
     'header.products': 'إدارة المنتجات',
+    'header.delivery': 'متابعة التوصيل',
     'header.sales': 'سجل المبيعات',
     'header.statistics': 'الإحصائيات',
     'header.history': 'سجل النشاط',
@@ -530,6 +572,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.table.last_updated': 'تاريخ الإنشاء',
     'products.status.active': 'نشط',
     'products.status.out_of_stock': 'غير متوفر',
+    'products.status.delivery': 'قيد التوصيل',
+    'products.actions.set_delivery': 'إرسال للتوصيل',
     'products.pagination': 'صفحة {currentPage} من {totalPages}',
     'products.time_ago.now': 'الآن',
     'products.time_ago.minutes': 'منذ {count} دقيقة',
@@ -539,6 +583,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.sort.sort_by': 'فرز حسب',
     'products.sort.name_asc': 'الاسم (أ-ي)',
     'products.sort.name_desc': 'الاسم (ي-أ)',
+    'products.sort.buy_price_asc': 'سعر الشراء (منخفض-مرتفع)',
+    'products.sort.buy_price_desc': 'سعر الشراء (مرتفع-منخفض)',
     'products.sort.sell_price_asc': 'السعر (منخفض-مرتفع)',
     'products.sort.sell_price_desc': 'السعر (مرتفع-منخفض)',
     'products.sort.stock_asc': 'المخزون (منخفض-مرتفع)',
@@ -559,6 +605,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'product_form.error_add': 'خطأ في إضافة المنتج: {error}',
     'product_form.error_update': 'خطأ في تحديث المنتج: {error}',
 
+    'product_details.view_button': 'عرض التفاصيل',
+    
     // Bulk Edit Form
     'bulk_edit_form.title': 'تعديل جماعي لـ {count} منتجات',
     'bulk_edit_form.description': 'سيتم تحديث الحقول المحددة فقط. لن يتم تغيير الحقول غير المحددة.',
@@ -604,8 +652,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'history.action.deleted': 'تم حذف المنتج "{productName}"',
     'history.action.sold': 'بيع: {productName}',
     'history.action.sale_cancelled': 'تم إلغاء البيع: {productName}',
+    'history.action.delivery_set': 'تم إرسال المنتج "{productName}" للتوصيل',
+    'history.action.delivery_cancelled': 'تم إلغاء توصيل المنتج "{productName}"',
     'history.action.unknown': 'إجراء غير معروف',
     'history.log.units_sold': 'تم بيع {quantity} وحدة (وحدات)',
+    'history.log.units_sold_from_delivery': 'بيع من التوصيل: تم بيع {quantity} وحدة (وحدات)',
     'history.log.sale_cancelled': 'تم إلغاء بيع {quantity} وحدة (وحدات).',
     'history.log.sale_cancelled_deleted_product': 'تم إلغاء البيع (تم حذف المنتج).',
     'history.log.bulk_delete': 'تم الحذف عبر إجراء جماعي',
@@ -624,6 +675,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'statistics.chart.products': 'منتجات',
     'statistics.weekly_sales_growth': 'نمو المبيعات (أسبوعي)',
 
+    // Delivery Page
+    'delivery.title': 'منتجات قيد التوصيل',
+    'delivery.empty.title': 'لا توجد منتجات قيد التوصيل',
+    'delivery.empty.subtitle': 'يمكنك تحديد منتج كـ "قيد التوصيل" من صفحة المنتجات.',
+    'delivery.confirm_sale': 'تأكيد البيع',
+    'delivery.cancel_delivery': 'إلغاء التوصيل',
+    'delivery.confirm_cancel': 'هل أنت متأكد أنك تريد إلغاء هذا التوصيل؟ سيعود المنتج إلى المخزون.',
+    'delivery.table.delivered_at': 'أرسل للتوصيل في',
+    
     'settings.theme_title': 'المظهر',
     'settings.theme_select': 'اختر مظهر التطبيق:',
     'settings.language_title': 'اللغة',

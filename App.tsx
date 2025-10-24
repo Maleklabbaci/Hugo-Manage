@@ -4,6 +4,7 @@ import { AppProvider, useAppContext } from './context/AppContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
+import Delivery from './pages/Delivery';
 import Statistics from './pages/Statistics';
 import Settings from './pages/Settings';
 import History from './pages/History';
@@ -50,6 +51,7 @@ const AppRoutes: React.FC = () => {
                         <Route path="/" element={<Navigate to="/dashboard" replace />} />
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/products" element={<Products />} />
+                        <Route path="/delivery" element={<Delivery />} />
                         <Route path="/sales" element={<Sales />} />
                         <Route path="/statistics" element={<Statistics />} />
                         <Route path="/history" element={<History />} />
