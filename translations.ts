@@ -67,6 +67,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.import.error_format': 'Format CSV invalide. Colonnes requises manquantes: {columns}',
     'products.import.error_no_products_found': 'Aucun produit valide trouvé dans le fichier. Veuillez vérifier le format du fichier.',
     'products.search_placeholder': 'Rechercher un produit...',
+    'products.filter.low_stock': 'Stock faible',
     'products.no_results_title': 'Aucun produit trouvé',
     'products.no_results_subtitle': 'Essayez de modifier vos critères de recherche.',
     'products.selected_text': '{count} produit(s) sélectionné(s)',
@@ -202,6 +203,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'delivery.cancel_delivery': 'Annuler la livraison',
     'delivery.confirm_cancel': 'Êtes-vous sûr de vouloir annuler cette livraison ? Le produit retournera au stock.',
     'delivery.table.delivered_at': 'Mis en livraison',
+    'delivery.total_items': 'Articles en livraison',
+    'delivery.total_value': 'Valeur en livraison',
 
     // Settings Page
     'settings.theme_title': 'Thème',
@@ -315,6 +318,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.import.error_format': 'Invalid CSV format. Missing required columns: {columns}',
     'products.import.error_no_products_found': 'No valid products found in the file. Please check the file format.',
     'products.search_placeholder': 'Search for a product...',
+    'products.filter.low_stock': 'Low Stock',
     'products.no_results_title': 'No products found',
     'products.no_results_subtitle': 'Try changing your search criteria.',
     'products.selected_text': '{count} product(s) selected',
@@ -444,6 +448,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'delivery.cancel_delivery': 'Cancel Delivery',
     'delivery.confirm_cancel': 'Are you sure you want to cancel this delivery? The product will be returned to stock.',
     'delivery.table.delivered_at': 'Set to delivery at',
+    'delivery.total_items': 'Items in Delivery',
+    'delivery.total_value': 'Value in Delivery',
 
     'settings.theme_title': 'Theme',
     'settings.theme_select': 'Choose the application theme:',
@@ -554,6 +560,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'products.import.error_format': 'تنسيق CSV غير صالح. الأعمدة المطلوبة مفقودة: {columns}',
     'products.import.error_no_products_found': 'لم يتم العثور على منتجات صالحة في الملف. يرجى التحقق من تنسيق الملف.',
     'products.search_placeholder': 'ابحث عن منتج...',
+    'products.filter.low_stock': 'مخزون منخفض',
     'products.no_results_title': 'لم يتم العثور على منتجات',
     'products.no_results_subtitle': 'حاول تغيير معايير البحث الخاصة بك.',
     'products.selected_text': '{count} منتج (منتجات) محددة',
@@ -683,6 +690,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'delivery.cancel_delivery': 'إلغاء التوصيل',
     'delivery.confirm_cancel': 'هل أنت متأكد أنك تريد إلغاء هذا التوصيل؟ سيعود المنتج إلى المخزون.',
     'delivery.table.delivered_at': 'أرسل للتوصيل في',
+    'delivery.total_items': 'عناصر قيد التوصيل',
+    'delivery.total_value': 'القيمة قيد التوصيل',
     
     'settings.theme_title': 'المظهر',
     'settings.theme_select': 'اختر مظهر التطبيق:',

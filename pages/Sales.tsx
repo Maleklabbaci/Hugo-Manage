@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ShoppingCartIcon, UndoIcon, DollarSignIcon, ArchiveIcon, TrendingUpIcon, ViewDetailsIcon } from '../components/Icons';
+import { ShoppingCartIcon, UndoIcon, DollarSignIcon, ArchiveIcon, TrendingUpIcon, ViewDetailsIcon, PiggyBankIcon } from '../components/Icons';
 import type { Language, Sale, Product } from '../types';
 import { motion } from 'framer-motion';
 import ProductDetailsModal from '../components/ProductDetailsModal';
+import StatCard from '../components/StatCard';
 
 const localeMap: Record<Language, string> = {
     fr: 'fr-FR',
@@ -71,6 +72,13 @@ const Sales: React.FC = () => {
     const [productToShow, setProductToShow] = useState<Product | null>(null);
     const locale = localeMap[language];
 
+    const salesStats = useMemo(() => {
+        const totalRevenue = sales.reduce((acc, s) => acc + s.totalPrice, 0);
+        const totalProfit = sales.reduce((acc, s) => acc + (s.totalMargin || 0), 0);
+        const unitsSold = sales.reduce((acc, s) => acc + s.quantity, 0);
+        return { totalRevenue, totalProfit, unitsSold };
+    }, [sales]);
+
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
@@ -108,6 +116,13 @@ const Sales: React.FC = () => {
     return (
         <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('sales.title')}</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <StatCard icon={DollarSignIcon} title={t('dashboard.sales_revenue')} value={`${salesStats.totalRevenue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
+                <StatCard icon={PiggyBankIcon} title={t('dashboard.sales_profit')} value={`${salesStats.totalProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
+                <StatCard icon={ShoppingCartIcon} title={t('dashboard.units_sold')} value={salesStats.unitsSold} />
+            </div>
+
             {isMobile ? (
                 <div className="grid grid-cols-1 gap-4">
                     {sales.map(sale => {

@@ -2,13 +2,15 @@
 
 
 
+
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
 import type { Product, BulkUpdatePayload, ProductFormData } from '../types';
 import ProductForm from '../components/ProductForm';
 import SaleModal from '../components/SaleModal';
 import BulkEditForm from '../components/BulkEditForm';
-import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, MoreVerticalIcon, UploadIcon, LoaderIcon, BulkEditIcon, SortAscIcon, SortDescIcon, DeliveryIcon } from '../components/Icons';
+import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, MoreVerticalIcon, UploadIcon, LoaderIcon, BulkEditIcon, SortAscIcon, SortDescIcon, DeliveryIcon, AlertCircleIcon } from '../components/Icons';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const calculateMargin = (product: Product) => {
@@ -122,6 +124,7 @@ const Products: React.FC = () => {
   const [isImporting, setIsImporting] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [showLowStockOnly, setShowLowStockOnly] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const productsPerPage = 30;
@@ -167,15 +170,22 @@ const Products: React.FC = () => {
   const availableProducts = useMemo(() => sortedProducts.filter(p => p.status !== 'en livraison'), [sortedProducts]);
 
   const filteredProducts = useMemo(() => {
-    if (!searchQuery) {
-        return availableProducts;
+    let intermediateResults = availableProducts;
+
+    if (showLowStockOnly) {
+        intermediateResults = intermediateResults.filter(product => product.stock > 0 && product.stock <= 5);
     }
-    return availableProducts.filter(product =>
+    
+    if (!searchQuery) {
+        return intermediateResults;
+    }
+
+    return intermediateResults.filter(product =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.supplier.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [availableProducts, searchQuery]);
+  }, [availableProducts, searchQuery, showLowStockOnly]);
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * productsPerPage;
@@ -184,7 +194,7 @@ const Products: React.FC = () => {
   
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, sortKey, sortDirection]);
+  }, [searchQuery, sortKey, sortDirection, showLowStockOnly]);
 
   useEffect(() => {
     setSelectedProducts([]);
@@ -430,6 +440,19 @@ const Products: React.FC = () => {
                 className="w-full ps-10 pr-4 py-2 bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
             />
         </div>
+        <motion.button
+            onClick={() => setShowLowStockOnly(!showLowStockOnly)}
+            className={`flex items-center font-semibold rounded-lg px-3 py-2 text-sm transition-colors ${
+                showLowStockOnly 
+                ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300 ring-1 ring-amber-500/50' 
+                : 'bg-white dark:bg-white/10 text-gray-700 dark:text-slate-200 border border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/20'
+            }`}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+        >
+            <AlertCircleIcon className="w-5 h-5 me-2" />
+            {t('products.filter.low_stock')}
+        </motion.button>
         {isMobile && (
             <select
                 value={`${sortKey}_${sortDirection}`}

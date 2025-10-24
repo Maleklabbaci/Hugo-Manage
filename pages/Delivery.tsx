@@ -1,9 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import type { Product, Language } from '../types';
-import { DeliveryIcon, MarkDeliveredIcon, ProductsIcon, UndoIcon, ViewDetailsIcon } from '../components/Icons';
+import { DeliveryIcon, MarkDeliveredIcon, ProductsIcon, UndoIcon, ViewDetailsIcon, DollarSignIcon } from '../components/Icons';
 import { motion } from 'framer-motion';
 import ProductDetailsModal from '../components/ProductDetailsModal';
+import StatCard from '../components/StatCard';
 
 const localeMap: Record<Language, string> = {
     fr: 'fr-FR',
@@ -42,7 +43,10 @@ const DeliveryCard: React.FC<{ product: Product, onConfirmSale: (id: number) => 
                 <div className="flex-1">
                     <h3 className="font-bold text-gray-900 dark:text-white leading-tight">{product.name}</h3>
                     <p className="text-sm text-gray-600 dark:text-slate-400">{product.category}</p>
-                    <p className="font-semibold text-lg text-gray-900 dark:text-white mt-2">{product.sellPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</p>
+                    <div className="flex items-baseline space-x-4 mt-2">
+                        <p className="font-semibold text-lg text-gray-900 dark:text-white">{product.sellPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</p>
+                        <p className="text-sm text-gray-500 dark:text-slate-400">{t('products.table.stock')}: <span className="font-semibold">{product.stock}</span></p>
+                    </div>
                     <p className="text-xs text-gray-500 dark:text-slate-500 mt-1">{t('delivery.table.delivered_at')}: {formatTimestamp(product.createdAt)}</p>
                 </div>
             </div>
@@ -88,10 +92,17 @@ const Delivery: React.FC = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [productToShow, setProductToShow] = useState<Product | null>(null);
+    const locale = localeMap[language];
 
     const deliveryProducts = useMemo(() => {
         return products.filter(p => p.status === 'en livraison').sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }, [products]);
+
+    const deliveryStats = useMemo(() => {
+        const totalItems = deliveryProducts.reduce((acc, p) => acc + p.stock, 0);
+        const totalValue = deliveryProducts.reduce((acc, p) => acc + (p.stock * p.sellPrice), 0);
+        return { totalItems, totalValue };
+    }, [deliveryProducts]);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -136,6 +147,11 @@ const Delivery: React.FC = () => {
         <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('delivery.title')} ({deliveryProducts.length})</h2>
             
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <StatCard icon={DeliveryIcon} title={t('delivery.total_items')} value={deliveryStats.totalItems} />
+                <StatCard icon={DollarSignIcon} title={t('delivery.total_value')} value={`${deliveryStats.totalValue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
+            </div>
+
             {isMobile ? (
                 <div className="grid grid-cols-1 gap-4">
                     {deliveryProducts.map(p => (
@@ -152,6 +168,7 @@ const Delivery: React.FC = () => {
                                     <th scope="col" className="px-6 py-3">{t('products.table.name')}</th>
                                     <th scope="col" className="px-6 py-3">{t('products.table.category')}</th>
                                     <th scope="col" className="px-6 py-3">{t('products.table.sell_price')}</th>
+                                    <th scope="col" className="px-6 py-3">{t('products.table.stock')}</th>
                                     <th scope="col" className="px-6 py-3">{t('delivery.table.delivered_at')}</th>
                                     <th scope="col" className="px-6 py-3 text-center">{t('actions')}</th>
                                 </tr>
@@ -171,6 +188,7 @@ const Delivery: React.FC = () => {
                                         <td className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">{product.name}</td>
                                         <td className="px-6 py-4">{product.category}</td>
                                         <td className="px-6 py-4 font-semibold">{product.sellPrice.toLocaleString(localeMap[language], { style: 'currency', currency: 'DZD' })}</td>
+                                        <td className="px-6 py-4 font-semibold">{product.stock}</td>
                                         <td className="px-6 py-4 text-xs whitespace-nowrap">{timeAgo(product.createdAt)}</td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center justify-center space-x-2">
