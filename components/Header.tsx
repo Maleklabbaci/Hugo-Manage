@@ -1,12 +1,12 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { SearchIcon, NotificationIcon } from './Icons';
+import { SearchIcon, NotificationIcon, RefreshCwIcon, LoaderIcon } from './Icons';
 import { useAppContext } from '../context/AppContext';
 import { motion } from 'framer-motion';
 
 const Header: React.FC<{ onSearchClick: () => void; onNotificationClick: () => void; }> = ({ onSearchClick, onNotificationClick }) => {
   const location = useLocation();
-  const { t, notifications } = useAppContext();
+  const { t, notifications, refetchData, isLoading } = useAppContext();
 
   const getPageTitle = (pathname: string): string => {
     const key = 'header' + pathname.replace('/', '.');
@@ -31,6 +31,17 @@ const Header: React.FC<{ onSearchClick: () => void; onNotificationClick: () => v
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h1>
         </div>
         <div className="flex items-center space-x-2">
+          <motion.button 
+            onClick={() => refetchData && refetchData()}
+            disabled={isLoading}
+            className="p-2 rounded-full text-gray-500 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-white/10 disabled:cursor-wait"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            title={t('header.refresh_data')}
+            aria-label={t('header.refresh_data')}
+          >
+            {isLoading ? <LoaderIcon className="w-6 h-6 animate-spin" /> : <RefreshCwIcon className="w-6 h-6" />}
+          </motion.button>
           <motion.button 
             onClick={onSearchClick} 
             className="p-2 rounded-full text-gray-500 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-white/10"

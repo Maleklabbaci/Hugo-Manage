@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
-import { AddIcon, EditIcon, DeleteIcon, ShoppingCartIcon, UndoIcon } from '../components/Icons';
+import { AddIcon, EditIcon, DeleteIcon, ShoppingCartIcon, UndoIcon, DeliveryIcon, LoaderIcon } from '../components/Icons';
 import { motion } from 'framer-motion';
 import type { ActivityLog, Language } from '../types';
 
@@ -11,11 +11,23 @@ const localeMap: Record<Language, string> = {
 };
 
 const History: React.FC = () => {
-  const { activityLog, t, language } = useAppContext();
+  const { activityLog, t, language, isLoading } = useAppContext();
   const locale = localeMap[language];
 
+  if (isLoading) {
+      return (
+          <div className="flex justify-center items-center h-96">
+              <LoaderIcon className="w-10 h-10 animate-spin text-cyan-500" />
+          </div>
+      );
+  }
+
   const formatTimestamp = (isoString: string) => {
+    if (!isoString) return t('history.invalid_date');
     const date = new Date(isoString);
+    if (isNaN(date.getTime())) {
+      return t('history.invalid_date');
+    }
     return date.toLocaleString(locale, {
       day: '2-digit',
       month: '2-digit',
@@ -56,6 +68,18 @@ const History: React.FC = () => {
           Icon: UndoIcon,
           color: 'text-amber-500',
           title: t('history.action.sale_cancelled', { productName: log.productName }),
+        };
+      case 'delivery_set':
+        return {
+          Icon: DeliveryIcon,
+          color: 'text-sky-500',
+          title: t('history.action.delivery_set', { productName: log.productName }),
+        };
+      case 'delivery_cancelled':
+        return {
+          Icon: UndoIcon,
+          color: 'text-amber-500',
+          title: t('history.action.delivery_cancelled', { productName: log.productName }),
         };
       default:
         return {

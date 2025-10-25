@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { SunIcon, MoonIcon, LogoutIcon, LanguagesIcon, ServerIcon } from '../components/Icons';
+import { SunIcon, MoonIcon, LogoutIcon, LanguagesIcon, ServerIcon, AlertCircleIcon } from '../components/Icons';
 import type { Language, Theme } from '../types';
 import { motion } from 'framer-motion';
 import { storage } from '../services/storage';
@@ -9,6 +9,7 @@ const Settings: React.FC = () => {
   const { theme, setTheme, language, setLanguage, t, logout, session, saveSupabaseCredentials } = useAppContext();
   const [supabaseUrl, setSupabaseUrl] = useState('');
   const [supabaseAnonKey, setSupabaseAnonKey] = useState('');
+  const [supabaseError, setSupabaseError] = useState('');
 
   useEffect(() => {
     const creds = storage.getSupabaseCredentials();
@@ -25,11 +26,29 @@ const Settings: React.FC = () => {
   }
 
   const handleSupabaseSave = () => {
-    if (!supabaseUrl.trim() || !supabaseAnonKey.trim()) {
-        alert(t('settings.supabase.error_missing_fields'));
+    setSupabaseError('');
+    let finalUrl = supabaseUrl.trim();
+    const anonKey = supabaseAnonKey.trim();
+
+    if (!finalUrl || !anonKey) {
+        setSupabaseError(t('settings.supabase.error_missing_fields'));
         return;
     }
-    saveSupabaseCredentials(supabaseUrl, supabaseAnonKey);
+
+    // Automatically prepend https:// if no protocol is specified.
+    if (!/^https?:\/\//i.test(finalUrl)) {
+        finalUrl = 'https://' + finalUrl;
+    }
+    
+    // Now, validate the final URL.
+    try {
+        new URL(finalUrl);
+    } catch(e) {
+        setSupabaseError(t('settings.supabase.error_invalid_url'));
+        return;
+    }
+
+    saveSupabaseCredentials(finalUrl, anonKey);
   };
   
   return (
@@ -43,13 +62,25 @@ const Settings: React.FC = () => {
         <div className="space-y-4">
           <div>
             <label htmlFor="supabaseUrl" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t('settings.supabase.url_label')}</label>
-            <input type="text" id="supabaseUrl" value={supabaseUrl} onChange={(e) => setSupabaseUrl(e.target.value)} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="https://xxxx.supabase.co" />
+            <input type="text" id="supabaseUrl" value={supabaseUrl} onChange={(e) => setSupabaseUrl(e.target.value)} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="xxxx.supabase.co" />
           </div>
           <div>
             <label htmlFor="supabaseAnonKey" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t('settings.supabase.anon_key_label')}</label>
             <input type="text" id="supabaseAnonKey" value={supabaseAnonKey} onChange={(e) => setSupabaseAnonKey(e.target.value)} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="ey..." />
           </div>
         </div>
+        
+        {supabaseError && (
+             <motion.div 
+              className="flex items-center p-3 mt-4 text-sm text-red-300 bg-red-900/50 rounded-lg"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <AlertCircleIcon className="w-5 h-5 me-2 flex-shrink-0" />
+              <span>{supabaseError}</span>
+            </motion.div>
+        )}
+
         <div className="mt-4">
           <motion.button onClick={handleSupabaseSave} className="w-full bg-cyan-500/10 text-cyan-500 font-semibold rounded-lg px-4 py-2 flex items-center justify-center transition-colors hover:bg-cyan-500/20" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             {t('settings.supabase.save_button')}

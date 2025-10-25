@@ -1,24 +1,25 @@
-
-
-
-
-
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
-import type { Product, BulkUpdatePayload, ProductFormData } from '../types';
+import type { Product, BulkUpdatePayload, ProductFormData, Language } from '../types';
 import ProductForm from '../components/ProductForm';
 import SaleModal from '../components/SaleModal';
 import BulkEditForm from '../components/BulkEditForm';
+import ConfirmationModal from '../components/ConfirmationModal';
 import { AddIcon, EditIcon, DeleteIcon, ChevronLeftIcon, ChevronRightIcon, ProductsIcon, ShoppingCartIcon, DuplicateIcon, SearchIcon, MoreVerticalIcon, UploadIcon, LoaderIcon, BulkEditIcon, SortAscIcon, SortDescIcon, DeliveryIcon, AlertCircleIcon } from '../components/Icons';
 import { AnimatePresence, motion } from 'framer-motion';
+
+const localeDateMap: Record<Language, string> = {
+    fr: 'fr-FR',
+    en: 'en-GB',
+    ar: 'ar-SA',
+};
 
 const calculateMargin = (product: Product) => {
   if (product.sellPrice <= 0) return '0.0';
   return (((product.sellPrice - product.buyPrice) / product.sellPrice) * 100).toFixed(1);
 };
 
-const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, isSelected: boolean, onEdit: (p: Product) => void, onSell: (p: Product) => void, onDuplicate: (id: number) => void, onDelete: (id: number) => void, onSetDelivery: (id: number) => void }> = 
+const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, isSelected: boolean, onEdit: (p: Product) => void, onSell: (p: Product) => void, onDuplicate: (id: number) => void, onDelete: (id: number) => void, onSetDelivery: (p: Product) => void }> = 
 ({ product, onSelect, isSelected, onEdit, onSell, onDuplicate, onDelete, onSetDelivery }) => {
   const { t } = useAppContext();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -94,7 +95,7 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
                   className="absolute bottom-12 right-0 bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-lg shadow-lg w-48 z-10 overflow-hidden"
                 >
                   <button onClick={() => { onEdit(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><EditIcon className="w-4 h-4 me-2"/> {t('edit')}</button>
-                  <button onClick={() => { onSetDelivery(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><DeliveryIcon className="w-4 h-4 me-2"/> {t('products.actions.set_delivery')}</button>
+                  <button onClick={() => { onSetDelivery(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><DeliveryIcon className="w-4 h-4 me-2"/> {t('products.actions.set_delivery')}</button>
                   <button onClick={() => { onDuplicate(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><DuplicateIcon className="w-4 h-4 me-2"/> {t('duplicate')}</button>
                   <div className="h-px bg-gray-200 dark:bg-white/10 my-1"></div>
                   <button onClick={() => { onDelete(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-red-500 hover:bg-red-500/10"><DeleteIcon className="w-4 h-4 me-2"/> {t('delete')}</button>
@@ -111,7 +112,7 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
 const Products: React.FC = () => {
   type SortKey = 'name' | 'buyPrice' | 'sellPrice' | 'stock' | 'createdAt';
   
-  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts, updateMultipleProducts, setProductToDelivery } = useAppContext();
+  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts, updateMultipleProducts, setProductToDelivery, language } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
@@ -125,6 +126,12 @@ const Products: React.FC = () => {
   const [sortKey, setSortKey] = useState<SortKey>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
+  const [isDeliveryConfirmOpen, setIsDeliveryConfirmOpen] = useState(false);
+  const [productToSetDelivery, setProductToSetDelivery] = useState<Product | null>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [productToDeleteId, setProductToDeleteId] = useState<number | null>(null);
+  const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const productsPerPage = 30;
@@ -139,6 +146,10 @@ const Products: React.FC = () => {
     if (hours < 24) return t('products.time_ago.hours', { count: hours });
     const days = Math.floor(hours / 24);
     return t('products.time_ago.days', { count: days });
+  };
+   const formatDate = (isoDate: string) => {
+    if (!isoDate) return '-';
+    return new Date(isoDate).toLocaleDateString(localeDateMap[language], { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
   
   useEffect(() => {
@@ -159,7 +170,17 @@ const Products: React.FC = () => {
         } else if (typeof aVal === 'number' && typeof bVal === 'number') {
             comparison = aVal - bVal;
         } else if (sortKey === 'createdAt') {
-            comparison = new Date(aVal).getTime() - new Date(bVal).getTime();
+            const timeA = new Date(aVal).getTime();
+            const timeB = new Date(bVal).getTime();
+            if (isNaN(timeA) && isNaN(timeB)) {
+                comparison = 0;
+            } else if (isNaN(timeA)) {
+                comparison = 1; // Invalid dates go to the end
+            } else if (isNaN(timeB)) {
+                comparison = -1;
+            } else {
+                comparison = timeA - timeB;
+            }
         }
 
         return sortDirection === 'asc' ? comparison : -comparison;
@@ -233,11 +254,17 @@ const Products: React.FC = () => {
     setSelectedProducts([]);
   };
   
-  const handleDelete = (productId: number) => {
-    if (window.confirm(t('products.confirm_delete'))) {
-        deleteProduct(productId);
+  const handleOpenDeleteConfirm = (productId: number) => {
+    setProductToDeleteId(productId);
+    setIsDeleteConfirmOpen(true);
+  };
+  
+  const handleConfirmDelete = async () => {
+    if (productToDeleteId) {
+        await deleteProduct(productToDeleteId);
+        setProductToDeleteId(null);
     }
-  }
+  };
 
   const handleOpenSaleModal = (product: Product) => {
     setProductToSell(product);
@@ -278,11 +305,9 @@ const Products: React.FC = () => {
     }
   };
 
-  const handleBulkDelete = () => {
-    if (window.confirm(t('products.confirm_delete_multiple', { count: selectedProducts.length }))) {
-        deleteMultipleProducts(selectedProducts);
-        setSelectedProducts([]);
-    }
+  const handleConfirmBulkDelete = async () => {
+    await deleteMultipleProducts(selectedProducts);
+    setSelectedProducts([]);
   };
 
   const handleImportClick = () => {
@@ -378,6 +403,17 @@ const Products: React.FC = () => {
         setSortKey(key);
         setSortDirection('asc'); // Default to ascending when changing column
     }
+  };
+
+  const handleOpenDeliveryConfirm = (product: Product) => {
+    setProductToSetDelivery(product);
+    setIsDeliveryConfirmOpen(true);
+  };
+
+  const handleConfirmSetToDelivery = async () => {
+      if (productToSetDelivery) {
+          await setProductToDelivery(productToSetDelivery.id);
+      }
   };
 
   const numSelected = selectedProducts.length;
@@ -491,7 +527,7 @@ const Products: React.FC = () => {
                     {t('products.bulk_edit')}
                 </motion.button>
                 <motion.button
-                    onClick={handleBulkDelete}
+                    onClick={() => setIsBulkDeleteConfirmOpen(true)}
                     className="flex items-center bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold rounded-lg px-3 py-1.5 text-sm"
                     whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.3), 0 4px 6px -2px rgba(239, 68, 68, 0.2)' }}
                     whileTap={{ scale: 0.95 }}
@@ -515,8 +551,8 @@ const Products: React.FC = () => {
               onEdit={handleOpenModal}
               onSell={handleOpenSaleModal}
               onDuplicate={duplicateProduct}
-              onDelete={handleDelete}
-              onSetDelivery={setProductToDelivery}
+              onDelete={handleOpenDeleteConfirm}
+              onSetDelivery={handleOpenDeliveryConfirm}
             />
           ))}
         </div>
@@ -585,11 +621,13 @@ const Products: React.FC = () => {
                         {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-xs whitespace-nowrap">{timeAgo(product.createdAt)}</td>
+                    <td className="px-6 py-4 text-xs whitespace-nowrap" title={timeAgo(product.createdAt)}>
+                      {formatDate(product.createdAt)}
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
                           <motion.button 
-                              onClick={() => setProductToDelivery(product.id)}
+                              onClick={() => handleOpenDeliveryConfirm(product)}
                               className="p-2 rounded-md transition-colors bg-sky-500/10 hover:bg-sky-500/20 text-sky-500"
                               title={t('products.actions.set_delivery')}
                               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
@@ -622,7 +660,7 @@ const Products: React.FC = () => {
                               <DuplicateIcon className="w-5 h-5" />
                           </motion.button>
                           <motion.button 
-                              onClick={() => handleDelete(product.id)} 
+                              onClick={() => handleOpenDeleteConfirm(product.id)} 
                               className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" 
                               title={t('delete')}
                                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
@@ -676,7 +714,7 @@ const Products: React.FC = () => {
                     <BulkEditIcon className="w-5 h-5" />
                 </motion.button>
                 <motion.button
-                  onClick={handleBulkDelete}
+                  onClick={() => setIsBulkDeleteConfirmOpen(true)}
                   className="p-2 rounded-lg bg-red-500/80 text-white"
                   whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
                 >
@@ -690,6 +728,32 @@ const Products: React.FC = () => {
       <ProductForm isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveProduct} productToEdit={productToEdit} />
       <SaleModal isOpen={isSaleModalOpen} onClose={handleCloseSaleModal} onConfirm={handleConfirmSale} product={productToSell} />
       <BulkEditForm isOpen={isBulkEditModalOpen} onClose={() => setIsBulkEditModalOpen(false)} onSave={handleSaveBulkEdit} productCount={selectedProducts.length} />
+      <ConfirmationModal 
+        isOpen={isDeliveryConfirmOpen}
+        onClose={() => {
+            setIsDeliveryConfirmOpen(false);
+            setProductToSetDelivery(null);
+        }}
+        onConfirm={handleConfirmSetToDelivery}
+        title={t('products.actions.set_delivery_confirm_title')}
+        message={productToSetDelivery ? t('products.actions.set_delivery_confirm_message_with_quantity', { productName: productToSetDelivery.name, quantity: 1 }) : ''}
+      />
+      <ConfirmationModal 
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title={t('products.confirm_delete_title')}
+        message={t('products.confirm_delete')}
+        confirmText={t('delete')}
+      />
+      <ConfirmationModal 
+        isOpen={isBulkDeleteConfirmOpen}
+        onClose={() => setIsBulkDeleteConfirmOpen(false)}
+        onConfirm={handleConfirmBulkDelete}
+        title={t('products.confirm_delete_multiple_title')}
+        message={t('products.confirm_delete_multiple', { count: selectedProducts.length })}
+        confirmText={t('delete')}
+      />
     </div>
   );
 };

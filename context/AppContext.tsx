@@ -69,6 +69,7 @@ interface AppContextType {
   markNotificationAsRead: (productId: number) => void;
   markAllNotificationsAsRead: () => void;
   saveSupabaseCredentials: (url: string, anonKey: string) => void;
+  refetchData: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -191,6 +192,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [session, t]);
 
+  const refetchData = async () => {
+    await fetchData();
+  };
+
   useEffect(() => {
     if (supabaseClient && session) {
       fetchData();
@@ -227,7 +232,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           details: data.details, createdAt: data.created_at, ownerId: data.owner_id
       }, ...prev]);
     }
-  }, [user]);
+  }, [user, t]);
   
   const addProduct = async (productData: ProductFormData): Promise<Product | null> => {
     if (!supabaseClient || !user) return null;
@@ -446,31 +451,67 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
   
   const setProductToDelivery = async (productId: number) => {
-    if (!supabaseClient) return;
+    if (!supabaseClient || !user) return;
     const productToUpdate = products.find(p => p.id === productId);
-    if (!productToUpdate) return;
+    if (!productToUpdate || productToUpdate.stock < 1) return;
 
-    const { data, error } = await supabaseClient.from('products').update({ status: 'en livraison' }).eq('id', productId).select().single();
+    if (productToUpdate.stock > 1) {
+        // Split product: create new delivery item, decrement original
+        try {
+            const newProductPayload = {
+                name: productToUpdate.name, category: productToUpdate.category, supplier: productToUpdate.supplier,
+                buyprice: productToUpdate.buyPrice, sellprice: productToUpdate.sellPrice, stock: 1,
+                imageurl: productToUpdate.imageUrl, status: 'en livraison' as const, owner_id: user.id
+            };
+            const { data: newProductData, error: insertError } = await supabaseClient.from('products').insert(newProductPayload).select().single();
+            if (insertError) throw insertError;
 
-    if (error) {
-      alert(error.message);
+            const newStock = productToUpdate.stock - 1;
+            const { data: updatedOriginalData, error: updateError } = await supabaseClient.from('products')
+                .update({ stock: newStock })
+                .eq('id', productToUpdate.id).select().single();
+            if (updateError) {
+                // Attempt to roll back the insert
+                await supabaseClient.from('products').delete().eq('id', newProductData.id);
+                throw updateError;
+            }
+            
+            const newProduct = mapSupabaseRecordToProduct(newProductData);
+            const updatedOriginalProduct = mapSupabaseRecordToProduct(updatedOriginalData);
+
+            setProducts(prev => [...prev.map(p => p.id === updatedOriginalProduct.id ? updatedOriginalProduct : p), newProduct]);
+
+            await logActivity('delivery_set', newProduct, t('history.log.delivery_split'));
+
+        } catch (error) {
+            alert((error as Error).message);
+        }
     } else {
-      const updatedProduct = mapSupabaseRecordToProduct(data);
-      setProducts(prev => prev.map(p => (p.id === productId ? updatedProduct : p)));
-      await logActivity('delivery_set', updatedProduct);
+        // Stock is 1, just update status
+        const { data, error } = await supabaseClient.from('products').update({ status: 'en livraison' }).eq('id', productId).select().single();
+
+        if (error) {
+            alert(error.message);
+        } else {
+            const updatedProduct = mapSupabaseRecordToProduct(data);
+            setProducts(prev => prev.map(p => (p.id === productId ? updatedProduct : p)));
+            await logActivity('delivery_set', updatedProduct);
+        }
     }
   };
 
   const confirmSaleFromDelivery = async (productId: number) => {
     if (!supabaseClient || !user) return;
     const product = products.find(p => p.id === productId);
-    if (!product || product.status !== 'en livraison') {
-      console.warn("Attempted to confirm sale for a product not in delivery.", productId);
+    if (!product || product.status !== 'en livraison' || product.stock < 1) {
+      console.warn("Attempted to confirm sale for a product not in delivery or out of stock.", productId);
       return;
     }
-
+    
+    const saleQuantity = 1; // Always sell one unit at a time from delivery
+    
     const newStock = product.stock - 1;
-    const newStatus = newStock > 0 ? 'actif' : 'rupture';
+    const newStatus = newStock > 0 ? 'en livraison' : 'rupture';
 
     const { data: updatedProductData, error: stockUpdateError } = await supabaseClient.from('products')
       .update({ stock: newStock, status: newStatus })
@@ -484,39 +525,74 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const salePayload = {
         product_id: productId,
         productname: product.name,
-        quantity: 1,
+        quantity: saleQuantity,
         sellprice: product.sellPrice,
-        totalprice: product.sellPrice * 1,
-        totalmargin: (product.sellPrice - product.buyPrice) * 1,
+        totalprice: product.sellPrice * saleQuantity,
+        totalmargin: (product.sellPrice - product.buyPrice) * saleQuantity,
         owner_id: user.id,
     };
     const { data: saleData, error: saleInsertError } = await supabaseClient.from('sales').insert(salePayload).select().single();
 
     if (saleInsertError) {
         alert(saleInsertError.message);
+        // Rollback product update
         await supabaseClient.from('products').update({ stock: product.stock, status: product.status }).eq('id', productId);
     } else {
         const updatedProduct = mapSupabaseRecordToProduct(updatedProductData);
         setProducts(prev => prev.map(p => p.id === productId ? updatedProduct : p));
         setSales(prev => [mapSupabaseRecordToSale(saleData), ...prev]);
-        await logActivity('sold', product, t('history.log.units_sold_from_delivery', { quantity: 1 }));
+        await logActivity('sold', product, t('history.log.units_sold_from_delivery', { quantity: saleQuantity }));
     }
   };
   
   const cancelDelivery = async (productId: number) => {
     if (!supabaseClient) return;
-    const productToUpdate = products.find(p => p.id === productId);
-    if (!productToUpdate) return;
+    const deliveryProduct = products.find(p => p.id === productId);
+    if (!deliveryProduct || deliveryProduct.status !== 'en livraison') return;
     
-    const newStatus = productToUpdate.stock > 0 ? 'actif' : 'rupture';
-    const { data, error } = await supabaseClient.from('products').update({ status: newStatus }).eq('id', productId).select().single();
-    
-    if(error) {
-        alert(error.message);
+    // Attempt to find an original product to merge back into
+    const originalProduct = products.find(p => 
+        p.id !== deliveryProduct.id &&
+        p.name === deliveryProduct.name &&
+        p.category === deliveryProduct.category &&
+        p.supplier === deliveryProduct.supplier &&
+        p.status !== 'en livraison'
+    );
+
+    if (originalProduct) {
+        // Merge back into original product
+        try {
+            const newStock = originalProduct.stock + deliveryProduct.stock;
+            const { data: updatedOriginalData, error: updateError } = await supabaseClient.from('products')
+                .update({ stock: newStock, status: 'actif' })
+                .eq('id', originalProduct.id).select().single();
+            if (updateError) throw updateError;
+            
+            const { error: deleteError } = await supabaseClient.from('products').delete().eq('id', deliveryProduct.id);
+            if (deleteError) {
+                // Attempt to roll back stock update
+                await supabaseClient.from('products').update({ stock: originalProduct.stock }).eq('id', originalProduct.id);
+                throw deleteError;
+            }
+            
+            const updatedOriginalProduct = mapSupabaseRecordToProduct(updatedOriginalData);
+            setProducts(prev => prev.filter(p => p.id !== deliveryProduct.id).map(p => p.id === originalProduct.id ? updatedOriginalProduct : p));
+
+            await logActivity('delivery_cancelled', deliveryProduct, t('history.log.delivery_merge'));
+
+        } catch (error) {
+            alert((error as Error).message);
+        }
     } else {
-      const updatedProduct = mapSupabaseRecordToProduct(data);
-      setProducts(prev => prev.map(p => (p.id === productId ? updatedProduct : p)));
-      await logActivity('delivery_cancelled', updatedProduct);
+        // Fallback: convert delivery item back to a normal, active product
+        const { data, error } = await supabaseClient.from('products').update({ status: 'actif' }).eq('id', productId).select().single();
+        if (error) {
+            alert(error.message);
+        } else {
+          const updatedProduct = mapSupabaseRecordToProduct(data);
+          setProducts(prev => prev.map(p => (p.id === productId ? updatedProduct : p)));
+          await logActivity('delivery_cancelled', updatedProduct);
+        }
     }
   };
 
@@ -561,7 +637,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     session, user, notifications, setTheme, setLanguage, t, login, logout,
     addProduct, addMultipleProducts, updateProduct, updateMultipleProducts, deleteProduct, deleteMultipleProducts, 
     duplicateProduct, setProductToDelivery, confirmSaleFromDelivery, cancelDelivery, addSale, cancelSale, markNotificationAsRead, markAllNotificationsAsRead,
-    isConfigured, saveSupabaseCredentials,
+    isConfigured, saveSupabaseCredentials, refetchData,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

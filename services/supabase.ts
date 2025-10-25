@@ -44,11 +44,52 @@ FOR DELETE USING (auth.uid() = owner_id);
 
 */
 
+// Helper function to validate if the URL is a valid HTTP/S URL.
+const isValidHttpUrl = (string: string | null): boolean => {
+    if (!string) {
+        return false;
+    }
+    let url;
+    try {
+        url = new URL(string);
+    } catch (_) {
+        return false;
+    }
+    return url.protocol === 'http:' || url.protocol === 'https:';
+};
+
+
 const { url: supabaseUrl, anonKey: supabaseAnonKey } = storage.getSupabaseCredentials();
 
-export const supabaseClient = (supabaseUrl && supabaseAnonKey) 
-    ? createClient(supabaseUrl, supabaseAnonKey) 
-    : null;
+// Custom fetch implementation to address potential "Failed to fetch" errors.
+// Some network environments or proxies might block requests with certain headers.
+// This custom fetch removes the 'x-client-info' header added by the Supabase client.
+const customFetch = (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    if (init && init.headers) {
+        // Create a new Headers object to make it mutable
+        const headers = new Headers(init.headers);
+        headers.delete('x-client-info');
+        init.headers = headers;
+    }
+    return fetch(input, init);
+};
+
+let client = null;
+if (isValidHttpUrl(supabaseUrl) && supabaseAnonKey) {
+    try {
+        client = createClient(supabaseUrl!, supabaseAnonKey, {
+            global: {
+                fetch: customFetch,
+            }
+        });
+    } catch (error) {
+        console.error("Supabase client initialization failed:", error);
+        // Fallback to null client, which shows the "unconfigured" state in the UI
+        client = null;
+    }
+}
+export const supabaseClient = client;
+
 
 const BUCKET_NAME = 'product-images';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { DashboardIcon, ProductsIcon, SettingsIcon, HistoryIcon, ShoppingCartIcon, StatsIcon, ChezHugoLogo, DeliveryIcon } from './Icons';
+import { DashboardIcon, ProductsIcon, SettingsIcon, HistoryIcon, ShoppingCartIcon, ChezHugoLogo, DeliveryIcon, StatsIcon } from './Icons';
 import { useAppContext } from '../context/AppContext';
 
 // Reusable NavItem for both sidebar and bottom nav
@@ -59,12 +59,12 @@ const Sidebar: React.FC = () => {
     { to: "/products", icon: ProductsIcon, label: t('sidebar.products'), count: products.filter(p => p.status !== 'en livraison').length },
     { to: "/delivery", icon: DeliveryIcon, label: t('sidebar.delivery'), count: products.filter(p => p.status === 'en livraison').length },
     { to: "/sales", icon: ShoppingCartIcon, label: t('sidebar.sales'), count: sales.length },
-    { to: "/statistics", icon: StatsIcon, label: t('sidebar.statistics'), desktopOnly: true },
+    { to: "/statistics", icon: StatsIcon, label: t('sidebar.statistics') },
     { to: "/history", icon: HistoryIcon, label: t('sidebar.history') },
     { to: "/settings", icon: SettingsIcon, label: t('sidebar.settings') },
   ];
   
-  const mobileNavLinks = navLinks.filter(l => !l.desktopOnly);
+  const mobileNavLinks = navLinks.filter(l => !('desktopOnly' in l));
   const desktopNavLinks = navLinks;
 
   return (

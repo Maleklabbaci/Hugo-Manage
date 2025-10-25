@@ -5,6 +5,7 @@ import type { Language, Sale, Product } from '../types';
 import { motion } from 'framer-motion';
 import ProductDetailsModal from '../components/ProductDetailsModal';
 import StatCard from '../components/StatCard';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const localeMap: Record<Language, string> = {
     fr: 'fr-FR',
@@ -70,6 +71,9 @@ const Sales: React.FC = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [productToShow, setProductToShow] = useState<Product | null>(null);
+    const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+    const [saleToCancelId, setSaleToCancelId] = useState<number | null>(null);
+
     const locale = localeMap[language];
 
     const salesStats = useMemo(() => {
@@ -95,9 +99,14 @@ const Sales: React.FC = () => {
       return date.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
     };
 
-    const handleCancelSale = (saleId: number) => {
-        if (window.confirm(t('sales.confirm_cancel'))) {
-            cancelSale(saleId);
+    const handleOpenCancelConfirm = (saleId: number) => {
+        setSaleToCancelId(saleId);
+        setIsCancelConfirmOpen(true);
+    };
+
+    const handleConfirmCancelSale = async () => {
+        if (saleToCancelId) {
+            await cancelSale(saleToCancelId);
         }
     };
 
@@ -127,7 +136,7 @@ const Sales: React.FC = () => {
                 <div className="grid grid-cols-1 gap-4">
                     {sales.map(sale => {
                         const product = products.find(p => p.id === sale.productId);
-                        return <SaleCard key={sale.id} sale={sale} onCancel={handleCancelSale} formatTimestamp={formatTimestamp} onViewDetails={handleViewDetails} product={product} />
+                        return <SaleCard key={sale.id} sale={sale} onCancel={handleOpenCancelConfirm} formatTimestamp={formatTimestamp} onViewDetails={handleViewDetails} product={product} />
                     })}
                 </div>
             ) : (
@@ -166,7 +175,7 @@ const Sales: React.FC = () => {
                                                         </motion.button>
                                                     )}
                                                     <motion.button 
-                                                        onClick={() => handleCancelSale(sale.id)} 
+                                                        onClick={() => handleOpenCancelConfirm(sale.id)} 
                                                         className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" 
                                                         title={t('sales.cancel_sale')}
                                                         whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
@@ -183,6 +192,13 @@ const Sales: React.FC = () => {
                 </div>
             )}
             <ProductDetailsModal isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} product={productToShow} />
+             <ConfirmationModal 
+                isOpen={isCancelConfirmOpen}
+                onClose={() => setIsCancelConfirmOpen(false)}
+                onConfirm={handleConfirmCancelSale}
+                title={t('sales.confirm_cancel_title')}
+                message={t('sales.confirm_cancel')}
+            />
         </div>
     );
 };

@@ -55,8 +55,14 @@ const Dashboard: React.FC = () => {
     
     const eightWeeksAgo = new Date();
     eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 56);
+    eightWeeksAgo.setHours(0, 0, 0, 0);
     
-    const recentSales = sales.filter(sale => new Date(sale.createdAt) >= eightWeeksAgo);
+    const recentSales = sales.filter(sale => {
+        if (!sale.createdAt) return false;
+        const saleDate = new Date(sale.createdAt);
+        // Ensure date is valid before comparison
+        return saleDate instanceof Date && !isNaN(saleDate.getTime()) && saleDate >= eightWeeksAgo;
+    });
 
     recentSales.forEach(sale => {
       const weekStartDate = getWeekStart(new Date(sale.createdAt));
@@ -65,11 +71,17 @@ const Dashboard: React.FC = () => {
       if (!profitByWeek[weekKey]) {
         profitByWeek[weekKey] = 0;
       }
-      profitByWeek[weekKey] += sale.totalMargin;
+      profitByWeek[weekKey] += sale.totalMargin || 0;
     });
 
     return Object.entries(profitByWeek)
-      .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
+      .sort((a: [string, number], b: [string, number]) => {
+          const timeA = new Date(a[0]).getTime();
+          const timeB = new Date(b[0]).getTime();
+          if (isNaN(timeA)) return 1;
+          if (isNaN(timeB)) return -1;
+          return timeA - timeB;
+      })
       .map(([date, profit]) => ({
         name: new Date(date).toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
         profit: parseFloat(profit.toFixed(2)),

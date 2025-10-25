@@ -5,14 +5,15 @@ import { DeliveryIcon, MarkDeliveredIcon, ProductsIcon, UndoIcon, ViewDetailsIco
 import { motion } from 'framer-motion';
 import ProductDetailsModal from '../components/ProductDetailsModal';
 import StatCard from '../components/StatCard';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const localeMap: Record<Language, string> = {
     fr: 'fr-FR',
     en: 'en-GB',
-    ar: 'ar-SA-u-nu-latn',
+    ar: 'ar-SA',
 };
 
-const DeliveryCard: React.FC<{ product: Product, onConfirmSale: (id: number) => void, onCancel: (id: number) => void, onViewDetails: (product: Product) => void }> = ({ product, onConfirmSale, onCancel, onViewDetails }) => {
+const DeliveryCard: React.FC<{ product: Product, onConfirmSale: (product: Product) => void, onCancel: (id: number) => void, onViewDetails: (product: Product) => void }> = ({ product, onConfirmSale, onCancel, onViewDetails }) => {
     const { t, language } = useAppContext();
     const locale = localeMap[language];
 
@@ -20,12 +21,6 @@ const DeliveryCard: React.FC<{ product: Product, onConfirmSale: (id: number) => 
         if (!isoDate) return '-';
         return new Date(isoDate).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
     };
-
-    const handleCancel = () => {
-        if (window.confirm(t('delivery.confirm_cancel'))) {
-            onCancel(product.id);
-        }
-    }
 
     return (
         <motion.div
@@ -52,7 +47,7 @@ const DeliveryCard: React.FC<{ product: Product, onConfirmSale: (id: number) => 
             </div>
             <div className="px-4 pb-4 flex items-center space-x-2 justify-between">
                 <motion.button
-                    onClick={() => onConfirmSale(product.id)}
+                    onClick={() => onConfirmSale(product)}
                     className="flex-1 flex items-center justify-center text-white bg-gradient-to-r from-green-500 to-emerald-500 font-semibold rounded-lg h-10"
                     whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3), 0 4px 6px -2px rgba(16, 185, 129, 0.2)' }}
                     whileTap={{ scale: 0.95 }}
@@ -72,7 +67,7 @@ const DeliveryCard: React.FC<{ product: Product, onConfirmSale: (id: number) => 
                         <ViewDetailsIcon className="w-5 h-5" />
                     </motion.button>
                     <motion.button
-                        onClick={handleCancel}
+                        onClick={() => onCancel(product.id)}
                         className="w-10 h-10 flex items-center justify-center bg-red-500/10 text-red-500 rounded-lg"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
@@ -92,10 +87,24 @@ const Delivery: React.FC = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [productToShow, setProductToShow] = useState<Product | null>(null);
+    const [isConfirmSaleOpen, setIsConfirmSaleOpen] = useState(false);
+    const [productToConfirmSale, setProductToConfirmSale] = useState<Product | null>(null);
+    const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+    const [deliveryToCancelId, setDeliveryToCancelId] = useState<number | null>(null);
     const locale = localeMap[language];
 
     const deliveryProducts = useMemo(() => {
-        return products.filter(p => p.status === 'en livraison').sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        const filtered = products.filter(p => p.status === 'en livraison');
+        return filtered.sort((a, b) => {
+            const timeA = new Date(a.createdAt).getTime();
+            const timeB = new Date(b.createdAt).getTime();
+
+            if (isNaN(timeA) && isNaN(timeB)) return 0;
+            if (isNaN(timeA)) return 1; // Invalid dates go to the end
+            if (isNaN(timeB)) return -1;
+            
+            return timeB - timeA; // Sort descending
+        });
     }, [products]);
 
     const deliveryStats = useMemo(() => {
@@ -115,12 +124,28 @@ const Delivery: React.FC = () => {
         setIsDetailsModalOpen(true);
     };
 
-    const handleCancelDelivery = (productId: number) => {
-        if (window.confirm(t('delivery.confirm_cancel'))) {
-            cancelDelivery(productId);
+    const handleOpenCancelConfirm = (productId: number) => {
+        setDeliveryToCancelId(productId);
+        setIsCancelConfirmOpen(true);
+    };
+    
+    const handleConfirmCancelDelivery = async () => {
+        if (deliveryToCancelId) {
+            await cancelDelivery(deliveryToCancelId);
         }
     };
     
+    const handleOpenConfirmSale = (product: Product) => {
+        setProductToConfirmSale(product);
+        setIsConfirmSaleOpen(true);
+    };
+
+    const handleConfirmSaleAction = async () => {
+        if (productToConfirmSale) {
+            await confirmSaleFromDelivery(productToConfirmSale.id);
+        }
+    };
+
     const timeAgo = (isoDate: string): string => {
         if (!isoDate) return '-';
         const seconds = Math.floor((new Date().getTime() - new Date(isoDate).getTime()) / 1000);
@@ -131,6 +156,11 @@ const Delivery: React.FC = () => {
         if (hours < 24) return t('products.time_ago.hours', { count: hours });
         const days = Math.floor(hours / 24);
         return t('products.time_ago.days', { count: days });
+    };
+
+    const formatDate = (isoDate: string) => {
+      if (!isoDate) return '-';
+      return new Date(isoDate).toLocaleDateString(localeMap[language], { day: '2-digit', month: '2-digit', year: 'numeric' });
     };
 
     if (deliveryProducts.length === 0) {
@@ -155,7 +185,7 @@ const Delivery: React.FC = () => {
             {isMobile ? (
                 <div className="grid grid-cols-1 gap-4">
                     {deliveryProducts.map(p => (
-                        <DeliveryCard key={p.id} product={p} onConfirmSale={confirmSaleFromDelivery} onCancel={cancelDelivery} onViewDetails={handleViewDetails} />
+                        <DeliveryCard key={p.id} product={p} onConfirmSale={handleOpenConfirmSale} onCancel={handleOpenCancelConfirm} onViewDetails={handleViewDetails} />
                     ))}
                 </div>
             ) : (
@@ -189,11 +219,13 @@ const Delivery: React.FC = () => {
                                         <td className="px-6 py-4">{product.category}</td>
                                         <td className="px-6 py-4 font-semibold">{product.sellPrice.toLocaleString(localeMap[language], { style: 'currency', currency: 'DZD' })}</td>
                                         <td className="px-6 py-4 font-semibold">{product.stock}</td>
-                                        <td className="px-6 py-4 text-xs whitespace-nowrap">{timeAgo(product.createdAt)}</td>
+                                        <td className="px-6 py-4 text-xs whitespace-nowrap" title={timeAgo(product.createdAt)}>
+                                            {formatDate(product.createdAt)}
+                                        </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center justify-center space-x-2">
                                                 <motion.button
-                                                    onClick={() => confirmSaleFromDelivery(product.id)}
+                                                    onClick={() => handleOpenConfirmSale(product)}
                                                     className="flex items-center text-white bg-gradient-to-r from-green-500 to-emerald-500 font-semibold rounded-lg px-3 py-2 text-sm"
                                                     whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                                                 >
@@ -208,7 +240,7 @@ const Delivery: React.FC = () => {
                                                     <ViewDetailsIcon className="w-5 h-5" />
                                                 </motion.button>
                                                 <motion.button
-                                                    onClick={() => handleCancelDelivery(product.id)}
+                                                    onClick={() => handleOpenCancelConfirm(product.id)}
                                                     className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500"
                                                     title={t('delivery.cancel_delivery')}
                                                     whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
@@ -224,6 +256,24 @@ const Delivery: React.FC = () => {
                 </div>
             )}
             <ProductDetailsModal isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} product={productToShow} />
+            <ConfirmationModal 
+                isOpen={isConfirmSaleOpen}
+                onClose={() => {
+                    setIsConfirmSaleOpen(false);
+                    setProductToConfirmSale(null);
+                }}
+                onConfirm={handleConfirmSaleAction}
+                title={t('delivery.confirm_sale_title')}
+                message={productToConfirmSale ? t('delivery.confirm_sale_message', { productName: productToConfirmSale.name }) : ''}
+                confirmText={t('delivery.confirm_sale')}
+            />
+            <ConfirmationModal 
+                isOpen={isCancelConfirmOpen}
+                onClose={() => setIsCancelConfirmOpen(false)}
+                onConfirm={handleConfirmCancelDelivery}
+                title={t('delivery.confirm_cancel_title')}
+                message={t('delivery.confirm_cancel')}
+            />
         </div>
     );
 };
