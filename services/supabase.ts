@@ -3,6 +3,46 @@ import { storage } from './storage';
 
 /*
 -- =================================================================
+-- SCRIPT SQL POUR LA NOUVELLE GESTION DES LIVRAISONS
+-- =================================================================
+--
+-- Pour que la nouvelle gestion des livraisons fonctionne,
+-- exécutez ce script dans votre éditeur SQL Supabase.
+--
+-- Cela crée une table `deliveries` pour suivre les articles en
+-- transit séparément du stock principal.
+--
+-- =================================================================
+
+-- 1. Créer la table `deliveries`
+CREATE TABLE IF NOT EXISTS public.deliveries (
+  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  product_id bigint NOT NULL,
+  productname text NOT NULL,
+  quantity integer NOT NULL,
+  sellprice numeric NOT NULL,
+  buyprice numeric NOT NULL,
+  imageurl text,
+  created_at timestamp with time zone DEFAULT now() NOT NULL,
+  owner_id uuid REFERENCES auth.users(id) ON DELETE CASCADE
+);
+
+-- 2. Activer RLS (Row Level Security) sur la nouvelle table
+ALTER TABLE public.deliveries ENABLE ROW LEVEL SECURITY;
+
+-- 3. Créer les politiques de sécurité RLS
+-- Supprime les anciennes politiques pour éviter les conflits
+DROP POLICY IF EXISTS "Users can manage their own deliveries" ON public.deliveries;
+
+-- 3.1 Autoriser les utilisateurs à voir, créer, modifier et supprimer leurs propres livraisons
+CREATE POLICY "Users can manage their own deliveries"
+ON public.deliveries
+FOR ALL
+USING (auth.uid() = owner_id)
+WITH CHECK (auth.uid() = owner_id);
+
+
+-- =================================================================
 -- SCRIPT SQL POUR LE STOCKAGE SUPABASE - À EXÉCUTER
 -- =================================================================
 --

@@ -1,7 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-// FIX: Import AppNotification type and remove the local Notification interface.
-import type { Product, Theme, Language, ActivityLog, Sale, BulkUpdatePayload, BulkUpdateMode, ProductFormData, AppContextType, AppNotification } from '../types';
+import type { Product, Theme, Language, ActivityLog, Sale, BulkUpdatePayload, BulkUpdateMode, ProductFormData, AppContextType, AppNotification, Delivery } from '../types';
 import { storage } from '../services/storage';
 import { translations } from '../translations';
 import { MOCK_PRODUCTS } from '../mock/products';
@@ -34,12 +33,25 @@ const mapSupabaseRecordToSale = (s: any): Sale => ({
   ownerId: s.owner_id
 });
 
+const mapSupabaseRecordToDelivery = (d: any): Delivery => ({
+    id: d.id,
+    productId: d.product_id,
+    productName: d.productname,
+    quantity: d.quantity,
+    sellPrice: d.sellprice,
+    buyPrice: d.buyprice,
+    imageUrl: d.imageurl,
+    createdAt: d.created_at,
+    ownerId: d.owner_id,
+});
+
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
   const [theme, rawSetTheme] = useState<Theme>(storage.getTheme());
   const [language, rawSetLanguage] = useState<Language>(storage.getLanguage());
@@ -123,34 +135,78 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setReadNotificationIds(prev => [...new Set([...prev, ...allCurrentIds])]);
   };
 
+  const handleSupabaseError = useCallback((error: any, contextKey: string) => {
+    console.error(`Supabase error (${contextKey}):`, error);
+    
+    let message: string;
+
+    if (error && typeof error.message === 'string' && error.message) {
+        // Most common case for Supabase/JS errors
+        message = error.message;
+    } else if (typeof error === 'string' && error) {
+        // If the error is just a string
+        message = error;
+    } else {
+        // Fallback for everything else. Ensure we always produce a readable string.
+        try {
+            const str = JSON.stringify(error);
+            // Avoid showing an empty object '{}' which is not helpful.
+            message = str === '{}' ? `An unknown object-based error occurred in ${contextKey}.` : str;
+        } catch {
+            // If stringification fails (e.g., circular references)
+            message = 'A non-serializable error occurred. Check the console.';
+        }
+    }
+
+    // Now, let's create a more user-friendly final message based on the error content.
+    let finalMessage = t('error.fetch_data', { error: message });
+
+    if (message.includes("permission denied")) {
+        finalMessage = `${t('error.fetch_data', { error: message })} ${t('error.rls_permission_denied')}`;
+    }
+    
+    if (message.includes("relation") && message.includes("does not exist")) {
+        const tableNameMatch = message.match(/relation "public\.(.*?)" does not exist/);
+        const tableName = tableNameMatch ? tableNameMatch[1] : null;
+        if (tableName === 'deliveries') {
+            finalMessage = t('error.deliveries_table_missing');
+        } else if (tableName) {
+             finalMessage = `The table "${tableName}" seems to be missing in your database. Please check your Supabase setup.`;
+        }
+    }
+    
+    alert(finalMessage);
+  }, [t]);
+
   const fetchData = useCallback(async () => {
     if (!supabaseClient || !session) return;
     setIsLoading(true);
     try {
-      const [productsRes, salesRes, logRes] = await Promise.all([
+      const [productsRes, salesRes, deliveriesRes, logRes] = await Promise.all([
         supabaseClient.from('products').select('*').order('created_at', { ascending: false }),
         supabaseClient.from('sales').select('*').order('created_at', { ascending: false }),
+        supabaseClient.from('deliveries').select('*').order('created_at', { ascending: false }),
         supabaseClient.from('activity_log').select('*').order('created_at', { ascending: false })
       ]);
 
       if (productsRes.error) throw productsRes.error;
       if (salesRes.error) throw salesRes.error;
+      if (deliveriesRes.error) throw deliveriesRes.error;
       if (logRes.error) throw logRes.error;
 
       setProducts(productsRes.data.map(mapSupabaseRecordToProduct));
       setSales((salesRes.data || []).map(mapSupabaseRecordToSale));
+      setDeliveries((deliveriesRes.data || []).map(mapSupabaseRecordToDelivery));
       setActivityLog((logRes.data || []).map((l: any) => ({
         id: l.id, productId: l.product_id, productName: l.productname || '', action: l.action,
         details: l.details, createdAt: l.created_at, ownerId: l.owner_id
       })));
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error("Error fetching data:", error);
-        alert(t('error.fetch_data', { error: errorMessage }));
+        handleSupabaseError(error, 'fetchData');
     } finally {
       setIsLoading(false);
     }
-  }, [session, t]);
+  }, [session, handleSupabaseError]);
 
   const refetchData = async () => {
     await fetchData();
@@ -163,6 +219,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsLoading(false);
         setProducts([]);
         setSales([]);
+        setDeliveries([]);
         setActivityLog([]);
     }
   }, [session, fetchData]);
@@ -285,7 +342,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setProducts(prev => prev.map(p => p.id === product.id ? updatedProduct : p));
 
       const changes: string[] = [];
-      const keysToCompare: (keyof Omit<Product, 'id'|'createdAt'|'status'|'imageUrl'|'ownerId'|'en livraison'>)[] = ['name', 'description', 'category', 'supplier', 'buyPrice', 'sellPrice', 'stock'];
+      const keysToCompare: (keyof Omit<Product, 'id'|'createdAt'|'status'|'imageUrl'|'ownerId'>)[] = ['name', 'description', 'category', 'supplier', 'buyPrice', 'sellPrice', 'stock'];
       keysToCompare.forEach(key => {
         if (product[key] !== updatedProduct[key]) {
           changes.push(`${t('log.' + key)}: "${product[key] || ''}" -> "${updatedProduct[key] || ''}"`);
@@ -386,7 +443,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const productToDuplicate = products.find(p => p.id === productId);
     if (!productToDuplicate) return;
 
-    const { id, createdAt, ownerId, ...newProductData } = productToDuplicate;
+    const { id, createdAt, ownerId, status, ...newProductData } = productToDuplicate;
     const duplicatedProductData = {
       ...newProductData,
       name: `${newProductData.name} (copie)`,
@@ -408,208 +465,186 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const { data: updatedProductData, error: stockUpdateError } = await supabaseClient.from('products')
       .update({ stock: newStock, status: newStock > 0 ? 'actif' : 'rupture' })
       .eq('id', productId).select().single();
-    
-    if (stockUpdateError) { alert(stockUpdateError.message); return; }
 
-    const salePayload = {
-        product_id: productId, productname: product.name, quantity: quantity, sellprice: product.sellPrice,
-        totalprice: product.sellPrice * quantity, totalmargin: (product.sellPrice - product.buyPrice) * quantity,
-        owner_id: user.id,
-    };
-    const { data: saleData, error: saleInsertError } = await supabaseClient.from('sales').insert(salePayload).select().single();
-
-    if (saleInsertError) {
-        alert(saleInsertError.message);
-        await supabaseClient.from('products').update({ stock: product.stock }).eq('id', productId);
-    } else {
-        const updatedProduct = mapSupabaseRecordToProduct(updatedProductData);
-        setProducts(prev => prev.map(p => p.id === productId ? updatedProduct : p));
-        setSales(prev => [mapSupabaseRecordToSale(saleData), ...prev]);
-        await logActivity('sold', product, t('history.log.units_sold', {quantity}));
-    }
-  };
-  
-  const setProductToDelivery = async (productId: number) => {
-    if (!supabaseClient || !user) return;
-    const productToUpdate = products.find(p => p.id === productId);
-    if (!productToUpdate || productToUpdate.stock < 1) return;
-
-    if (productToUpdate.stock > 1) {
-        // Split product: create new delivery item, decrement original
-        try {
-            const newProductPayload = {
-                name: productToUpdate.name, 
-                description: productToUpdate.description,
-                category: productToUpdate.category, 
-                supplier: productToUpdate.supplier,
-                buyprice: productToUpdate.buyPrice, 
-                sellprice: productToUpdate.sellPrice, 
-                stock: 1,
-                imageurl: productToUpdate.imageUrl, 
-                status: 'en livraison' as const, 
-                owner_id: user.id
-            };
-            const { data: newProductData, error: insertError } = await supabaseClient.from('products').insert(newProductPayload).select().single();
-            if (insertError) throw insertError;
-
-            const newStock = productToUpdate.stock - 1;
-            const { data: updatedOriginalData, error: updateError } = await supabaseClient.from('products')
-                .update({ stock: newStock })
-                .eq('id', productToUpdate.id).select().single();
-            if (updateError) {
-                // Attempt to roll back the insert
-                await supabaseClient.from('products').delete().eq('id', newProductData.id);
-                throw updateError;
-            }
-            
-            const newProduct = mapSupabaseRecordToProduct(newProductData);
-            const updatedOriginalProduct = mapSupabaseRecordToProduct(updatedOriginalData);
-
-            setProducts(prev => [...prev.map(p => p.id === updatedOriginalProduct.id ? updatedOriginalProduct : p), newProduct]);
-
-            await logActivity('delivery_set', newProduct, t('history.log.delivery_split'));
-
-        } catch (error) {
-            alert((error as Error).message);
-        }
-    } else {
-        // Stock is 1, just update status
-        const { data, error } = await supabaseClient.from('products').update({ status: 'en livraison' }).eq('id', productId).select().single();
-
-        if (error) {
-            alert(error.message);
-        } else {
-            const updatedProduct = mapSupabaseRecordToProduct(data);
-            setProducts(prev => prev.map(p => (p.id === productId ? updatedProduct : p)));
-            await logActivity('delivery_set', updatedProduct);
-        }
-    }
-  };
-
-  const confirmSaleFromDelivery = async (productId: number) => {
-    if (!supabaseClient || !user) return;
-    const product = products.find(p => p.id === productId);
-    if (!product || product.status !== 'en livraison' || product.stock < 1) {
-      console.warn("Attempted to confirm sale for a product not in delivery or out of stock.", productId);
-      return;
+    if (stockUpdateError) {
+        alert(stockUpdateError.message);
+        return;
     }
     
-    const saleQuantity = 1; // Always sell one unit at a time from delivery
-    
-    const newStock = product.stock - 1;
-    const newStatus = newStock > 0 ? 'en livraison' : 'rupture';
+    const updatedProduct = mapSupabaseRecordToProduct(updatedProductData);
+    setProducts(prev => prev.map(p => p.id === productId ? updatedProduct : p));
 
-    const { data: updatedProductData, error: stockUpdateError } = await supabaseClient.from('products')
-      .update({ stock: newStock, status: newStatus })
-      .eq('id', productId).select().single();
-    
-    if (stockUpdateError) { 
-      alert(stockUpdateError.message); 
-      return; 
-    }
-
-    const salePayload = {
+    const totalMargin = (product.sellPrice - product.buyPrice) * quantity;
+    const newSale = {
         product_id: productId,
         productname: product.name,
-        quantity: saleQuantity,
+        quantity,
         sellprice: product.sellPrice,
-        totalprice: product.sellPrice * saleQuantity,
-        totalmargin: (product.sellPrice - product.buyPrice) * saleQuantity,
+        totalprice: product.sellPrice * quantity,
+        totalmargin: totalMargin,
         owner_id: user.id,
     };
-    const { data: saleData, error: saleInsertError } = await supabaseClient.from('sales').insert(salePayload).select().single();
 
-    if (saleInsertError) {
-        alert(saleInsertError.message);
-        // Rollback product update
+    const { data, error: saleError } = await supabaseClient.from('sales').insert(newSale).select().single();
+    if (saleError) {
+        alert(saleError.message);
+        // Revert stock change
         await supabaseClient.from('products').update({ stock: product.stock, status: product.status }).eq('id', productId);
+        setProducts(prev => prev.map(p => p.id === productId ? product : p));
     } else {
-        const updatedProduct = mapSupabaseRecordToProduct(updatedProductData);
-        setProducts(prev => prev.map(p => p.id === productId ? updatedProduct : p));
-        setSales(prev => [mapSupabaseRecordToSale(saleData), ...prev]);
-        await logActivity('sold', product, t('history.log.units_sold_from_delivery', { quantity: saleQuantity }));
+        setSales(prev => [mapSupabaseRecordToSale(data), ...prev]);
+        await logActivity('sold', product, t('history.log.units_sold', { quantity }));
     }
   };
-  
-  const cancelDelivery = async (productId: number) => {
-    if (!supabaseClient) return;
-    const deliveryProduct = products.find(p => p.id === productId);
-    if (!deliveryProduct || deliveryProduct.status !== 'en livraison') return;
-    
-    // Attempt to find an original product to merge back into
-    const originalProduct = products.find(p => 
-        p.id !== deliveryProduct.id &&
-        p.name === deliveryProduct.name &&
-        p.category === deliveryProduct.category &&
-        p.supplier === deliveryProduct.supplier &&
-        p.status !== 'en livraison'
-    );
-
-    if (originalProduct) {
-        // Merge back into original product
-        try {
-            const newStock = originalProduct.stock + deliveryProduct.stock;
-            const { data: updatedOriginalData, error: updateError } = await supabaseClient.from('products')
-                .update({ stock: newStock, status: 'actif' })
-                .eq('id', originalProduct.id).select().single();
-            if (updateError) throw updateError;
-            
-            const { error: deleteError } = await supabaseClient.from('products').delete().eq('id', deliveryProduct.id);
-            if (deleteError) {
-                // Attempt to roll back stock update
-                await supabaseClient.from('products').update({ stock: originalProduct.stock }).eq('id', originalProduct.id);
-                throw deleteError;
-            }
-            
-            const updatedOriginalProduct = mapSupabaseRecordToProduct(updatedOriginalData);
-            setProducts(prev => prev.filter(p => p.id !== deliveryProduct.id).map(p => p.id === originalProduct.id ? updatedOriginalProduct : p));
-
-            await logActivity('delivery_cancelled', deliveryProduct, t('history.log.delivery_merge'));
-
-        } catch (error) {
-            alert((error as Error).message);
-        }
-    } else {
-        // Fallback: convert delivery item back to a normal, active product
-        const { data, error } = await supabaseClient.from('products').update({ status: 'actif' }).eq('id', productId).select().single();
-        if (error) {
-            alert(error.message);
-        } else {
-          const updatedProduct = mapSupabaseRecordToProduct(data);
-          setProducts(prev => prev.map(p => (p.id === productId ? updatedProduct : p)));
-          await logActivity('delivery_cancelled', updatedProduct);
-        }
-    }
-  };
-
 
   const cancelSale = async (saleId: number) => {
     if (!supabaseClient) return;
     const saleToCancel = sales.find(s => s.id === saleId);
     if (!saleToCancel) return;
 
-    const { error: deleteSaleError } = await supabaseClient.from('sales').delete().eq('id', saleId);
-    if (deleteSaleError) { alert(deleteSaleError.message); return; }
-
+    const { error: deleteError } = await supabaseClient.from('sales').delete().eq('id', saleId);
+    if (deleteError) {
+        alert(deleteError.message);
+        return;
+    }
     setSales(prev => prev.filter(s => s.id !== saleId));
     
-    const product = products.find(p => p.id === saleToCancel.productId);
-    if (product) {
-      const newStock = product.stock + saleToCancel.quantity;
-      const newStatus = newStock > 0 ? 'actif' : 'rupture';
-      const { data, error: stockUpdateError } = await supabaseClient.from('products')
-        .update({ stock: newStock, status: newStatus }).eq('id', product.id).select().single();
-
-      if (stockUpdateError) {
-        alert(t('sales.error_restoring_stock'));
-      } else {
-        const updatedProduct = mapSupabaseRecordToProduct(data);
-        setProducts(prev => prev.map(p => p.id === product.id ? updatedProduct : p));
-        await logActivity('sale_cancelled', product, t('history.log.sale_cancelled', { quantity: saleToCancel.quantity }));
-      }
+    const productToUpdate = products.find(p => p.id === saleToCancel.productId);
+    if (productToUpdate) {
+        const newStock = productToUpdate.stock + saleToCancel.quantity;
+        const { data, error: stockUpdateError } = await supabaseClient.from('products')
+            .update({ stock: newStock, status: newStock > 0 ? 'actif' : 'rupture' })
+            .eq('id', productToUpdate.id).select().single();
+            
+        if (stockUpdateError) {
+            alert(t('sales.error_restoring_stock'));
+        } else {
+            setProducts(prev => prev.map(p => p.id === productToUpdate.id ? mapSupabaseRecordToProduct(data) : p));
+            await logActivity('sale_cancelled', productToUpdate, t('history.log.sale_cancelled', { quantity: saleToCancel.quantity }));
+        }
     } else {
-      await logActivity('sale_cancelled', { id: saleToCancel.productId, name: saleToCancel.productName }, t('history.log.sale_cancelled_deleted_product'));
+        await logActivity('sale_cancelled', { id: saleToCancel.productId, name: saleToCancel.productName }, t('history.log.sale_cancelled_deleted_product'));
     }
+  };
+  
+  const setProductToDelivery = async (productId: number, quantity: number) => {
+    if (!supabaseClient || !user) return;
+    const product = products.find(p => p.id === productId);
+    if (!product || product.stock < quantity) return;
+
+    // 1. Update stock of the original product
+    const newStock = product.stock - quantity;
+    const { data: updatedProductData, error: stockUpdateError } = await supabaseClient.from('products')
+        .update({ stock: newStock, status: newStock > 0 ? 'actif' : 'rupture' })
+        .eq('id', productId).select().single();
+        
+    if (stockUpdateError) { 
+        handleSupabaseError(stockUpdateError, 'setProductToDelivery');
+        return;
+    }
+    
+    // 2. Create a new record in the `deliveries` table
+    const deliveryPayload = {
+        product_id: product.id,
+        productname: product.name,
+        quantity: quantity,
+        sellprice: product.sellPrice,
+        buyprice: product.buyPrice,
+        imageurl: product.imageUrl,
+        owner_id: user.id
+    };
+    const { data: deliveryData, error: createError } = await supabaseClient.from('deliveries').insert(deliveryPayload).select().single();
+
+    if (createError) {
+        handleSupabaseError(createError, 'setProductToDelivery');
+        // Revert stock change if delivery creation fails
+        await supabaseClient.from('products').update({ stock: product.stock, status: product.status }).eq('id', productId);
+        return;
+    }
+    
+    // 3. Update local state
+    const updatedOriginalProduct = mapSupabaseRecordToProduct(updatedProductData);
+    const newDelivery = mapSupabaseRecordToDelivery(deliveryData);
+    setProducts(prev => prev.map(p => p.id === productId ? updatedOriginalProduct : p));
+    setDeliveries(prev => [newDelivery, ...prev]);
+
+    await logActivity('delivery_set', product, t('history.log.delivery_set_quantity', { quantity }));
+  };
+  
+  const confirmSaleFromDelivery = async (deliveryId: number) => {
+    if (!supabaseClient || !user) return;
+    const delivery = deliveries.find(d => d.id === deliveryId);
+    if (!delivery) return;
+
+    // 1. Delete the delivery record
+    const { error: deleteError } = await supabaseClient.from('deliveries').delete().eq('id', deliveryId);
+    if (deleteError) { alert(deleteError.message); return; }
+
+    setDeliveries(prev => prev.filter(d => d.id !== deliveryId));
+    
+    // 2. Create a new sale record
+    const totalMargin = (delivery.sellPrice - delivery.buyPrice) * delivery.quantity;
+    const newSale = {
+        product_id: delivery.productId,
+        productname: delivery.productName,
+        quantity: delivery.quantity,
+        sellprice: delivery.sellPrice,
+        totalprice: delivery.sellPrice * delivery.quantity,
+        totalmargin: totalMargin,
+        owner_id: user.id,
+    };
+
+    const { data, error: saleError } = await supabaseClient.from('sales').insert(newSale).select().single();
+    if (saleError) {
+        alert(saleError.message);
+        // Re-create the delivery if sale fails
+        const { id, ...deliveryPayload } = delivery; // Assuming delivery object matches table structure
+        await supabaseClient.from('deliveries').insert(deliveryPayload);
+        setDeliveries(prev => [delivery, ...prev]);
+    } else {
+        setSales(prev => [mapSupabaseRecordToSale(data), ...prev]);
+        await logActivity('sold', { id: delivery.productId, name: newSale.productname }, t('history.log.units_sold_from_delivery', { quantity: newSale.quantity }));
+    }
+  };
+  
+  const cancelDelivery = async (deliveryId: number) => {
+    if (!supabaseClient) return;
+    const delivery = deliveries.find(d => d.id === deliveryId);
+    if (!delivery) return;
+    
+    const originalProduct = products.find(p => p.id === delivery.productId);
+    if (!originalProduct) {
+        handleSupabaseError({ message: 'Original product not found, cannot restore stock.' }, 'cancelDelivery');
+        return;
+    }
+
+    // 1. Update stock of the original product
+    const updatedStock = originalProduct.stock + delivery.quantity;
+    const { data: updatedProductData, error: stockUpdateError } = await supabaseClient.from('products').update({ 
+        stock: updatedStock,
+        status: 'actif' // It will be active since we're adding stock
+    }).eq('id', originalProduct.id).select().single();
+
+    if (stockUpdateError) {
+        handleSupabaseError(stockUpdateError, 'cancelDelivery');
+        return;
+    }
+    
+    // 2. Delete the delivery record
+    const { error: deleteError } = await supabaseClient.from('deliveries').delete().eq('id', delivery.id);
+    
+    if (deleteError) {
+        handleSupabaseError(deleteError, 'cancelDelivery');
+        // Revert stock change if deletion fails to maintain data integrity
+        await supabaseClient.from('products').update({ stock: originalProduct.stock, status: originalProduct.status }).eq('id', originalProduct.id);
+        return;
+    }
+
+    // 3. Update local state
+    const locallyUpdatedOriginal = mapSupabaseRecordToProduct(updatedProductData);
+    setProducts(prev => prev.map(p => p.id === originalProduct.id ? locallyUpdatedOriginal : p));
+    setDeliveries(prev => prev.filter(d => d.id !== delivery.id));
+    await logActivity('delivery_cancelled', {id: originalProduct.id, name: originalProduct.name}, t('history.log.delivery_cancelled_quantity', { quantity: delivery.quantity }));
   };
 
   const saveSupabaseCredentials = (url: string, anonKey: string) => {
@@ -617,48 +652,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     alert(t('settings.supabase.saved_message'));
     window.location.reload();
   };
-  
+
   const findProductByName = (name: string): Product[] => {
-      if (!name) return [];
-      const lowerCaseName = name.toLowerCase();
-      return products.filter(p => p.name.toLowerCase().includes(lowerCaseName));
+    const lowerCaseName = name.toLowerCase();
+    return products.filter(p => p.name.toLowerCase().includes(lowerCaseName));
   };
 
-  const findProductsByKeywords = (description: string): Product[] => {
-    const keywords = description.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-    if (keywords.length === 0) return [];
+  const findProductsByKeywords = (keywords: string): Product[] => {
+    const lowerCaseKeywords = keywords.toLowerCase().split(/\s+/).filter(Boolean);
+    if (lowerCaseKeywords.length === 0) return [];
 
-    const scoredProducts = products.map(product => {
-      let score = 0;
-      const name = product.name.toLowerCase();
-      const category = product.category.toLowerCase();
-      const desc = (product.description || '').toLowerCase();
+    return products
+        .map(product => {
+            const name = product.name.toLowerCase();
+            const category = product.category.toLowerCase();
+            const description = (product.description || '').toLowerCase();
+            
+            let score = 0;
+            lowerCaseKeywords.forEach(keyword => {
+                if (name.includes(keyword)) score += 3;
+                if (category.includes(keyword)) score += 2;
+                if (description.includes(keyword)) score += 1;
+            });
 
-      keywords.forEach(keyword => {
-        if (name.includes(keyword)) score += 3;
-        if (category.includes(keyword)) score += 2;
-        if (desc.includes(keyword)) score += 1;
-      });
-      return { ...product, score };
-    });
-
-    return scoredProducts.filter(p => p.score > 0).sort((a, b) => b.score - a.score);
+            return { product, score };
+        })
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map(item => item.product);
   };
 
-  const value = {
-    products, sales, activityLog, theme, language, isLoading,
-    session, user, notifications, setTheme, setLanguage, t, login, logout,
-    addProduct, addMultipleProducts, updateProduct, updateMultipleProducts, deleteProduct, deleteMultipleProducts, 
-    duplicateProduct, setProductToDelivery, confirmSaleFromDelivery, cancelDelivery, addSale, cancelSale, markNotificationAsRead, markAllNotificationsAsRead,
-    isConfigured, saveSupabaseCredentials, refetchData, findProductByName, findProductsByKeywords,
-  };
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  return (
+    <AppContext.Provider value={{ 
+        products, sales, deliveries, activityLog, notifications, theme, language, isLoading, isConfigured, session, user,
+        setTheme, setLanguage, t, login, logout, addProduct, addMultipleProducts, updateProduct, updateMultipleProducts, deleteProduct, deleteMultipleProducts,
+        duplicateProduct, setProductToDelivery, confirmSaleFromDelivery, cancelDelivery, addSale, cancelSale,
+        markNotificationAsRead, markAllNotificationsAsRead, saveSupabaseCredentials, refetchData, findProductByName,
+        findProductsByKeywords,
+    }}>
+      {children}
+    </AppContext.Provider>
+  );
 };
 
 export const useAppContext = (): AppContextType => {
   const context = useContext(AppContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAppContext must be used within an AppProvider');
   }
   return context;

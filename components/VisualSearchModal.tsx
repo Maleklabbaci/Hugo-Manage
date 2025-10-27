@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { findProductByImage } from '../services/gemini';
 import { Product } from '../types';
-import { XIcon, CameraIcon, LoaderIcon, ProductsIcon } from './Icons';
+import { XIcon, CameraIcon, LoaderIcon, ProductsIcon, DeliveryIcon } from './Icons';
 
 interface VisualSearchModalProps {
   isOpen: boolean;
@@ -29,7 +29,7 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
 };
 
 const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }) => {
-    const { t, findProductsByKeywords } = useAppContext();
+    const { t, findProductsByKeywords, deliveries } = useAppContext();
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -158,21 +158,37 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
                                 {foundProducts.length > 0 ? (
                                     <>
                                         <p className="font-semibold mb-2">{t('visual_search.results_found', { count: foundProducts.length })}</p>
-                                        <ul className="space-y-2">{foundProducts.map(p => (
-                                            <li key={p.id}><Link to="/products" onClick={onClose} className="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
-                                                {p.imageUrl ? (
-                                                    <img src={p.imageUrl} alt={p.name} className="w-12 h-12 object-cover rounded-md me-3" />
-                                                ) : (
-                                                    <div className="w-12 h-12 bg-gray-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center me-3">
-                                                        <ProductsIcon className="w-6 h-6 text-cyan-500"/>
-                                                    </div>
-                                                )}
-                                                <div>
-                                                    <p className="font-semibold text-gray-900 dark:text-white">{p.name}</p>
-                                                    <p className="text-sm text-gray-600 dark:text-slate-400">{p.category}</p>
-                                                </div>
-                                            </Link></li>
-                                        ))}</ul>
+                                        <ul className="space-y-2">{foundProducts.map(p => {
+                                            const isDelivery = deliveries.some(d => d.productId === p.id);
+                                            const linkTo = isDelivery ? '/delivery' : '/products';
+                                            const statusText = isDelivery ? t('sidebar.delivery') : t('sidebar.products');
+                                            const statusColor = isDelivery 
+                                                ? 'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300'
+                                                : 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-slate-200';
+                                            
+                                            return (
+                                                <li key={p.id}>
+                                                    <Link to={linkTo} onClick={onClose} className="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
+                                                        {p.imageUrl ? (
+                                                            <img src={p.imageUrl} alt={p.name} className="w-12 h-12 object-cover rounded-md me-3 flex-shrink-0" />
+                                                        ) : (
+                                                            <div className="w-12 h-12 bg-gray-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center me-3 flex-shrink-0">
+                                                                <ProductsIcon className="w-6 h-6 text-cyan-500"/>
+                                                            </div>
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="font-semibold text-gray-900 dark:text-white truncate">{p.name}</p>
+                                                            <p className="text-sm text-gray-600 dark:text-slate-400 truncate">{p.category}</p>
+                                                        </div>
+                                                        <div className="ms-2 flex-shrink-0">
+                                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColor}`}>
+                                                                {statusText}
+                                                            </span>
+                                                        </div>
+                                                    </Link>
+                                                </li>
+                                            );
+                                        })}</ul>
                                     </>
                                 ) : (
                                     <p className="text-center text-gray-600 dark:text-slate-400 py-8">{t('visual_search.no_results')}</p>
