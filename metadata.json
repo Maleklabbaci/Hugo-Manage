@@ -1,5 +1,7 @@
 {
   "name": "Manager",
   "description": "Plateforme web interne complète et professionnelle pour la gestion de produits, statistiques et paramètres pour un utilisateur unique.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "camera"
+  ]
 }

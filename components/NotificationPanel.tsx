@@ -39,6 +39,7 @@ const NotificationPanel: React.FC<{ isOpen: boolean, onClose: () => void }> = ({
                                 {notifications.length > 0 ? (
                                     <ul className="divide-y divide-gray-200 dark:divide-white/10 p-2">
                                         {notifications.map(notification => (
+                                            // FIX: The properties 'id', 'type', and 'message' are now correctly typed and accessible.
                                             <li key={notification.id} className="flex items-start p-3">
                                                 <div className={`mt-1 ${notification.type === 'error' ? 'text-red-500' : 'text-amber-500'}`}>
                                                     {notification.type === 'error' ? <PackageXIcon className="w-5 h-5"/> : <AlertCircleIcon className="w-5 h-5"/>}

@@ -1,20 +1,16 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import type { Product, Theme, Language, ActivityLog, Sale, BulkUpdatePayload, BulkUpdateMode, ProductFormData } from '../types';
+// FIX: Import AppNotification type and remove the local Notification interface.
+import type { Product, Theme, Language, ActivityLog, Sale, BulkUpdatePayload, BulkUpdateMode, ProductFormData, AppContextType, AppNotification } from '../types';
 import { storage } from '../services/storage';
 import { translations } from '../translations';
 import { MOCK_PRODUCTS } from '../mock/products';
 import { supabaseClient, uploadImage, deleteImage } from '../services/supabase';
 
-export interface Notification {
-  id: number; // product id
-  type: 'warning' | 'error';
-  message: string;
-}
-
 const mapSupabaseRecordToProduct = (p: any): Product => ({
   id: p.id,
   name: p.name || '',
+  description: p.description,
   category: p.category || '',
   supplier: p.supplier || '',
   buyPrice: p.buyprice ?? 0,
@@ -38,39 +34,6 @@ const mapSupabaseRecordToSale = (s: any): Sale => ({
   ownerId: s.owner_id
 });
 
-interface AppContextType {
-  products: Product[];
-  sales: Sale[];
-  activityLog: ActivityLog[];
-  notifications: Notification[];
-  theme: Theme;
-  language: Language;
-  isLoading: boolean;
-  isConfigured: boolean;
-  session: Session | null;
-  user: User | null;
-  setTheme: (theme: Theme) => void;
-  setLanguage: (language: Language) => void;
-  t: (key: string, params?: Record<string, string | number>) => string;
-  login: (email: string, pass: string) => Promise<{ error: Error | null }>;
-  logout: () => Promise<void>;
-  addProduct: (productData: ProductFormData) => Promise<Product | null>;
-  addMultipleProducts: (productsData: Omit<Product, 'id' | 'status' | 'createdAt'>[]) => Promise<void>;
-  updateProduct: (product: Product, productData: ProductFormData) => Promise<Product | null>;
-  updateMultipleProducts: (productIds: number[], updates: BulkUpdatePayload) => Promise<void>;
-  deleteProduct: (productId: number) => Promise<void>;
-  deleteMultipleProducts: (productIds: number[]) => Promise<void>;
-  duplicateProduct: (productId: number) => Promise<void>;
-  setProductToDelivery: (productId: number) => Promise<void>;
-  confirmSaleFromDelivery: (productId: number) => Promise<void>;
-  cancelDelivery: (productId: number) => Promise<void>;
-  addSale: (productId: number, quantity: number) => Promise<void>;
-  cancelSale: (saleId: number) => Promise<void>;
-  markNotificationAsRead: (productId: number) => void;
-  markAllNotificationsAsRead: () => void;
-  saveSupabaseCredentials: (url: string, anonKey: string) => void;
-  refetchData: () => Promise<void>;
-}
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -131,7 +94,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return translation;
   }, [language]);
     
-  const notifications = useMemo(() => {
+  const notifications: AppNotification[] = useMemo(() => {
     const lowStockAlerts = products
       .filter(p => p.stock > 0 && p.stock <= 5 && !readNotificationIds.includes(p.id))
       .map(p => ({
@@ -181,16 +144,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         details: l.details, createdAt: l.created_at, ownerId: l.owner_id
       })));
     } catch (error) {
-        let errorMessage: string;
-        if (error && typeof error === 'object' && 'message' in error) {
-            errorMessage = String((error as { message: string }).message);
-        } else {
-            errorMessage = String(error);
-        }
-        
-        if (errorMessage.includes("permission denied for table")) {
-             errorMessage = t('error.rls_permission_denied');
-        }
+        const errorMessage = error instanceof Error ? error.message : String(error);
         console.error("Error fetching data:", error);
         alert(t('error.fetch_data', { error: errorMessage }));
     } finally {
@@ -238,7 +192,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           details: data.details, createdAt: data.created_at, ownerId: data.owner_id
       }, ...prev]);
     }
-  }, [user, t]);
+  }, [user]);
   
   const addProduct = async (productData: ProductFormData): Promise<Product | null> => {
     if (!supabaseClient || !user) return null;
@@ -249,9 +203,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       const newProductPayload = {
-        name: productData.name, category: productData.category, supplier: productData.supplier,
-        buyprice: productData.buyPrice, sellprice: productData.sellPrice, stock: productData.stock,
-        imageurl: imageUrl, status: productData.stock > 0 ? 'actif' : 'rupture',
+        name: productData.name,
+        description: productData.description || null,
+        category: productData.category,
+        supplier: productData.supplier,
+        buyprice: productData.buyPrice,
+        sellprice: productData.sellPrice,
+        stock: productData.stock,
+        imageurl: imageUrl,
+        status: productData.stock > 0 ? 'actif' : 'rupture',
         owner_id: user.id
       };
       const { data, error } = await supabaseClient.from('products').insert(newProductPayload).select().single();
@@ -271,9 +231,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!supabaseClient || !user) return;
     try {
         const newProductsPayload = productsData.map(p => ({
-            name: p.name, category: p.category, supplier: p.supplier, buyprice: p.buyPrice,
-            sellprice: p.sellPrice, stock: p.stock, imageurl: p.imageUrl,
-            status: p.stock > 0 ? 'actif' : 'rupture', owner_id: user.id
+            name: p.name, 
+            description: p.description || null,
+            category: p.category, 
+            supplier: p.supplier, 
+            buyprice: p.buyPrice,
+            sellprice: p.sellPrice, 
+            stock: p.stock, 
+            imageurl: p.imageUrl,
+            status: p.stock > 0 ? 'actif' : 'rupture', 
+            owner_id: user.id
         }));
 
         const { data, error } = await supabaseClient.from('products').insert(newProductsPayload).select();
@@ -301,9 +268,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       const updatedProductPayload = {
-        name: productData.name, category: productData.category, supplier: productData.supplier,
-        buyprice: productData.buyPrice, sellprice: productData.sellPrice, stock: productData.stock,
-        imageurl: imageUrl, status: productData.stock > 0 ? 'actif' : 'rupture',
+        name: productData.name,
+        description: productData.description || null,
+        category: productData.category,
+        supplier: productData.supplier,
+        buyprice: productData.buyPrice,
+        sellprice: productData.sellPrice,
+        stock: productData.stock,
+        imageurl: imageUrl,
+        status: productData.stock > 0 ? 'actif' : 'rupture',
       };
       const { data, error } = await supabaseClient.from('products').update(updatedProductPayload).eq('id', product.id).select().single();
       if (error) throw error;
@@ -312,10 +285,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setProducts(prev => prev.map(p => p.id === product.id ? updatedProduct : p));
 
       const changes: string[] = [];
-      const keysToCompare: (keyof Omit<Product, 'id'|'createdAt'|'status'|'imageUrl'|'ownerId'|'en livraison'>)[] = ['name', 'category', 'supplier', 'buyPrice', 'sellPrice', 'stock'];
+      const keysToCompare: (keyof Omit<Product, 'id'|'createdAt'|'status'|'imageUrl'|'ownerId'|'en livraison'>)[] = ['name', 'description', 'category', 'supplier', 'buyPrice', 'sellPrice', 'stock'];
       keysToCompare.forEach(key => {
         if (product[key] !== updatedProduct[key]) {
-          changes.push(`${t('log.' + key)}: "${product[key]}" -> "${updatedProduct[key]}"`);
+          changes.push(`${t('log.' + key)}: "${product[key] || ''}" -> "${updatedProduct[key] || ''}"`);
         }
       });
       if (imageUrl !== product.imageUrl) {
@@ -465,9 +438,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Split product: create new delivery item, decrement original
         try {
             const newProductPayload = {
-                name: productToUpdate.name, category: productToUpdate.category, supplier: productToUpdate.supplier,
-                buyprice: productToUpdate.buyPrice, sellprice: productToUpdate.sellPrice, stock: 1,
-                imageurl: productToUpdate.imageUrl, status: 'en livraison' as const, owner_id: user.id
+                name: productToUpdate.name, 
+                description: productToUpdate.description,
+                category: productToUpdate.category, 
+                supplier: productToUpdate.supplier,
+                buyprice: productToUpdate.buyPrice, 
+                sellprice: productToUpdate.sellPrice, 
+                stock: 1,
+                imageurl: productToUpdate.imageUrl, 
+                status: 'en livraison' as const, 
+                owner_id: user.id
             };
             const { data: newProductData, error: insertError } = await supabaseClient.from('products').insert(newProductPayload).select().single();
             if (insertError) throw insertError;
@@ -637,13 +617,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     alert(t('settings.supabase.saved_message'));
     window.location.reload();
   };
+  
+  const findProductByName = (name: string): Product[] => {
+      if (!name) return [];
+      const lowerCaseName = name.toLowerCase();
+      return products.filter(p => p.name.toLowerCase().includes(lowerCaseName));
+  };
+
+  const findProductsByKeywords = (description: string): Product[] => {
+    const keywords = description.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    if (keywords.length === 0) return [];
+
+    const scoredProducts = products.map(product => {
+      let score = 0;
+      const name = product.name.toLowerCase();
+      const category = product.category.toLowerCase();
+      const desc = (product.description || '').toLowerCase();
+
+      keywords.forEach(keyword => {
+        if (name.includes(keyword)) score += 3;
+        if (category.includes(keyword)) score += 2;
+        if (desc.includes(keyword)) score += 1;
+      });
+      return { ...product, score };
+    });
+
+    return scoredProducts.filter(p => p.score > 0).sort((a, b) => b.score - a.score);
+  };
 
   const value = {
     products, sales, activityLog, theme, language, isLoading,
     session, user, notifications, setTheme, setLanguage, t, login, logout,
     addProduct, addMultipleProducts, updateProduct, updateMultipleProducts, deleteProduct, deleteMultipleProducts, 
     duplicateProduct, setProductToDelivery, confirmSaleFromDelivery, cancelDelivery, addSale, cancelSale, markNotificationAsRead, markAllNotificationsAsRead,
-    isConfigured, saveSupabaseCredentials, refetchData,
+    isConfigured, saveSupabaseCredentials, refetchData, findProductByName, findProductsByKeywords,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

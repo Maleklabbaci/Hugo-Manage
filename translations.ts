@@ -57,6 +57,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.notifications.out_of_stock': '{productName} est en rupture de stock.',
     'dashboard.units_in_delivery': 'Unités en livraison',
     'dashboard.this_week': 'cette semaine',
+    'dashboard.ai_insights.title': "Synthèse par l'IA",
+    'dashboard.ai_insights.generate_button': "Générer une synthèse",
+    'dashboard.ai_insights.generating': "Analyse des données...",
+    'dashboard.ai_insights.error': "Impossible de générer la synthèse. Veuillez réessayer.",
+    'dashboard.ai_insights.insight_types.positive': "Point Positif",
+    'dashboard.ai_insights.insight_types.negative': "Risque Potentiel",
+    'dashboard.ai_insights.insight_types.neutral': "Observation",
 
     // Products Page
     'products.title': 'Liste des produits',
@@ -116,6 +123,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'product_form.edit_title': 'Modifier le produit',
     'product_form.add_title': 'Ajouter un produit',
     'product_form.name_label': 'Nom du produit',
+    'product_form.description': 'Description',
+    'product_form.generate_with_ai': "Générer avec l'IA",
+    'product_form.generating': 'Génération...',
+    'product_form.error_generation_fields': 'Veuillez renseigner le nom et la catégorie pour utiliser l\'IA.',
+    'product_form.error_generation_api': 'La génération par IA a échoué. Veuillez réessayer.',
     'product_form.category_label': 'Catégorie',
     'product_form.select_category': 'Sélectionner une catégorie',
     'product_form.image_label': 'Image du produit',
@@ -128,6 +140,7 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Product Details Modal
     'product_details.view_button': 'Voir les détails',
+    'product_details.description': 'Description',
 
     // Bulk Edit Form
     'bulk_edit_form.title': 'Édition groupée de {count} produits',
@@ -239,6 +252,17 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.unconfigured_link': "Allez dans les paramètres pour vous connecter.",
     'settings.supabase.unconfigured_link_short': "Configurez ici.",
 
+    // AI Assistant
+    'ai_assistant.title': 'Assistant IA',
+    'ai_assistant.placeholder': 'Demandez-moi quelque chose...',
+    'ai_assistant.welcome_message': 'Bonjour ! Je suis Hugo, votre assistant. Que puis-je faire pour vous ?',
+    'ai_assistant.thinking': 'Hugo réfléchit...',
+    'ai_assistant.tool_error': 'Désolé, je n\'ai pas pu effectuer cette action.',
+    'ai_assistant.api_error': 'Désolé, une erreur de communication est survenue. Veuillez réessayer.',
+    'ai_assistant.product_not_found': 'Désolé, je n\'ai pas trouvé de produit correspondant à "{productName}".',
+    'ai_assistant.products_ambiguous': 'J\'ai trouvé plusieurs produits : {productNames}. Lequel voulez-vous ?',
+    'ai_assistant.action_success': 'Action effectuée avec succès !',
+
     // Global Search
     'search.placeholder': 'Rechercher partout...',
     'search.products': 'Produits',
@@ -248,6 +272,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'search.results_for': 'pour la recherche "{query}"',
     'search.sale_details': 'Qté: {quantity}, Total: {price} DA',
 
+    // Visual Search
+    'visual_search.title': 'Recherche par image',
+    'visual_search.scan_button': 'Scanner le produit',
+    'visual_search.scanning': 'Scan en cours...',
+    'visual_search.analyzing': "Analyse par l'IA...",
+    'visual_search.retry_button': 'Réessayer',
+    'visual_search.no_results': 'Aucun produit correspondant trouvé',
+    'visual_search.results_found': '{count} produit(s) trouvé(s)',
+
     // Notifications
     'notifications.title': 'Notifications',
     'notifications.empty': 'Aucune nouvelle notification',
@@ -255,6 +288,7 @@ export const translations: Record<Language, Record<string, string>> = {
 
     // Activity Log details (in AppContext)
     'log.name': 'Nom',
+    'log.description': 'Description',
     'log.category': 'Catégorie',
     'log.supplier': 'Fournisseur',
     'log.buyPrice': "Prix d'achat",
@@ -324,6 +358,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.notifications.out_of_stock': '{productName} is out of stock.',
     'dashboard.units_in_delivery': 'Units in Delivery',
     'dashboard.this_week': 'this week',
+    'dashboard.ai_insights.title': "AI-Powered Insights",
+    'dashboard.ai_insights.generate_button': "Generate Insights",
+    'dashboard.ai_insights.generating': "Analyzing data...",
+    'dashboard.ai_insights.error': "Could not generate insights. Please try again.",
+    'dashboard.ai_insights.insight_types.positive': "Good Point",
+    'dashboard.ai_insights.insight_types.negative': "Potential Risk",
+    'dashboard.ai_insights.insight_types.neutral': "Observation",
 
     'products.title': 'Product List',
     'products.add_product': 'Add Product',
@@ -381,6 +422,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'product_form.edit_title': 'Edit Product',
     'product_form.add_title': 'Add Product',
     'product_form.name_label': 'Product Name',
+    'product_form.description': 'Description',
+    'product_form.generate_with_ai': "Generate with AI",
+    'product_form.generating': 'Generating...',
+    'product_form.error_generation_fields': 'Please fill in the name and category to use AI generation.',
+    'product_form.error_generation_api': 'AI generation failed. Please try again.',
     'product_form.category_label': 'Category',
     'product_form.select_category': 'Select a category',
     'product_form.image_label': 'Product Image',
@@ -392,6 +438,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'product_form.error_update': 'Error updating product: {error}',
     
     'product_details.view_button': 'View Details',
+    'product_details.description': 'Description',
 
     // Bulk Edit Form
     'bulk_edit_form.title': 'Bulk Edit {count} Products',
@@ -498,6 +545,17 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.unconfigured_prefix': "Database is not configured.",
     'settings.supabase.unconfigured_link': "Go to settings to connect.",
     'settings.supabase.unconfigured_link_short': 'Configure here.',
+
+    // AI Assistant
+    'ai_assistant.title': 'AI Assistant',
+    'ai_assistant.placeholder': 'Ask me anything...',
+    'ai_assistant.welcome_message': 'Hello! I am Hugo, your assistant. How can I help you?',
+    'ai_assistant.thinking': 'Hugo is thinking...',
+    'ai_assistant.tool_error': 'Sorry, I was unable to perform that action.',
+    'ai_assistant.api_error': 'Sorry, a communication error occurred. Please try again.',
+    'ai_assistant.product_not_found': 'Sorry, I could not find a product matching "{productName}".',
+    'ai_assistant.products_ambiguous': 'I found several products: {productNames}. Which one do you mean?',
+    'ai_assistant.action_success': 'Action performed successfully!',
     
     // Global Search
     'search.placeholder': 'Search everywhere...',
@@ -508,12 +566,22 @@ export const translations: Record<Language, Record<string, string>> = {
     'search.results_for': 'for query "{query}"',
     'search.sale_details': 'Qty: {quantity}, Total: {price} DZD',
     
+    // Visual Search
+    'visual_search.title': 'Visual Search',
+    'visual_search.scan_button': 'Scan Product',
+    'visual_search.scanning': 'Scanning...',
+    'visual_search.analyzing': 'Analyzing with AI...',
+    'visual_search.retry_button': 'Try Again',
+    'visual_search.no_results': 'No matching products found',
+    'visual_search.results_found': '{count} product(s) found',
+
     // Notifications
     'notifications.title': 'Notifications',
     'notifications.empty': 'No new notifications',
     'notifications.clear_all': 'Clear all',
 
     'log.name': 'Name',
+    'log.description': 'Description',
     'log.category': 'Category',
     'log.supplier': 'Supplier',
     'log.buyPrice': 'Buy Price',
@@ -582,6 +650,13 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.notifications.out_of_stock': 'نفد مخزون {productName}.',
     'dashboard.units_in_delivery': 'وحدات قيد التوصيل',
     'dashboard.this_week': 'هذا الأسبوع',
+    'dashboard.ai_insights.title': "رؤى مدعومة بالذكاء الاصطناعي",
+    'dashboard.ai_insights.generate_button': "توليد رؤى",
+    'dashboard.ai_insights.generating': "جاري تحليل البيانات...",
+    'dashboard.ai_insights.error': "تعذر توليد الرؤى. يرجى المحاولة مرة أخرى.",
+    'dashboard.ai_insights.insight_types.positive': "نقطة إيجابية",
+    'dashboard.ai_insights.insight_types.negative': "خطر محتمل",
+    'dashboard.ai_insights.insight_types.neutral': "ملاحظة",
 
     'products.title': 'قائمة المنتجات',
     'products.add_product': 'إضافة منتج',
@@ -639,6 +714,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'product_form.edit_title': 'تعديل المنتج',
     'product_form.add_title': 'إضافة منتج',
     'product_form.name_label': 'اسم المنتج',
+    'product_form.description': 'الوصف',
+    'product_form.generate_with_ai': "توليد بواسطة الذكاء الاصطناعي",
+    'product_form.generating': 'جاري التوليد...',
+    'product_form.error_generation_fields': 'يرجى ملء الاسم والفئة لاستخدام التوليد بالذكاء الاصطناعي.',
+    'product_form.error_generation_api': 'فشل التوليد بالذكاء الاصطناعي. يرجى المحاولة مرة أخرى.',
     'product_form.category_label': 'الفئة',
     'product_form.select_category': 'اختر فئة',
     'product_form.image_label': 'صورة المنتج',
@@ -650,6 +730,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'product_form.error_update': 'خطأ في تحديث المنتج: {error}',
 
     'product_details.view_button': 'عرض التفاصيل',
+    'product_details.description': 'الوصف',
     
     // Bulk Edit Form
     'bulk_edit_form.title': 'تعديل جماعي لـ {count} منتجات',
@@ -757,6 +838,17 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.unconfigured_link': 'اذهب إلى الإعدادات للاتصال.',
     'settings.supabase.unconfigured_link_short': 'الإعدادات هنا.',
     
+    // AI Assistant
+    'ai_assistant.title': 'المساعد الذكي',
+    'ai_assistant.placeholder': 'اسألني أي شيء...',
+    'ai_assistant.welcome_message': 'مرحباً! أنا هوغو، مساعدك. كيف يمكنني مساعدتك؟',
+    'ai_assistant.thinking': 'هوغو يفكر...',
+    'ai_assistant.tool_error': 'عذراً، لم أتمكن من تنفيذ هذا الإجراء.',
+    'ai_assistant.api_error': 'عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.',
+    'ai_assistant.product_not_found': 'عذراً، لم أجد منتجاً يطابق "{productName}".',
+    'ai_assistant.products_ambiguous': 'لقد وجدت عدة منتجات: {productNames}. أي واحد تقصد؟',
+    'ai_assistant.action_success': 'تم تنفيذ الإجراء بنجاح!',
+
     // Global Search
     'search.placeholder': 'ابحث في كل مكان...',
     'search.products': 'المنتجات',
@@ -765,6 +857,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'search.no_results': 'لم يتم العثور على نتائج',
     'search.results_for': 'للبحث "{query}"',
     'search.sale_details': 'الكمية: {quantity}, الإجمالي: {price} د.ج',
+
+    // Visual Search
+    'visual_search.title': 'البحث بالصورة',
+    'visual_search.scan_button': 'مسح المنتج',
+    'visual_search.scanning': 'جاري المسح...',
+    'visual_search.analyzing': 'تحليل بواسطة الذكاء الاصطناعي...',
+    'visual_search.retry_button': 'إعادة المحاولة',
+    'visual_search.no_results': 'لم يتم العثور على منتجات مطابقة',
+    'visual_search.results_found': 'تم العثور على {count} منتج (منتجات)',
     
     // Notifications
     'notifications.title': 'الإشعارات',
@@ -772,6 +873,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'notifications.clear_all': 'مسح الكل',
 
     'log.name': 'الاسم',
+    'log.description': 'الوصف',
     'log.category': 'الفئة',
     'log.supplier': 'المورد',
     'log.buyPrice': 'سعر الشراء',

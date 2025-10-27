@@ -69,6 +69,13 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ isOpen, onClo
                                 <p className="text-md text-gray-600 dark:text-slate-400">{product.category}</p>
                             </div>
                         </div>
+                        
+                        {product.description && (
+                            <div className="mt-6">
+                                <h3 className="text-sm font-bold text-gray-500 dark:text-slate-400 mb-1">{t('product_details.description')}</h3>
+                                <p className="text-sm text-gray-700 dark:text-slate-300 whitespace-pre-wrap">{product.description}</p>
+                            </div>
+                        )}
 
                         <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-5">
                             <DetailItem label={t('product_form.supplier_label')} value={product.supplier} />

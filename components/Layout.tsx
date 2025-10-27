@@ -5,24 +5,33 @@ import Header from './Header';
 import { motion, AnimatePresence } from 'framer-motion';
 import GlobalSearch from './GlobalSearch';
 import NotificationPanel from './NotificationPanel';
+import ConversationalAssistant from './ConversationalAssistant';
+import VisualSearchModal from './VisualSearchModal';
 import { useAppContext } from '../context/AppContext';
+import { BotIcon } from './Icons';
 
 
 const Layout: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const location = useLocation();
-  const { isConfigured, t } = useAppContext();
+  const { isConfigured, t, session } = useAppContext();
 
   return (
     <div className="flex h-screen">
       <Sidebar />
       <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <VisualSearchModal isOpen={isVisualSearchOpen} onClose={() => setIsVisualSearchOpen(false)} />
       <NotificationPanel isOpen={isNotificationsOpen} onClose={() => setIsNotificationsOpen(false)} />
+      {session && <ConversationalAssistant isOpen={isAssistantOpen} onClose={() => setIsAssistantOpen(false)} />}
+      
       <div className="flex-1 flex flex-col overflow-hidden md:ms-64">
         <Header 
             onSearchClick={() => setIsSearchOpen(true)}
             onNotificationClick={() => setIsNotificationsOpen(prev => !prev)}
+            onVisualSearchClick={() => setIsVisualSearchOpen(true)}
         />
         {!isConfigured && location.pathname !== '/settings' && (
             <div className="bg-amber-500/20 text-amber-700 dark:text-amber-300 p-3 text-center text-sm font-medium">
@@ -46,6 +55,19 @@ const Layout: React.FC = () => {
             </AnimatePresence>
         </main>
       </div>
+
+      {session && (
+        <motion.button
+            onClick={() => setIsAssistantOpen(true)}
+            className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-40 w-14 h-14 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white flex items-center justify-center shadow-lg"
+            whileHover={{ scale: 1.1, rotate: 10 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            aria-label={t('ai_assistant.title')}
+        >
+            <BotIcon className="w-7 h-7" />
+        </motion.button>
+      )}
     </div>
   );
 };

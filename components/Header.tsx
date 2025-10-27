@@ -1,10 +1,10 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { SearchIcon, NotificationIcon, RefreshCwIcon, LoaderIcon } from './Icons';
+import { SearchIcon, NotificationIcon, RefreshCwIcon, LoaderIcon, CameraIcon } from './Icons';
 import { useAppContext } from '../context/AppContext';
 import { motion } from 'framer-motion';
 
-const Header: React.FC<{ onSearchClick: () => void; onNotificationClick: () => void; }> = ({ onSearchClick, onNotificationClick }) => {
+const Header: React.FC<{ onSearchClick: () => void; onNotificationClick: () => void; onVisualSearchClick: () => void; }> = ({ onSearchClick, onNotificationClick, onVisualSearchClick }) => {
   const location = useLocation();
   const { t, notifications, refetchData, isLoading } = useAppContext();
 
@@ -47,8 +47,18 @@ const Header: React.FC<{ onSearchClick: () => void; onNotificationClick: () => v
             className="p-2 rounded-full text-gray-500 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-white/10"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
+            title={t('search.placeholder')}
           >
             <SearchIcon className="w-6 h-6" />
+          </motion.button>
+          <motion.button 
+            onClick={onVisualSearchClick} 
+            className="p-2 rounded-full text-gray-500 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-white/10"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            title={t('visual_search.title')}
+          >
+            <CameraIcon className="w-6 h-6" />
           </motion.button>
           <motion.button 
             onClick={onNotificationClick} 

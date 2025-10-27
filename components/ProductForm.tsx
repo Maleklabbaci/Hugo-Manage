@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import type { Product, ProductFormData } from '../types';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { XIcon, LoaderIcon } from './Icons';
+import { XIcon, LoaderIcon, SparklesIcon } from './Icons';
 import { useAppContext } from '../context/AppContext';
+import { generateProductInfo } from '../services/gemini';
+
 
 interface ProductFormProps {
   isOpen: boolean;
@@ -18,6 +20,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
   const { t } = useAppContext();
   const [formData, setFormData] = useState({
     name: '',
+    description: '',
     category: '',
     supplier: '',
     buyPrice: 0,
@@ -27,11 +30,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     if (productToEdit) {
       setFormData({
         name: productToEdit.name,
+        description: productToEdit.description || '',
         category: productToEdit.category,
         supplier: productToEdit.supplier,
         buyPrice: productToEdit.buyPrice,
@@ -40,22 +45,24 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
       });
       setImagePreview(productToEdit.imageUrl || null);
     } else {
-      setFormData({ name: '', category: '', supplier: '', buyPrice: 0, sellPrice: 0, stock: 0 });
+      setFormData({ name: '', description: '', category: '', supplier: '', buyPrice: 0, sellPrice: 0, stock: 0 });
     }
     
-    // Reset image file and preview for both edit and new
     setImageFile(null);
     if (!productToEdit) setImagePreview(null);
 
   }, [productToEdit, isOpen]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
+    // @ts-ignore
+    const isNumber = type === 'number';
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'number' ? parseFloat(value) || 0 : value,
+      [name]: isNumber ? parseFloat(value) || 0 : value,
     }));
   };
+  
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,13 +72,32 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
     }
   };
 
+  const handleGenerate = async () => {
+    if (!formData.name || !formData.category) {
+        alert(t('product_form.error_generation_fields'));
+        return;
+    }
+    setIsGenerating(true);
+    const result = await generateProductInfo(formData.name, formData.category, formData.supplier);
+    if (result) {
+        setFormData(prev => ({
+            ...prev,
+            name: result.name,
+            description: result.description,
+        }));
+    } else {
+        alert(t('product_form.error_generation_api'));
+    }
+    setIsGenerating(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     const finalProductData: ProductFormData = { 
         ...formData,
-        imageUrl: productToEdit?.imageUrl, // Keep old imageUrl for context
+        imageUrl: productToEdit?.imageUrl,
         imageFile: imageFile 
     };
 
@@ -115,9 +141,25 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
                     <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">{productToEdit ? t('product_form.edit_title') : t('product_form.add_title')}</h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         
-                        <div>
+                        <div className="relative">
                             <label htmlFor="name" className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">{t('product_form.name_label')}</label>
                             <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" required />
+                            <motion.button 
+                                type="button" 
+                                onClick={handleGenerate} 
+                                disabled={isGenerating}
+                                className="absolute top-7 right-2 flex items-center px-2 py-1 text-xs font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-100 dark:bg-cyan-500/20 rounded-full disabled:opacity-50"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                {isGenerating ? <LoaderIcon className="w-4 h-4 animate-spin me-1"/> : <SparklesIcon className="w-4 h-4 me-1"/>}
+                                {isGenerating ? t('product_form.generating') : t('product_form.generate_with_ai')}
+                            </motion.button>
+                        </div>
+
+                        <div>
+                            <label htmlFor="description" className="block text-sm font-medium text-gray-600 dark:text-slate-300 mb-1">{t('product_form.description')}</label>
+                            <textarea id="description" name="description" value={formData.description} onChange={handleChange} rows={3} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"></textarea>
                         </div>
                         
                         <div>

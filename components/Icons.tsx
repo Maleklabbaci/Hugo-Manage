@@ -45,6 +45,10 @@ import {
   Truck,
   CheckCircle2,
   Eye,
+  Bot,
+  Sparkles,
+  Lightbulb,
+  Camera,
 } from 'lucide-react';
 
 export const ChezHugoLogo: React.FC<{ className?: string }> = ({ className }) => {
@@ -107,4 +111,8 @@ export {
   Truck as DeliveryIcon,
   CheckCircle2 as MarkDeliveredIcon,
   Eye as ViewDetailsIcon,
+  Bot as BotIcon,
+  Sparkles as SparklesIcon,
+  Lightbulb as LightbulbIcon,
+  Camera as CameraIcon,
 };

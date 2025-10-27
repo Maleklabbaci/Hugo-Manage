@@ -78,8 +78,8 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                         variants={modalVariants}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="p-4 border-b border-gray-200 dark:border-white/10 flex items-center">
-                           <SearchIcon className="w-5 h-5 text-gray-400 me-3"/>
+                        <div className="p-4 border-b border-gray-200 dark:border-white/10 flex items-center space-x-2">
+                           <SearchIcon className="w-5 h-5 text-gray-400"/>
                            <input
                                 ref={inputRef}
                                 type="text"
