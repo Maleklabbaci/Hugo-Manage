@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import type { Product, Language } from '../types';
 import { DeliveryIcon, MarkDeliveredIcon, ProductsIcon, UndoIcon, ViewDetailsIcon, DollarSignIcon } from '../components/Icons';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import ProductDetailsModal from '../components/ProductDetailsModal';
 import StatCard from '../components/StatCard';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -91,6 +91,7 @@ const Delivery: React.FC = () => {
     const [productToConfirmSale, setProductToConfirmSale] = useState<Product | null>(null);
     const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
     const [deliveryToCancelId, setDeliveryToCancelId] = useState<number | null>(null);
+    const [hoveredImage, setHoveredImage] = useState<string | null>(null);
     const locale = localeMap[language];
 
     const deliveryProducts = useMemo(() => {
@@ -208,7 +209,13 @@ const Delivery: React.FC = () => {
                                     <tr key={product.id} className="border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5">
                                         <td className="px-6 py-4">
                                             {product.imageUrl ? (
-                                                <img src={product.imageUrl} alt={product.name} className="w-12 h-12 object-cover rounded-md" />
+                                                <img 
+                                                    src={product.imageUrl} 
+                                                    alt={product.name} 
+                                                    className="w-12 h-12 object-cover rounded-md cursor-pointer"
+                                                    onMouseEnter={() => setHoveredImage(product.imageUrl)}
+                                                    onMouseLeave={() => setHoveredImage(null)}
+                                                />
                                             ) : (
                                                 <div className="w-12 h-12 bg-gray-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center">
                                                     <ProductsIcon className="w-6 h-6 text-gray-400" />
@@ -274,6 +281,26 @@ const Delivery: React.FC = () => {
                 title={t('delivery.confirm_cancel_title')}
                 message={t('delivery.confirm_cancel')}
             />
+            <AnimatePresence>
+                {hoveredImage && !isMobile && (
+                    <motion.div
+                        className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 pointer-events-none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.img
+                            src={hoveredImage}
+                            alt="Product Fullscreen"
+                            className="max-w-[80vw] max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

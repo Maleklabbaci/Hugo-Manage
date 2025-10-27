@@ -104,7 +104,13 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                                             <h3 className="text-xs font-bold uppercase text-gray-500 px-3 py-2">{t('search.products')}</h3>
                                             <ul>{searchResults.products.map(p => (
                                                 <li key={`prod-${p.id}`}><Link to="/products" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
-                                                    <ProductsIcon className="w-5 h-5 text-cyan-500 me-4"/>
+                                                    {p.imageUrl ? (
+                                                        <img src={p.imageUrl} alt={p.name} className="w-10 h-10 object-cover rounded-md me-4 flex-shrink-0" />
+                                                    ) : (
+                                                        <div className="w-10 h-10 bg-gray-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center me-4 flex-shrink-0">
+                                                            <ProductsIcon className="w-5 h-5 text-cyan-500"/>
+                                                        </div>
+                                                    )}
                                                     <div>
                                                         <p className="font-semibold text-gray-900 dark:text-white">{p.name}</p>
                                                         <p className="text-sm text-gray-600 dark:text-slate-400">{p.category}</p>
@@ -116,15 +122,24 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                                     {searchResults.sales.length > 0 && (
                                         <div className="mb-2">
                                             <h3 className="text-xs font-bold uppercase text-gray-500 px-3 py-2">{t('search.sales')}</h3>
-                                            <ul>{searchResults.sales.map(s => (
+                                            <ul>{searchResults.sales.map(s => {
+                                                const product = products.find(p => p.id === s.productId);
+                                                return (
                                                 <li key={`sale-${s.id}`}><Link to="/sales" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
-                                                    <ShoppingCartIcon className="w-5 h-5 text-green-500 me-4"/>
+                                                    {product?.imageUrl ? (
+                                                        <img src={product.imageUrl} alt={s.productName} className="w-10 h-10 object-cover rounded-md me-4 flex-shrink-0" />
+                                                    ) : (
+                                                        <div className="w-10 h-10 bg-gray-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center me-4 flex-shrink-0">
+                                                            <ShoppingCartIcon className="w-5 h-5 text-green-500"/>
+                                                        </div>
+                                                    )}
                                                      <div>
                                                         <p className="font-semibold text-gray-900 dark:text-white">{s.productName}</p>
                                                         <p className="text-sm text-gray-600 dark:text-slate-400">{t('search.sale_details', { quantity: s.quantity, price: s.totalPrice.toFixed(2) })}</p>
                                                     </div>
                                                 </Link></li>
-                                            ))}</ul>
+                                                );
+                                            })}</ul>
                                         </div>
                                     )}
                                     {searchResults.activityLog.length > 0 && (

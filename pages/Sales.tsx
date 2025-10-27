@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { ShoppingCartIcon, UndoIcon, DollarSignIcon, ArchiveIcon, TrendingUpIcon, ViewDetailsIcon, PiggyBankIcon } from '../components/Icons';
 import type { Language, Sale, Product } from '../types';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import ProductDetailsModal from '../components/ProductDetailsModal';
 import StatCard from '../components/StatCard';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -14,17 +14,23 @@ const localeMap: Record<Language, string> = {
 };
 
 const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTimestamp: (iso: string) => string, onViewDetails: (p: Product) => void, product: Product | undefined }> = ({ sale, onCancel, formatTimestamp, onViewDetails, product }) => {
-    const { t, language } = useAppContext();
-    const locale = localeMap[language];
+    const { t } = useAppContext();
     return (
-        <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden">
-            <div className="p-4">
+        <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden p-4 flex space-x-4 items-start">
+            {product?.imageUrl ? (
+                <img src={product.imageUrl} alt={sale.productName} className="w-20 h-20 object-cover rounded-lg flex-shrink-0" />
+            ) : (
+                <div className="w-20 h-20 bg-gray-200 dark:bg-slate-700/50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <ShoppingCartIcon className="w-10 h-10 text-gray-400" />
+                </div>
+            )}
+            <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start">
-                    <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white leading-tight">{sale.productName}</h3>
+                    <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-gray-900 dark:text-white leading-tight truncate">{sale.productName}</h3>
                         <p className="text-sm text-gray-600 dark:text-slate-400">{formatTimestamp(sale.createdAt)}</p>
                     </div>
-                    <div className="flex items-center space-x-2 -mt-1 -me-1">
+                    <div className="flex items-center space-x-1 flex-shrink-0 -mt-1 -me-2">
                         {product && (
                              <motion.button 
                                 onClick={() => onViewDetails(product)} 
@@ -47,7 +53,7 @@ const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTim
                         </motion.button>
                     </div>
                 </div>
-                <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+                <div className="mt-3 grid grid-cols-3 gap-2 text-center">
                     <div className="bg-gray-100 dark:bg-black/20 p-2 rounded-lg">
                         <div className="text-xs text-gray-600 dark:text-slate-400">{t('sales.table.quantity')}</div>
                         <div className="font-semibold text-gray-900 dark:text-white flex items-center justify-center space-x-1"><ArchiveIcon className="w-4 h-4"/><span>{sale.quantity}</span></div>
@@ -73,6 +79,7 @@ const Sales: React.FC = () => {
     const [productToShow, setProductToShow] = useState<Product | null>(null);
     const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
     const [saleToCancelId, setSaleToCancelId] = useState<number | null>(null);
+    const [hoveredImage, setHoveredImage] = useState<string | null>(null);
 
     const locale = localeMap[language];
 
@@ -120,7 +127,7 @@ const Sales: React.FC = () => {
         )
     }
     
-    const tableHeaders = ['product', 'quantity', 'unit_price', 'total_price', 'margin', 'date', 'actions'];
+    const tableHeaders = ['image', 'product', 'quantity', 'unit_price', 'total_price', 'margin', 'date', 'actions'];
 
     return (
         <div>
@@ -155,6 +162,21 @@ const Sales: React.FC = () => {
                                     const product = products.find(p => p.id === sale.productId);
                                     return (
                                         <tr key={sale.id} className="border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5">
+                                            <td className="px-6 py-4">
+                                                {product?.imageUrl ? (
+                                                    <img
+                                                        src={product.imageUrl}
+                                                        alt={sale.productName}
+                                                        className="w-12 h-12 object-cover rounded-md cursor-pointer"
+                                                        onMouseEnter={() => setHoveredImage(product.imageUrl)}
+                                                        onMouseLeave={() => setHoveredImage(null)}
+                                                    />
+                                                ) : (
+                                                    <div className="w-12 h-12 bg-gray-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center">
+                                                        <ShoppingCartIcon className="w-6 h-6 text-gray-400" />
+                                                    </div>
+                                                )}
+                                            </td>
                                             <td className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">{sale.productName}</td>
                                             <td className="px-6 py-4">{sale.quantity}</td>
                                             <td className="px-6 py-4">{sale.sellPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>
@@ -199,6 +221,26 @@ const Sales: React.FC = () => {
                 title={t('sales.confirm_cancel_title')}
                 message={t('sales.confirm_cancel')}
             />
+            <AnimatePresence>
+                {hoveredImage && !isMobile && (
+                    <motion.div
+                        className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 pointer-events-none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.img
+                            src={hoveredImage}
+                            alt="Product Fullscreen"
+                            className="max-w-[80vw] max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

@@ -131,6 +131,7 @@ const Products: React.FC = () => {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [productToDeleteId, setProductToDeleteId] = useState<number | null>(null);
   const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
+  const [hoveredImage, setHoveredImage] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -603,7 +604,13 @@ const Products: React.FC = () => {
                       </td>
                     <td className="px-6 py-4">
                       {product.imageUrl ? (
-                        <img src={product.imageUrl} alt={product.name} className="w-12 h-12 object-cover rounded-md" />
+                        <img 
+                          src={product.imageUrl} 
+                          alt={product.name} 
+                          className="w-12 h-12 object-cover rounded-md cursor-pointer"
+                          onMouseEnter={() => setHoveredImage(product.imageUrl)}
+                          onMouseLeave={() => setHoveredImage(null)}
+                        />
                       ) : (
                         <div className="w-12 h-12 bg-gray-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center">
                           <ProductsIcon className="w-6 h-6 text-gray-400" />
@@ -754,6 +761,26 @@ const Products: React.FC = () => {
         message={t('products.confirm_delete_multiple', { count: selectedProducts.length })}
         confirmText={t('delete')}
       />
+      <AnimatePresence>
+        {hoveredImage && !isMobile && (
+            <motion.div
+                className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 pointer-events-none"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+            >
+                <motion.img
+                    src={hoveredImage}
+                    alt="Product Fullscreen"
+                    className="max-w-[80vw] max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+                />
+            </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

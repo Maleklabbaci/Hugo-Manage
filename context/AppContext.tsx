@@ -181,7 +181,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         details: l.details, createdAt: l.created_at, ownerId: l.owner_id
       })));
     } catch (error) {
-        let errorMessage = (error as Error).message;
+        let errorMessage: string;
+        if (error && typeof error === 'object' && 'message' in error) {
+            errorMessage = String((error as { message: string }).message);
+        } else {
+            errorMessage = String(error);
+        }
+        
         if (errorMessage.includes("permission denied for table")) {
              errorMessage = t('error.rls_permission_denied');
         }
