@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { DashboardIcon, ProductsIcon, SettingsIcon, HistoryIcon, ShoppingCartIcon, ChezHugoLogo, DeliveryIcon, StatsIcon } from './Icons';
+import { DashboardIcon, ProductsIcon, SettingsIcon, ShoppingCartIcon, ChezHugoLogo, DeliveryIcon } from './Icons';
 import { useAppContext } from '../context/AppContext';
 
 // Reusable NavItem for both sidebar and bottom nav
@@ -61,8 +61,6 @@ const Sidebar: React.FC = () => {
     { to: "/products", icon: ProductsIcon, label: t('sidebar.products'), count: products.filter(p => p.status !== 'en livraison').length },
     { to: "/delivery", icon: DeliveryIcon, label: t('sidebar.delivery'), count: products.filter(p => p.status === 'en livraison').length },
     { to: "/sales", icon: ShoppingCartIcon, label: t('sidebar.sales'), count: sales.length },
-    { to: "/statistics", icon: StatsIcon, label: t('sidebar.statistics') },
-    { to: "/history", icon: HistoryIcon, label: t('sidebar.history') },
     { to: "/settings", icon: SettingsIcon, label: t('sidebar.settings') },
   ];
   

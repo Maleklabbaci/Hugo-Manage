@@ -6,9 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Delivery from './pages/Delivery';
 import Settings from './pages/Settings';
-import History from './pages/History';
 import Sales from './pages/Sales';
-import Statistics from './pages/Statistics';
 import Layout from './components/Layout';
 import { LoaderIcon } from './components/Icons';
 import LoadingScreen from './components/LoadingScreen';
@@ -54,8 +52,6 @@ const AppRoutes: React.FC = () => {
                         <Route path="/products" element={<Products />} />
                         <Route path="/delivery" element={<Delivery />} />
                         <Route path="/sales" element={<Sales />} />
-                        <Route path="/statistics" element={<Statistics />} />
-                        <Route path="/history" element={<History />} />
                     </Route>
                 </Route>
                 

@@ -18,8 +18,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'sidebar.products': 'Produits',
     'sidebar.delivery': 'Livraison',
     'sidebar.sales': 'Ventes',
-    'sidebar.statistics': 'Statistiques',
-    'sidebar.history': 'Journal',
     'sidebar.settings': 'Paramètres',
 
     // Header
@@ -27,8 +25,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.products': 'Gestion des Produits',
     'header.delivery': 'Suivi des Livraisons',
     'header.sales': 'Historique des Ventes',
-    'header.statistics': 'Statistiques des Ventes',
-    'header.history': "Journal d'activité",
     'header.settings': 'Paramètres',
     'header.default': 'Manager',
     'header.refresh_data': 'Rafraîchir les données',
@@ -59,7 +55,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.stock_value': 'Valeur du stock',
     'dashboard.total_products': 'Total produits',
     'dashboard.out_of_stock': 'Produits en rupture',
-    'dashboard.weekly_profit_chart_title': 'Profit semaine (DA)',
+    'dashboard.weekly_profit_chart_title': 'Profit par Période (DA)',
     'dashboard.stock_by_category_chart_title': 'Stock par catégorie',
     'dashboard.chart.profit': 'Profit',
     'dashboard.chart.units': 'unités',
@@ -74,6 +70,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.ai_insights.insight_types.positive': "Point Positif",
     'dashboard.ai_insights.insight_types.negative': "Risque Potentiel",
     'dashboard.ai_insights.insight_types.neutral': "Observation",
+    'dashboard.total_orders': 'Total Commandes',
+    'dashboard.avg_order_value': 'Panier moyen',
+    'dashboard.top_selling_products': 'Top 5 Produits Vendus',
+    'dashboard.chart.revenue': 'Revenu',
+    'dashboard.range.7d': '7 jours',
+    'dashboard.range.30d': '30 jours',
+    'dashboard.range.1y': '1 an',
+    'dashboard.range.all': 'Tout',
+
 
     // Products Page
     'products.title': 'Liste des produits',
@@ -184,17 +189,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'sales.empty.title': 'Aucune vente enregistrée',
     'sales.empty.subtitle': 'Lorsqu\'une vente est effectuée, elle apparaîtra ici.',
 
-    // Statistics Page
-    'statistics.range.7d': '7 jours',
-    'statistics.range.30d': '30 jours',
-    'statistics.range.1y': '1 an',
-    'statistics.range.all': 'Tout',
-    'statistics.total_orders': 'Total Commandes',
-    'statistics.avg_order_value': 'Panier moyen',
-    'statistics.revenue_over_time': 'Revenu par Période',
-    'statistics.top_selling_products': 'Top 5 Produits Vendus',
-    'statistics.chart.revenue': 'Revenu',
-
     // History Page
     'history.title': "Journal d'activité",
     'history.details': 'Détails',
@@ -281,8 +275,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.setup.test_error_db': 'Erreur de connexion à la base de données.',
     'settings.setup.test_error_storage': 'Erreur de connexion au stockage (Bucket "product-images").',
     
-    // Notifications Panel
-    'notifications.title': 'Notifications',
+    // Notifications Panel & Activity Center
+    'activity_center.title': 'Centre d\'activité',
+    'activity_center.notifications_tab': 'Notifications',
+    'activity_center.history_tab': 'Journal',
     'notifications.clear_all': 'Tout marquer comme lu',
     'notifications.empty': 'Aucune nouvelle notification',
 
@@ -366,8 +362,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'sidebar.products': 'Products',
     'sidebar.delivery': 'Delivery',
     'sidebar.sales': 'Sales',
-    'sidebar.statistics': 'Statistics',
-    'sidebar.history': 'History',
     'sidebar.settings': 'Settings',
 
     // Header
@@ -375,8 +369,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.products': 'Product Management',
     'header.delivery': 'Delivery Tracking',
     'header.sales': 'Sales History',
-    'header.statistics': 'Sales Statistics',
-    'header.history': 'Activity Log',
     'header.settings': 'Settings',
     'header.default': 'Manager',
     'header.refresh_data': 'Refresh data',
@@ -407,7 +399,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.stock_value': 'Stock Value',
     'dashboard.total_products': 'Total Products',
     'dashboard.out_of_stock': 'Out of Stock',
-    'dashboard.weekly_profit_chart_title': 'Weekly Profit (DZD)',
+    'dashboard.weekly_profit_chart_title': 'Profit Over Period (DZD)',
     'dashboard.stock_by_category_chart_title': 'Stock by Category',
     'dashboard.chart.profit': 'Profit',
     'dashboard.chart.units': 'units',
@@ -422,6 +414,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.ai_insights.insight_types.positive': "Positive Highlight",
     'dashboard.ai_insights.insight_types.negative': "Potential Risk",
     'dashboard.ai_insights.insight_types.neutral': "Observation",
+    'dashboard.total_orders': 'Total Orders',
+    'dashboard.avg_order_value': 'Avg. Order Value',
+    'dashboard.top_selling_products': 'Top 5 Selling Products',
+    'dashboard.chart.revenue': 'Revenue',
+    'dashboard.range.7d': '7 days',
+    'dashboard.range.30d': '30 days',
+    'dashboard.range.1y': '1 year',
+    'dashboard.range.all': 'All time',
     
     // Products Page
     'products.title': 'Product List',
@@ -531,17 +531,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'sales.table.actions': 'Actions',
     'sales.empty.title': 'No Sales Recorded',
     'sales.empty.subtitle': 'When a sale is made, it will appear here.',
-
-    // Statistics Page
-    'statistics.range.7d': '7 days',
-    'statistics.range.30d': '30 days',
-    'statistics.range.1y': '1 year',
-    'statistics.range.all': 'All time',
-    'statistics.total_orders': 'Total Orders',
-    'statistics.avg_order_value': 'Avg. Order Value',
-    'statistics.revenue_over_time': 'Revenue Over Time',
-    'statistics.top_selling_products': 'Top 5 Selling Products',
-    'statistics.chart.revenue': 'Revenue',
     
     // History Page
     'history.title': 'Activity Log',
@@ -629,8 +618,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.setup.test_error_db': 'Failed to connect to the database.',
     'settings.setup.test_error_storage': 'Failed to connect to Storage (Bucket "product-images").',
 
-    // Notifications Panel
-    'notifications.title': 'Notifications',
+    // Notifications Panel & Activity Center
+    'activity_center.title': 'Activity Center',
+    'activity_center.notifications_tab': 'Notifications',
+    'activity_center.history_tab': 'History',
     'notifications.clear_all': 'Mark all as read',
     'notifications.empty': 'No new notifications',
 
@@ -713,8 +704,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'sidebar.products': 'المنتجات',
     'sidebar.delivery': 'التوصيل',
     'sidebar.sales': 'المبيعات',
-    'sidebar.statistics': 'الإحصائيات',
-    'sidebar.history': 'السجل',
     'sidebar.settings': 'الإعدادات',
 
     // Header
@@ -722,8 +711,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'header.products': 'إدارة المنتجات',
     'header.delivery': 'تتبع التوصيل',
     'header.sales': 'سجل المبيعات',
-    'header.statistics': 'إحصائيات المبيعات',
-    'header.history': 'سجل النشاط',
     'header.settings': 'الإعدادات',
     'header.default': 'المدير',
     'header.refresh_data': 'تحديث البيانات',
@@ -754,7 +741,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.stock_value': 'قيمة المخزون',
     'dashboard.total_products': 'إجمالي المنتجات',
     'dashboard.out_of_stock': 'نفد من المخزون',
-    'dashboard.weekly_profit_chart_title': 'الربح الأسبوعي (د.ج)',
+    'dashboard.weekly_profit_chart_title': 'الربح خلال الفترة (د.ج)',
     'dashboard.stock_by_category_chart_title': 'المخزون حسب الفئة',
     'dashboard.chart.profit': 'الربح',
     'dashboard.chart.units': 'وحدات',
@@ -769,6 +756,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.ai_insights.insight_types.positive': "نقطة إيجابية",
     'dashboard.ai_insights.insight_types.negative': "خطر محتمل",
     'dashboard.ai_insights.insight_types.neutral': "ملاحظة",
+    'dashboard.total_orders': 'إجمالي الطلبات',
+    'dashboard.avg_order_value': 'متوسط قيمة الطلب',
+    'dashboard.top_selling_products': 'أفضل 5 منتجات مبيعًا',
+    'dashboard.chart.revenue': 'الإيرادات',
+    'dashboard.range.7d': '7 أيام',
+    'dashboard.range.30d': '30 يومًا',
+    'dashboard.range.1y': 'سنة واحدة',
+    'dashboard.range.all': 'كل الوقت',
 
     // Products Page
     'products.title': 'قائمة المنتجات',
@@ -879,17 +874,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'sales.empty.title': 'لا توجد مبيعات مسجلة',
     'sales.empty.subtitle': 'عندما تتم عملية بيع، ستظهر هنا.',
 
-    // Statistics Page
-    'statistics.range.7d': '7 أيام',
-    'statistics.range.30d': '30 يومًا',
-    'statistics.range.1y': 'سنة واحدة',
-    'statistics.range.all': 'كل الوقت',
-    'statistics.total_orders': 'إجمالي الطلبات',
-    'statistics.avg_order_value': 'متوسط قيمة الطلب',
-    'statistics.revenue_over_time': 'الإيرادات عبر الزمن',
-    'statistics.top_selling_products': 'أفضل 5 منتجات مبيعًا',
-    'statistics.chart.revenue': 'الإيرادات',
-    
     // History Page
     'history.title': 'سجل النشاط',
     'history.details': 'التفاصيل',
@@ -976,8 +960,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.setup.test_error_db': 'فشل الاتصال بقاعدة البيانات.',
     'settings.setup.test_error_storage': 'فشل الاتصال بالتخزين (حاوية "product-images").',
 
-    // Notifications Panel
-    'notifications.title': 'الإشعارات',
+    // Notifications Panel & Activity Center
+    'activity_center.title': 'مركز النشاط',
+    'activity_center.notifications_tab': 'الإشعارات',
+    'activity_center.history_tab': 'السجل',
     'notifications.clear_all': 'وضع علامة على الكل كمقروء',
     'notifications.empty': 'لا توجد إشعارات جديدة',
 
