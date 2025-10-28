@@ -23,13 +23,14 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
 ({ product, onSelect, isSelected, onEdit, onSell, onDuplicate, onDelete, onSetDelivery }) => {
   const { t } = useAppContext();
   const [menuOpen, setMenuOpen] = useState(false);
+  const lowStock = product.stock > 0 && product.stock <= 5;
 
   const margin = useMemo(() => calculateMargin(product), [product]);
 
   return (
     <motion.div 
         layout
-        className={`bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden transition-all duration-200 relative ${isSelected ? 'ring-2 ring-cyan-500' : 'ring-1 ring-transparent'}`}
+        className={`bg-white dark:bg-white/5 backdrop-blur-lg border rounded-xl overflow-hidden transition-all duration-200 relative ${isSelected ? 'ring-2 ring-cyan-500' : 'ring-1 ring-transparent'} ${lowStock ? 'border-amber-500' : 'border-gray-200 dark:border-white/10'}`}
     >
       <div className="flex items-start p-4 space-x-4">
         {product.imageUrl ? (
@@ -56,7 +57,10 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
             <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300'}`}>
               {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
             </span>
-            <p className="text-xs text-gray-500 dark:text-slate-500">Stock: {product.stock}</p>
+            <p className={`text-xs flex items-center ${lowStock ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-gray-500 dark:text-slate-500'}`}>
+                {lowStock && <AlertCircleIcon className="w-4 h-4 me-1" />}
+                Stock: {product.stock}
+            </p>
           </div>
         </div>
       </div>
@@ -621,7 +625,12 @@ const Products: React.FC = () => {
                     <td className="px-6 py-4">{product.category}</td>
                     <td className="px-6 py-4">{product.buyPrice.toFixed(2)} DA</td>
                     <td className="px-6 py-4">{product.sellPrice.toFixed(2)} DA</td>
-                    <td className="px-6 py-4">{product.stock}</td>
+                    <td className="px-6 py-4">
+                      <div className={`flex items-center ${product.stock > 0 && product.stock <= 5 ? 'text-amber-600 dark:text-amber-400 font-semibold' : ''}`}>
+                          {product.stock > 0 && product.stock <= 5 && <AlertCircleIcon className="w-4 h-4 me-1.5" />}
+                          {product.stock}
+                      </div>
+                    </td>
                     <td className={`px-6 py-4 font-semibold ${parseFloat(calculateMargin(product)) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{calculateMargin(product)}%</td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300'}`}>

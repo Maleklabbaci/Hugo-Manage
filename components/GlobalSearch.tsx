@@ -4,6 +4,29 @@ import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { SearchIcon, XIcon, ProductsIcon, ShoppingCartIcon, HistoryIcon } from './Icons';
 
+const HighlightedText: React.FC<{ text?: string, highlight: string }> = ({ text, highlight }) => {
+    if (!text) return null;
+    if (!highlight.trim()) {
+        return <>{text}</>;
+    }
+    const regex = new RegExp(`(${highlight.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
+    const parts = text.split(regex);
+    return (
+        <span>
+            {parts.map((part, i) =>
+                part.toLowerCase() === highlight.toLowerCase() ? (
+                    <span key={i} className="bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-bold rounded-sm px-0.5">
+                        {part}
+                    </span>
+                ) : (
+                    part
+                )
+            )}
+        </span>
+    );
+};
+
+
 const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOpen, onClose }) => {
     const { products, sales, activityLog, t } = useAppContext();
     const [query, setQuery] = useState('');
@@ -101,7 +124,7 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                                 <div className="p-2">
                                     {searchResults.products.length > 0 && (
                                         <div className="mb-2">
-                                            <h3 className="text-xs font-bold uppercase text-gray-500 px-3 py-2">{t('search.products')}</h3>
+                                            <h3 className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 text-sm font-bold uppercase text-gray-500 dark:text-slate-400 px-3 py-2">{t('search.products')}</h3>
                                             <ul>{searchResults.products.map(p => (
                                                 <li key={`prod-${p.id}`}><Link to="/products" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
                                                     {p.imageUrl ? (
@@ -112,8 +135,8 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                                                         </div>
                                                     )}
                                                     <div>
-                                                        <p className="font-semibold text-gray-900 dark:text-white">{p.name}</p>
-                                                        <p className="text-sm text-gray-600 dark:text-slate-400">{p.category}</p>
+                                                        <p className="font-semibold text-gray-900 dark:text-white"><HighlightedText text={p.name} highlight={query} /></p>
+                                                        <p className="text-sm text-gray-600 dark:text-slate-400"><HighlightedText text={p.category} highlight={query} /></p>
                                                     </div>
                                                 </Link></li>
                                             ))}</ul>
@@ -121,7 +144,7 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                                     )}
                                     {searchResults.sales.length > 0 && (
                                         <div className="mb-2">
-                                            <h3 className="text-xs font-bold uppercase text-gray-500 px-3 py-2">{t('search.sales')}</h3>
+                                            <h3 className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 text-sm font-bold uppercase text-gray-500 dark:text-slate-400 px-3 py-2">{t('search.sales')}</h3>
                                             <ul>{searchResults.sales.map(s => {
                                                 const product = products.find(p => p.id === s.productId);
                                                 return (
@@ -134,7 +157,7 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                                                         </div>
                                                     )}
                                                      <div>
-                                                        <p className="font-semibold text-gray-900 dark:text-white">{s.productName}</p>
+                                                        <p className="font-semibold text-gray-900 dark:text-white"><HighlightedText text={s.productName} highlight={query} /></p>
                                                         <p className="text-sm text-gray-600 dark:text-slate-400">{t('search.sale_details', { quantity: s.quantity, price: s.totalPrice.toFixed(2) })}</p>
                                                     </div>
                                                 </Link></li>
@@ -144,13 +167,13 @@ const GlobalSearch: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ isOp
                                     )}
                                     {searchResults.activityLog.length > 0 && (
                                         <div className="mb-2">
-                                            <h3 className="text-xs font-bold uppercase text-gray-500 px-3 py-2">{t('search.history')}</h3>
+                                            <h3 className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 text-sm font-bold uppercase text-gray-500 dark:text-slate-400 px-3 py-2">{t('search.history')}</h3>
                                             <ul>{searchResults.activityLog.map(l => (
                                                 <li key={`log-${l.id}`}><Link to="/history" onClick={onClose} className="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5">
                                                     <HistoryIcon className="w-5 h-5 text-amber-500 me-4"/>
                                                      <div>
-                                                        <p className="font-semibold text-gray-900 dark:text-white">{l.productName}</p>
-                                                        <p className="text-sm text-gray-600 dark:text-slate-400">{l.action}: {l.details || ''}</p>
+                                                        <p className="font-semibold text-gray-900 dark:text-white"><HighlightedText text={l.productName} highlight={query} /></p>
+                                                        <p className="text-sm text-gray-600 dark:text-slate-400"><HighlightedText text={`${l.action}: ${l.details || ''}`} highlight={query} /></p>
                                                     </div>
                                                 </Link></li>
                                             ))}</ul>
