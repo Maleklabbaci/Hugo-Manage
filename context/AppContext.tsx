@@ -49,6 +49,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [readNotificationIds, setReadNotificationIds] = useState<number[]>([]);
   const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
   const [productDataForForm, setProductDataForForm] = useState<(ProductFormData & { imageBlob?: Blob }) | null>(null);
+  const [visualSearchQuery, setVisualSearchQuery] = useState<string | null>(null);
   const isConfigured = !!supabaseClient;
 
   useEffect(() => {
@@ -702,11 +703,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const value = {
     products, sales, activityLog, theme, language, isLoading,
-    session, user, notifications, isVisualSearchOpen, productDataForForm, setTheme, setLanguage, t, login, logout,
+    session, user, notifications, isVisualSearchOpen, productDataForForm, visualSearchQuery, setTheme, setLanguage, t, login, logout,
     addProduct, addMultipleProducts, updateProduct, updateMultipleProducts, deleteProduct, deleteMultipleProducts, 
     duplicateProduct, setProductToDelivery, confirmSaleFromDelivery, cancelDelivery, addSale, cancelSale, markNotificationAsRead, markAllNotificationsAsRead,
     isConfigured, saveSupabaseCredentials, saveGeminiApiKey, refetchData, findProductByName, findProductsByKeywords, testSupabaseConnection,
-    openVisualSearch, closeVisualSearch, setProductDataForForm
+    openVisualSearch, closeVisualSearch, setProductDataForForm, setVisualSearchQuery
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

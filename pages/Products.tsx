@@ -116,7 +116,7 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
 const Products: React.FC = () => {
   type SortKey = 'name' | 'buyPrice' | 'sellPrice' | 'stock' | 'createdAt';
   
-  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts, updateMultipleProducts, setProductToDelivery, language, productDataForForm, setProductDataForForm } = useAppContext();
+  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts, updateMultipleProducts, setProductToDelivery, language, productDataForForm, setProductDataForForm, visualSearchQuery, setVisualSearchQuery } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [initialFormData, setInitialFormData] = useState<(ProductFormData & { imageBlob?: Blob }) | null>(null);
@@ -144,6 +144,13 @@ const Products: React.FC = () => {
   
   const productsPerPage = 30;
 
+  useEffect(() => {
+    if (visualSearchQuery) {
+        setSearchQuery(visualSearchQuery);
+        setVisualSearchQuery(null); // Reset after use
+    }
+  }, [visualSearchQuery, setVisualSearchQuery]);
+  
   useEffect(() => {
     if (productDataForForm) {
         setInitialFormData(productDataForForm);

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { getDetailedVisualAnalysis } from '../services/gemini';
 import { Product, ProductFormData } from '../types';
@@ -36,7 +36,7 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
 };
 
 export const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }) => {
-    const { t, products, findProductsByKeywords, setProductDataForForm } = useAppContext();
+    const { t, products, findProductsByKeywords, setProductDataForForm, setVisualSearchQuery } = useAppContext();
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -47,6 +47,7 @@ export const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, on
     const [capturedImageBlob, setCapturedImageBlob] = useState<Blob | null>(null);
     const [errorMsg, setErrorMsg] = useState('');
     const [analysisText, setAnalysisText] = useState('');
+    const navigate = useNavigate();
 
     const startCamera = useCallback(async () => {
         try {
@@ -107,11 +108,22 @@ export const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, on
                 setAnalysisResult(analysis);
                 const searchKeywords = [analysis.name, ...analysis.attributes].join(' ');
                 const matches = findProductsByKeywords(searchKeywords);
-                setFoundProducts(matches.slice(0, 5));
+                
+                if (matches.length > 0) {
+                    const topMatch = matches[0];
+                    setVisualSearchQuery(topMatch.name);
+                    onClose();
+                    navigate('/products');
+                    return;
+                }
+                
+                // No match found, show analysis page
+                setFoundProducts([]);
+                setScanState('analysis_complete');
             } else {
                 setFoundProducts([]);
+                setScanState('analysis_complete');
             }
-            setScanState('analysis_complete');
 
         } catch (err) {
             console.error("Analysis failed:", err);

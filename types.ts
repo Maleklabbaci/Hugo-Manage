@@ -94,6 +94,7 @@ export interface AppContextType {
   user: any; // Using `any` for Supabase User type for simplicity
   isVisualSearchOpen: boolean;
   productDataForForm: (ProductFormData & { imageBlob?: Blob }) | null;
+  visualSearchQuery: string | null;
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   t: (key: string, params?: Record<string, string | number>) => string;
@@ -122,4 +123,5 @@ export interface AppContextType {
   openVisualSearch: () => void;
   closeVisualSearch: () => void;
   setProductDataForForm: (data: (ProductFormData & { imageBlob?: Blob }) | null) => void;
+  setVisualSearchQuery: (query: string | null) => void;
 }
