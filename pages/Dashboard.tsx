@@ -3,7 +3,7 @@ import StatCard from '../components/StatCard';
 import { useAppContext } from '../context/AppContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import type { Language, Sale } from '../types';
-import { ShoppingBagIcon, DollarSignIcon, PackageXIcon, ShoppingCartIcon, ArchiveIcon, CreditCardIcon, PiggyBankIcon, DeliveryIcon, TrendingUpIcon } from '../components/Icons';
+import { ShoppingBagIcon, DollarSignIcon, PackageXIcon, ShoppingCartIcon, ArchiveIcon, CreditCardIcon, PiggyBankIcon, DeliveryIcon, DatabaseIcon } from '../components/Icons';
 import AIInsights from '../components/AIInsights';
 import { motion } from 'framer-motion';
 
@@ -155,7 +155,7 @@ const Dashboard: React.FC = () => {
         <StatCard icon={PiggyBankIcon} title={t('dashboard.sales_profit')} value={`${stats.salesProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={ShoppingCartIcon} title={t('dashboard.units_sold')} value={stats.unitsSold} />
         <StatCard icon={ArchiveIcon} title={t('dashboard.total_orders')} value={stats.totalOrders} />
-        <StatCard icon={TrendingUpIcon} title={t('dashboard.potential_profit')} value={`${stats.totalProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
+        <StatCard icon={DatabaseIcon} title={t('dashboard.stock_value')} value={`${stats.stockValue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={DeliveryIcon} title={t('dashboard.units_in_delivery')} value={stats.unitsInDelivery} />
         <StatCard icon={ShoppingBagIcon} title={t('dashboard.total_products')} value={stats.totalProducts} />
         <StatCard icon={PackageXIcon} title={t('dashboard.out_of_stock')} value={stats.outOfStock} />
