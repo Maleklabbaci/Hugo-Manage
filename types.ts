@@ -93,6 +93,7 @@ export interface AppContextType {
   session: any; // Using `any` for Supabase Session type for simplicity
   user: any; // Using `any` for Supabase User type for simplicity
   isVisualSearchOpen: boolean;
+  productDataForForm: (ProductFormData & { imageBlob?: Blob }) | null;
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   t: (key: string, params?: Record<string, string | number>) => string;
@@ -120,4 +121,5 @@ export interface AppContextType {
   testSupabaseConnection: () => Promise<{ success: boolean; error?: string; dbOk?: boolean; storageOk?: boolean; }>;
   openVisualSearch: () => void;
   closeVisualSearch: () => void;
+  setProductDataForForm: (data: (ProductFormData & { imageBlob?: Blob }) | null) => void;
 }

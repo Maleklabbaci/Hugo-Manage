@@ -48,6 +48,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [user, setUser] = useState<User | null>(null);
   const [readNotificationIds, setReadNotificationIds] = useState<number[]>([]);
   const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
+  const [productDataForForm, setProductDataForForm] = useState<(ProductFormData & { imageBlob?: Blob }) | null>(null);
   const isConfigured = !!supabaseClient;
 
   useEffect(() => {
@@ -643,9 +644,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return products.filter(p => p.name.toLowerCase().includes(lowerCaseName));
   };
 
-  const findProductsByKeywords = (description: string): Product[] => {
-    const keywords = description.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-    if (keywords.length === 0) return [];
+  const findProductsByKeywords = (keywords: string): Product[] => {
+    const searchTerms = keywords.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    if (searchTerms.length === 0) return [];
 
     const scoredProducts = products.map(product => {
       let score = 0;
@@ -653,10 +654,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const category = product.category.toLowerCase();
       const desc = (product.description || '').toLowerCase();
 
-      keywords.forEach(keyword => {
-        if (name.includes(keyword)) score += 3;
-        if (category.includes(keyword)) score += 2;
-        if (desc.includes(keyword)) score += 1;
+      searchTerms.forEach(term => {
+        if (name.includes(term)) score += 3;
+        if (category.includes(term)) score += 2;
+        if (desc.includes(term)) score += 1;
       });
       return { ...product, score };
     });
@@ -701,11 +702,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const value = {
     products, sales, activityLog, theme, language, isLoading,
-    session, user, notifications, isVisualSearchOpen, setTheme, setLanguage, t, login, logout,
+    session, user, notifications, isVisualSearchOpen, productDataForForm, setTheme, setLanguage, t, login, logout,
     addProduct, addMultipleProducts, updateProduct, updateMultipleProducts, deleteProduct, deleteMultipleProducts, 
     duplicateProduct, setProductToDelivery, confirmSaleFromDelivery, cancelDelivery, addSale, cancelSale, markNotificationAsRead, markAllNotificationsAsRead,
     isConfigured, saveSupabaseCredentials, saveGeminiApiKey, refetchData, findProductByName, findProductsByKeywords, testSupabaseConnection,
-    openVisualSearch, closeVisualSearch
+    openVisualSearch, closeVisualSearch, setProductDataForForm
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -11,12 +11,13 @@ interface ProductFormProps {
   onClose: () => void;
   onSave: (data: ProductFormData | (Product & { productData: ProductFormData })) => Promise<void>;
   productToEdit?: Product | null;
+  initialData?: (ProductFormData & { imageBlob?: Blob }) | null;
 }
 
 
 const categories = ["Lunettes", "Montres", "Sacoches & Porte feuille", "Casquette", "Bracelet", "Ceintures", "Écharpes"];
 
-const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, productToEdit }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, productToEdit, initialData }) => {
   const { t } = useAppContext();
   const [formData, setFormData] = useState({
     name: '',
@@ -44,14 +45,26 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
         stock: productToEdit.stock,
       });
       setImagePreview(productToEdit.imageUrl || null);
+    } else if (initialData) {
+        const { imageBlob, ...formDataFromAI } = initialData;
+        setFormData(formDataFromAI);
+        if (imageBlob) {
+            const file = new File([imageBlob], "scanned-product.jpg", { type: imageBlob.type });
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(imageBlob));
+        }
     } else {
       setFormData({ name: '', description: '', category: '', supplier: '', buyPrice: 0, sellPrice: 0, stock: 0 });
     }
     
-    setImageFile(null);
-    if (!productToEdit) setImagePreview(null);
+    if (!initialData) {
+        setImageFile(null);
+    }
+    if (!productToEdit && !initialData) {
+        setImagePreview(null);
+    }
 
-  }, [productToEdit, isOpen]);
+  }, [productToEdit, initialData, isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;

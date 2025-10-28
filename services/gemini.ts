@@ -124,7 +124,7 @@ Respond with a JSON array where each object has "type" ('positive', 'negative', 
     }
 };
 
-export const generateProductTitleAndCategory = async (base64ImageData: string, categories: string[]): Promise<{ title: string; category: string } | null> => {
+export const getDetailedVisualAnalysis = async (base64ImageData: string, categories: string[]): Promise<{ name: string; category: string; description: string; attributes: string[] } | null> => {
     if (!ai) return null;
 
     const imagePart = {
@@ -134,13 +134,23 @@ export const generateProductTitleAndCategory = async (base64ImageData: string, c
         },
     };
     
-    const textPart = {
-        text: `Analyse l'objet dans cette image. En te basant sur la liste de catégories fournie, choisis la catégorie la plus appropriée pour cet objet. Donne également à l'objet un nom de produit simple et descriptif.
+    const prompt = `En tant qu'expert analyste de produits, examine l'image fournie. Ta tâche est d'extraire des informations détaillées et de suggérer un contenu marketing. L'utilisateur souhaite ajouter cet article à son inventaire qui comprend ces catégories : [${categories.join(', ')}].
 
-Liste des catégories disponibles : [${categories.join(', ')}]
+1.  **Identifie l'objet principal.**
+2.  **Suggère un nom de produit commercialisable.** Rends-le attractif.
+3.  **Choisis la catégorie la plus pertinente** dans la liste fournie.
+4.  **Rédige une description marketing courte et convaincante** (2-3 phrases).
+5.  **Liste 3 à 5 attributs visuels clés** sous forme de tableau de chaînes de caractères (ex: "monture en métal", "verres ronds", "couleur or", "design minimaliste").
 
-Réponds avec un objet JSON au format : {"title": "Nom du produit", "category": "Catégorie choisie"}`
-    };
+Réponds UNIQUEMENT avec un objet JSON dans ce format exact :
+{
+  "name": "Nom de Produit Suggéré",
+  "category": "Catégorie Choisie",
+  "description": "Description marketing générée.",
+  "attributes": ["Attribut 1", "Attribut 2", "Attribut 3"]
+}`;
+
+    const textPart = { text: prompt };
 
     try {
         const response = await ai.models.generateContent({
@@ -151,101 +161,25 @@ Réponds avec un objet JSON au format : {"title": "Nom du produit", "category": 
                 responseSchema: {
                     type: Type.OBJECT,
                     properties: {
-                        title: { type: Type.STRING },
+                        name: { type: Type.STRING },
                         category: { type: Type.STRING },
+                        description: { type: Type.STRING },
+                        attributes: {
+                            type: Type.ARRAY,
+                            items: { type: Type.STRING }
+                        }
                     },
-                    required: ['title', 'category'],
+                    required: ['name', 'category', 'description', 'attributes'],
                 }
             }
         });
         const jsonText = response.text.trim();
         return JSON.parse(jsonText);
     } catch (error) {
-        console.error("Error generating product title and category:", error);
+        console.error("Error in getDetailedVisualAnalysis:", error);
         return null;
     }
 };
-
-const imageUrlToBase64 = async (url: string): Promise<string | null> => {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) return null;
-        const blob = await response.blob();
-        const reader = new FileReader();
-        return new Promise<string>((resolve, reject) => {
-            reader.onloadend = () => {
-                if (typeof reader.result === 'string') {
-                    resolve(reader.result.split(',')[1]);
-                } else {
-                    reject('Failed to convert blob to base64');
-                }
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
-    } catch (e) {
-        console.error("Failed to fetch image for visual matching:", url, e);
-        return null;
-    }
-};
-
-export const getBestVisualMatch = async (userImageBase64: string, candidateProducts: Product[]): Promise<Product | null> => {
-    if (!ai) return null;
-
-    const candidatesWithImages = candidateProducts.filter(p => p.imageUrl).slice(0, 4);
-    if (candidatesWithImages.length === 0) return null;
-
-    try {
-        const userImagePart: Part = { inlineData: { mimeType: 'image/jpeg', data: userImageBase64 } };
-        const candidateImageParts: Part[] = [];
-        const candidateIds: number[] = [];
-
-        const imagePromises = candidatesWithImages.map(async (p) => {
-            const b64 = await imageUrlToBase64(p.imageUrl!);
-            if (b64) {
-                candidateImageParts.push({ inlineData: { mimeType: 'image/jpeg', data: b64 } });
-                candidateIds.push(p.id);
-            }
-        });
-        
-        await Promise.all(imagePromises);
-
-        if (candidateImageParts.length === 0) return null;
-
-        const prompt = `La première image est l'image de l'utilisateur. Les images suivantes sont des produits candidats. 
-Les ID de produit pour les images candidates sont, dans l'ordre : [${candidateIds.join(', ')}].
-Identifie le produit qui correspond le mieux à l'image de l'utilisateur et réponds avec son ID dans un objet JSON. 
-Format de réponse : {"matchId": ID_DU_PRODUIT}`;
-        const textPart: Part = { text: prompt };
-
-        const allParts: Part[] = [textPart, userImagePart, ...candidateImageParts];
-
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: [{ parts: allParts }],
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        matchId: { type: Type.NUMBER },
-                    },
-                    required: ['matchId'],
-                }
-            }
-        });
-        
-        const jsonText = response.text.trim();
-        const result = JSON.parse(jsonText);
-        
-        const matchedProduct = candidateProducts.find(p => p.id === result.matchId);
-        return matchedProduct || null;
-    } catch (error) {
-        console.error("Error getting best visual match:", error);
-        return null;
-    }
-};
-
 
 const tools: FunctionDeclaration[] = [
     {

@@ -116,9 +116,10 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
 const Products: React.FC = () => {
   type SortKey = 'name' | 'buyPrice' | 'sellPrice' | 'stock' | 'createdAt';
   
-  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts, updateMultipleProducts, setProductToDelivery, language } = useAppContext();
+  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts, updateMultipleProducts, setProductToDelivery, language, productDataForForm, setProductDataForForm } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+  const [initialFormData, setInitialFormData] = useState<(ProductFormData & { imageBlob?: Blob }) | null>(null);
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
   const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
   const [productToSell, setProductToSell] = useState<Product | null>(null);
@@ -142,6 +143,15 @@ const Products: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const productsPerPage = 30;
+
+  useEffect(() => {
+    if (productDataForForm) {
+        setInitialFormData(productDataForForm);
+        setProductToEdit(null); // Ensure we are in "add" mode
+        setIsModalOpen(true);
+        setProductDataForForm(null); // Clear the data after consuming it
+    }
+  }, [productDataForForm, setProductDataForForm]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -242,12 +252,14 @@ const Products: React.FC = () => {
 
   const handleOpenModal = (product?: Product) => {
     setProductToEdit(product || null);
+    setInitialFormData(null);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setProductToEdit(null);
+    setInitialFormData(null);
   };
 
   const handleSaveProduct = async (data: ProductFormData | (Product & { productData: ProductFormData })) => {
@@ -738,7 +750,7 @@ const Products: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <ProductForm isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveProduct} productToEdit={productToEdit} />
+      <ProductForm isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveProduct} productToEdit={productToEdit} initialData={initialFormData} />
       <SaleModal isOpen={isSaleModalOpen} onClose={handleCloseSaleModal} onConfirm={handleConfirmSale} product={productToSell} />
       <BulkEditForm isOpen={isBulkEditModalOpen} onClose={() => setIsBulkEditModalOpen(false)} onSave={handleSaveBulkEdit} productCount={selectedProducts.length} />
       <ConfirmationModal 

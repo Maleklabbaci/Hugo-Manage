@@ -69,27 +69,10 @@ const isValidHttpUrl = (string: string | null): boolean => {
 
 const { url: supabaseUrl, anonKey: supabaseAnonKey } = storage.getSupabaseCredentials();
 
-// Custom fetch implementation to address potential "Failed to fetch" errors.
-// Some network environments or proxies might block requests with certain headers.
-// This custom fetch removes the 'x-client-info' header added by the Supabase client.
-const customFetch = (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    if (init && init.headers) {
-        // Create a new Headers object to make it mutable
-        const headers = new Headers(init.headers);
-        headers.delete('x-client-info');
-        init.headers = headers;
-    }
-    return fetch(input, init);
-};
-
 let client = null;
 if (isValidHttpUrl(supabaseUrl) && supabaseAnonKey) {
     try {
-        client = createClient(supabaseUrl!, supabaseAnonKey, {
-            global: {
-                fetch: customFetch,
-            }
-        });
+        client = createClient(supabaseUrl!, supabaseAnonKey);
     } catch (error) {
         console.error("Supabase client initialization failed:", error);
         // Fallback to null client, which shows the "unconfigured" state in the UI
