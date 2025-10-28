@@ -194,12 +194,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [user]);
 
-  const handleStorageError = (error: Error): void => {
-      const errorMessage = error.message;
-      if (errorMessage.toLowerCase().includes('bucket not found')) {
+  const handleSupabaseError = (error: Error, context: 'add' | 'update'): void => {
+      const errorMessage = error.message.toLowerCase();
+      if (errorMessage.includes('bucket not found')) {
           alert(t('error.bucket_not_found'));
+      } else if (errorMessage.includes("schema cache") || errorMessage.includes("does not exist")) {
+          alert(t('error.schema_mismatch'));
       } else {
-          alert(t('product_form.error_add', { error: errorMessage }));
+          const alertMessage = context === 'add' ? 'product_form.error_add' : 'product_form.error_update';
+          alert(t(alertMessage, { error: error.message }));
       }
   };
   
@@ -231,7 +234,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await logActivity('created', createdProduct);
       return createdProduct;
     } catch (error) {
-      handleStorageError(error as Error);
+      handleSupabaseError(error as Error, 'add');
       return null;
     }
   };
@@ -263,7 +266,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         }
     } catch (error) {
-        alert(t('product_form.error_add', { error: (error as Error).message }));
+        handleSupabaseError(error as Error, 'add');
     }
   };
 
@@ -308,7 +311,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       return updatedProduct;
     } catch (error) {
-      handleStorageError(error as Error);
+      handleSupabaseError(error as Error, 'update');
       return null;
     }
   };
@@ -654,23 +657,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return scoredProducts.filter(p => p.score > 0).sort((a, b) => b.score - a.score);
   };
 
-  const testStorageConnection = async (): Promise<{ success: boolean; error?: string }> => {
+  const testSupabaseConnection = async (): Promise<{ success: boolean; error?: string; dbOk?: boolean; storageOk?: boolean; }> => {
     if (!supabaseClient) return { success: false, error: 'Supabase client not initialized' };
     
-    // This is a lightweight operation to check if the bucket exists and is readable.
-    const { data, error } = await supabaseClient.storage
+    let dbOk = false;
+    let storageOk = false;
+    let finalError = '';
+
+    const { error: storageError } = await supabaseClient.storage
         .from('product-images')
         .list('', { limit: 1, offset: 0 });
 
-    if (error) {
-        console.error('Storage test failed:', error.message);
-        if (error.message.toLowerCase().includes('bucket not found')) {
-            return { success: false, error: 'Bucket not found' };
-        }
-        return { success: false, error: error.message };
+    if (storageError) {
+        finalError += `Storage Error: ${storageError.message}. `;
+    } else {
+        storageOk = true;
     }
 
-    return { success: true };
+    const { error: dbError } = await supabaseClient.from('products').select('id').limit(1);
+
+    if (dbError) {
+        finalError += `Database Error: ${dbError.message}.`;
+    } else {
+        dbOk = true;
+    }
+
+    if (dbOk && storageOk) {
+        return { success: true, dbOk: true, storageOk: true };
+    } else {
+        return { success: false, error: finalError.trim(), dbOk, storageOk };
+    }
   };
 
   const value = {
@@ -678,7 +694,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     session, user, notifications, setTheme, setLanguage, t, login, logout,
     addProduct, addMultipleProducts, updateProduct, updateMultipleProducts, deleteProduct, deleteMultipleProducts, 
     duplicateProduct, setProductToDelivery, confirmSaleFromDelivery, cancelDelivery, addSale, cancelSale, markNotificationAsRead, markAllNotificationsAsRead,
-    isConfigured, saveSupabaseCredentials, refetchData, findProductByName, findProductsByKeywords, testStorageConnection
+    isConfigured, saveSupabaseCredentials, refetchData, findProductByName, findProductsByKeywords, testSupabaseConnection
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
