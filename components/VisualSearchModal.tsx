@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { generateDescriptionForImage, getBestVisualMatch } from '../services/gemini';
+import { generateProductTitleAndCategory, getBestVisualMatch } from '../services/gemini';
 import { Product } from '../types';
 import { XIcon, CameraIcon, LoaderIcon, ProductsIcon } from './Icons';
 
@@ -29,7 +29,7 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
 };
 
 const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }) => {
-    const { t, findProductsByKeywords } = useAppContext();
+    const { t, products } = useAppContext();
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -46,7 +46,7 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
                 }
-                setScanState('idle');
+                // Do not set state to idle here. Wait for onCanPlay event on video element.
             } else {
                 setScanState('no-camera');
             }
@@ -70,7 +70,7 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
         } else {
             stopCamera();
             setFoundProducts([]);
-            setScanState('idle');
+            setScanState('idle'); // Reset state correctly on close
         }
         return stopCamera;
     }, [isOpen, startCamera, stopCamera]);
@@ -90,14 +90,30 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
                 try {
                     setScanState('analyzing');
                     
-                    setAnalysisText(t('visual_search.analyzing_description'));
-                    const base64Data = await blobToBase64(blob);
-                    const description = await generateDescriptionForImage(base64Data);
+                    const uniqueCategories = [...new Set(products.map(p => p.category))];
                     
-                    if (description) {
-                        setAnalysisText(t('visual_search.finding_candidates'));
-                        const candidates = findProductsByKeywords(description);
-                        
+                    setAnalysisText(t('visual_search.classifying_object'));
+                    const base64Data = await blobToBase64(blob);
+                    const classification = await generateProductTitleAndCategory(base64Data, uniqueCategories);
+                    
+                    if (classification) {
+                        const { title, category } = classification;
+                        setAnalysisText(t('visual_search.searching_in_category', { category }));
+
+                        const keywords = title.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+                        const candidates = products
+                            .filter(p => p.category.toLowerCase().includes(category.toLowerCase()))
+                            .map(product => {
+                                let score = 0;
+                                const name = product.name.toLowerCase();
+                                keywords.forEach(keyword => {
+                                    if (name.includes(keyword)) score++;
+                                });
+                                return { ...product, score };
+                            })
+                            .filter(p => p.score > 0)
+                            .sort((a, b) => b.score - a.score);
+
                         if (candidates.length > 0) {
                             setAnalysisText(t('visual_search.comparing_matches'));
                             const bestMatch = await getBestVisualMatch(base64Data, candidates);
@@ -155,7 +171,14 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
                         </header>
                         
                         <div className="aspect-video bg-black relative">
-                            <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                            <video 
+                                ref={videoRef} 
+                                autoPlay 
+                                playsInline 
+                                muted 
+                                className="w-full h-full object-cover" 
+                                onCanPlay={() => { if (scanState === 'initializing') { setScanState('idle'); } }}
+                            />
                             <canvas ref={canvasRef} className="hidden" />
                             <AnimatePresence>
                             {(scanState === 'initializing' || scanState === 'scanning' || scanState === 'analyzing') && (

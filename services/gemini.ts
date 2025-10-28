@@ -120,7 +120,7 @@ Respond with a JSON array where each object has "type" ('positive', 'negative', 
     }
 };
 
-export const generateDescriptionForImage = async (base64ImageData: string): Promise<string | null> => {
+export const generateProductTitleAndCategory = async (base64ImageData: string, categories: string[]): Promise<{ title: string; category: string } | null> => {
     if (!ai) return null;
 
     const imagePart = {
@@ -129,18 +129,35 @@ export const generateDescriptionForImage = async (base64ImageData: string): Prom
             data: base64ImageData,
         },
     };
+    
     const textPart = {
-        text: "Génère une description riche et détaillée pour l'objet principal dans cette image. Inclus des informations sur le type d'objet, les couleurs, les matériaux, le style et toute caractéristique distinctive. La description doit être une chaîne de mots-clés pour une recherche efficace.",
+        text: `Analyse l'objet dans cette image. En te basant sur la liste de catégories fournie, choisis la catégorie la plus appropriée pour cet objet. Donne également à l'objet un nom de produit simple et descriptif.
+
+Liste des catégories disponibles : [${categories.join(', ')}]
+
+Réponds avec un objet JSON au format : {"title": "Nom du produit", "category": "Catégorie choisie"}`
     };
 
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: { parts: [imagePart, textPart] },
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        title: { type: Type.STRING },
+                        category: { type: Type.STRING },
+                    },
+                    required: ['title', 'category'],
+                }
+            }
         });
-        return response.text;
+        const jsonText = response.text.trim();
+        return JSON.parse(jsonText);
     } catch (error) {
-        console.error("Error generating image description:", error);
+        console.error("Error generating product title and category:", error);
         return null;
     }
 };
