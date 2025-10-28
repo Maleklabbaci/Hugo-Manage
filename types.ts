@@ -92,6 +92,7 @@ export interface AppContextType {
   isConfigured: boolean;
   session: any; // Using `any` for Supabase Session type for simplicity
   user: any; // Using `any` for Supabase User type for simplicity
+  isVisualSearchOpen: boolean;
   setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   t: (key: string, params?: Record<string, string | number>) => string;
@@ -117,4 +118,6 @@ export interface AppContextType {
   findProductByName: (name: string) => Product[];
   findProductsByKeywords: (keywords: string) => Product[];
   testSupabaseConnection: () => Promise<{ success: boolean; error?: string; dbOk?: boolean; storageOk?: boolean; }>;
+  openVisualSearch: () => void;
+  closeVisualSearch: () => void;
 }

@@ -14,17 +14,16 @@ import { BotIcon } from './Icons';
 
 const Layout: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const location = useLocation();
-  const { isConfigured, t, session } = useAppContext();
+  const { isConfigured, t, session, isVisualSearchOpen, openVisualSearch, closeVisualSearch } = useAppContext();
 
   return (
     <div className="flex h-screen">
       <Sidebar />
       <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-      <VisualSearchModal isOpen={isVisualSearchOpen} onClose={() => setIsVisualSearchOpen(false)} />
+      <VisualSearchModal isOpen={isVisualSearchOpen} onClose={closeVisualSearch} />
       <NotificationPanel isOpen={isNotificationsOpen} onClose={() => setIsNotificationsOpen(false)} />
       {session && <ConversationalAssistant isOpen={isAssistantOpen} onClose={() => setIsAssistantOpen(false)} />}
       
@@ -32,7 +31,7 @@ const Layout: React.FC = () => {
         <Header 
             onSearchClick={() => setIsSearchOpen(true)}
             onNotificationClick={() => setIsNotificationsOpen(prev => !prev)}
-            onVisualSearchClick={() => setIsVisualSearchOpen(true)}
+            onVisualSearchClick={openVisualSearch}
         />
         {!isConfigured && location.pathname !== '/settings' && (
             <div className="bg-amber-500/20 text-amber-700 dark:text-amber-300 p-3 text-center text-sm font-medium">

@@ -28,7 +28,8 @@ const Login: React.FC = () => {
   };
 
   if (session) {
-    return <Navigate to="/dashboard" />;
+    const isMobile = window.innerWidth < 768;
+    return <Navigate to={isMobile ? "/mobile-hub" : "/dashboard"} />;
   }
 
   return (

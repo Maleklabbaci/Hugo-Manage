@@ -47,6 +47,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [readNotificationIds, setReadNotificationIds] = useState<number[]>([]);
+  const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
   const isConfigured = !!supabaseClient;
 
   useEffect(() => {
@@ -694,13 +695,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return { success: false, error: finalError.trim(), dbOk, storageOk };
     }
   };
+  
+  const openVisualSearch = () => setIsVisualSearchOpen(true);
+  const closeVisualSearch = () => setIsVisualSearchOpen(false);
 
   const value = {
     products, sales, activityLog, theme, language, isLoading,
-    session, user, notifications, setTheme, setLanguage, t, login, logout,
+    session, user, notifications, isVisualSearchOpen, setTheme, setLanguage, t, login, logout,
     addProduct, addMultipleProducts, updateProduct, updateMultipleProducts, deleteProduct, deleteMultipleProducts, 
     duplicateProduct, setProductToDelivery, confirmSaleFromDelivery, cancelDelivery, addSale, cancelSale, markNotificationAsRead, markAllNotificationsAsRead,
-    isConfigured, saveSupabaseCredentials, saveGeminiApiKey, refetchData, findProductByName, findProductsByKeywords, testSupabaseConnection
+    isConfigured, saveSupabaseCredentials, saveGeminiApiKey, refetchData, findProductByName, findProductsByKeywords, testSupabaseConnection,
+    openVisualSearch, closeVisualSearch
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

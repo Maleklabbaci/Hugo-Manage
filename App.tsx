@@ -12,6 +12,7 @@ import Statistics from './pages/Statistics';
 import Layout from './components/Layout';
 import { LoaderIcon } from './components/Icons';
 import LoadingScreen from './components/LoadingScreen';
+import MobileHub from './pages/MobileHub';
 
 // This wrapper protects routes that require a logged-in user.
 const AuthWrapper: React.FC = () => {
@@ -39,7 +40,7 @@ const AppRoutes: React.FC = () => {
     return (
         <HashRouter>
             <Routes>
-                <Route path="/login" element={session ? <Navigate to="/dashboard" /> : <Login />} />
+                <Route path="/login" element={<Login />} />
                 
                 {/* Routes with the main Layout */}
                 <Route element={<Layout />}>
@@ -56,6 +57,11 @@ const AppRoutes: React.FC = () => {
                         <Route path="/statistics" element={<Statistics />} />
                         <Route path="/history" element={<History />} />
                     </Route>
+                </Route>
+                
+                 {/* Mobile-only hub route, protected */}
+                 <Route element={<AuthWrapper />}>
+                    <Route path="/mobile-hub" element={<MobileHub />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to="/" />} />

@@ -41,6 +41,16 @@ export const translations: Record<Language, Record<string, string>> = {
     'login.submit_button': 'Connexion',
     'login.error.incorrect_credentials': 'Identifiants incorrects',
 
+    // Mobile Hub
+    'mobile_hub.welcome': 'Bienvenue, {email}',
+    'mobile_hub.title': 'Que souhaitez-vous faire ?',
+    'mobile_hub.manage_products_title': 'Gérer les Produits',
+    'mobile_hub.manage_products_desc': 'Voir, ajouter ou modifier votre inventaire.',
+    'mobile_hub.sell_deliver_title': 'Vendre ou Livrer',
+    'mobile_hub.sell_deliver_desc': 'Scannez un produit pour le vendre ou le mettre en livraison.',
+    'mobile_hub.enter_platform_title': 'Accès Complet',
+    'mobile_hub.enter_platform_desc': 'Accéder à toutes les fonctionnalités du dashboard.',
+
     // Dashboard
     'dashboard.sales_revenue': 'Revenu des Ventes',
     'dashboard.sales_profit': 'Bénéfice des Ventes',
@@ -376,6 +386,16 @@ export const translations: Record<Language, Record<string, string>> = {
     'login.submit_button': 'Sign In',
     'login.error.incorrect_credentials': 'Incorrect credentials',
 
+    // Mobile Hub
+    'mobile_hub.welcome': 'Welcome, {email}',
+    'mobile_hub.title': 'What would you like to do?',
+    'mobile_hub.manage_products_title': 'Manage Products',
+    'mobile_hub.manage_products_desc': 'View, add, or edit your inventory.',
+    'mobile_hub.sell_deliver_title': 'Sell or Deliver',
+    'mobile_hub.sell_deliver_desc': 'Scan a product to sell it or set it for delivery.',
+    'mobile_hub.enter_platform_title': 'Full Access',
+    'mobile_hub.enter_platform_desc': 'Go to the full dashboard for all features.',
+
     // Dashboard
     'dashboard.sales_revenue': 'Sales Revenue',
     'dashboard.sales_profit': 'Sales Profit',
@@ -648,7 +668,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'ai_assistant.action_success': 'Action completed successfully.',
     'ai_assistant.product_not_found': 'I could not find a product named "{productName}".',
     'ai_assistant.products_ambiguous': 'Found multiple products. Could you be more specific? Found: {productNames}.',
-
+    
     // Loading Screen
     'loading.connecting': 'Connecting...',
     'loading.fetching_products': 'Fetching products...',
@@ -709,6 +729,16 @@ export const translations: Record<Language, Record<string, string>> = {
     'login.password_placeholder': 'كلمة المرور',
     'login.submit_button': 'تسجيل الدخول',
     'login.error.incorrect_credentials': 'بيانات الاعتماد غير صحيحة',
+
+    // Mobile Hub
+    'mobile_hub.welcome': 'أهلاً بك، {email}',
+    'mobile_hub.title': 'ماذا تود أن تفعل؟',
+    'mobile_hub.manage_products_title': 'إدارة المنتجات',
+    'mobile_hub.manage_products_desc': 'عرض، إضافة أو تعديل مخزونك.',
+    'mobile_hub.sell_deliver_title': 'بيع أو توصيل',
+    'mobile_hub.sell_deliver_desc': 'امسح منتجاً لبيعه أو إرساله للتوصيل.',
+    'mobile_hub.enter_platform_title': 'الدخول للمنصة',
+    'mobile_hub.enter_platform_desc': 'الوصول إلى كافة ميزات لوحة التحكم.',
 
     // Dashboard
     'dashboard.sales_revenue': 'إيرادات المبيعات',
