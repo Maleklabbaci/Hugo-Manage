@@ -301,7 +301,6 @@ const Products: React.FC = () => {
   const handleConfirmDelete = async () => {
     if (productToDeleteId) {
         await deleteProduct(productToDeleteId);
-        setProductToDeleteId(null);
     }
   };
 
@@ -773,7 +772,10 @@ const Products: React.FC = () => {
       />
       <ConfirmationModal 
         isOpen={isDeleteConfirmOpen}
-        onClose={() => setIsDeleteConfirmOpen(false)}
+        onClose={() => {
+            setIsDeleteConfirmOpen(false);
+            setProductToDeleteId(null);
+        }}
         onConfirm={handleConfirmDelete}
         title={t('products.confirm_delete_title')}
         message={t('products.confirm_delete')}

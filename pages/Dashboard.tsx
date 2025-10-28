@@ -3,7 +3,7 @@ import StatCard from '../components/StatCard';
 import { useAppContext } from '../context/AppContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import type { Language, Sale } from '../types';
-import { ShoppingBagIcon, DollarSignIcon, PackageXIcon, ShoppingCartIcon, ArchiveIcon, CreditCardIcon, PiggyBankIcon, DeliveryIcon, DatabaseIcon } from '../components/Icons';
+import { ShoppingBagIcon, DollarSignIcon, PackageXIcon, ShoppingCartIcon, ArchiveIcon, CreditCardIcon, PiggyBankIcon, DeliveryIcon, DatabaseIcon, TrendingUpIcon, ServerIcon } from '../components/Icons';
 import AIInsights from '../components/AIInsights';
 import { motion } from 'framer-motion';
 
@@ -50,9 +50,12 @@ const Dashboard: React.FC = () => {
     const totalProducts = products.length;
     const stockValue = products.reduce((acc, p) => acc + p.buyPrice * p.stock, 0);
     const potentialRevenue = products.reduce((acc, p) => acc + p.sellPrice * p.stock, 0);
-    const totalProfit = potentialRevenue - stockValue;
+    const potentialStockProfit = potentialRevenue - stockValue;
     const outOfStock = products.filter(p => p.stock === 0).length;
     const unitsInDelivery = products.filter(p => p.status === 'en livraison').length;
+    const totalCurrentStockAndDelivery = products.reduce((acc, p) => acc + p.stock, 0);
+    const totalUnitsSoldEver = sales.reduce((acc, s) => acc + s.quantity, 0);
+    const totalUnits = totalCurrentStockAndDelivery + totalUnitsSoldEver;
 
     // Time-filtered sales stats
     const salesRevenue = filteredSales.reduce((acc, s) => acc + s.totalPrice, 0);
@@ -61,8 +64,8 @@ const Dashboard: React.FC = () => {
     const totalOrders = filteredSales.length;
     const avgOrderValue = totalOrders > 0 ? salesRevenue / totalOrders : 0;
 
-    return { totalProducts, stockValue, totalProfit, outOfStock, unitsInDelivery, salesRevenue, unitsSold, salesProfit, totalOrders, avgOrderValue };
-  }, [products, filteredSales]);
+    return { totalProducts, stockValue, potentialStockProfit, outOfStock, unitsInDelivery, salesRevenue, unitsSold, salesProfit, totalOrders, avgOrderValue, totalUnits };
+  }, [products, sales, filteredSales]);
 
   const profitOverTimeData = useMemo(() => {
     if (filteredSales.length === 0) return [];
@@ -150,15 +153,17 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
         <StatCard icon={CreditCardIcon} title={t('dashboard.sales_revenue')} value={`${stats.salesRevenue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={PiggyBankIcon} title={t('dashboard.sales_profit')} value={`${stats.salesProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={ShoppingCartIcon} title={t('dashboard.units_sold')} value={stats.unitsSold} />
         <StatCard icon={ArchiveIcon} title={t('dashboard.total_orders')} value={stats.totalOrders} />
+        <StatCard icon={TrendingUpIcon} title={t('dashboard.potential_stock_profit')} value={`${stats.potentialStockProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={DatabaseIcon} title={t('dashboard.stock_value')} value={`${stats.stockValue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
-        <StatCard icon={DeliveryIcon} title={t('dashboard.units_in_delivery')} value={stats.unitsInDelivery} />
         <StatCard icon={ShoppingBagIcon} title={t('dashboard.total_products')} value={stats.totalProducts} />
         <StatCard icon={PackageXIcon} title={t('dashboard.out_of_stock')} value={stats.outOfStock} />
+        <StatCard icon={DeliveryIcon} title={t('dashboard.units_in_delivery')} value={stats.unitsInDelivery} />
+        <StatCard icon={ServerIcon} title={t('dashboard.total_units')} value={stats.totalUnits} />
       </div>
 
       <AIInsights />

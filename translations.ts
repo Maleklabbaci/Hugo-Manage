@@ -52,6 +52,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.sales_profit': 'Bénéfice des Ventes',
     'dashboard.units_sold': 'Unités Vendues',
     'dashboard.stock_value': 'Valeur du Stock (Investissement)',
+    'dashboard.potential_stock_profit': 'Bénéfice Potentiel du Stock',
     'dashboard.total_products': 'Total produits',
     'dashboard.out_of_stock': 'Produits en rupture',
     'dashboard.weekly_profit_chart_title': 'Profit par Période (DA)',
@@ -77,6 +78,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.range.30d': '30 jours',
     'dashboard.range.1y': '1 an',
     'dashboard.range.all': 'Tout',
+    'dashboard.total_units': 'Total Unités',
 
 
     // Products Page
@@ -395,6 +397,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.sales_profit': 'Sales Profit',
     'dashboard.units_sold': 'Units Sold',
     'dashboard.stock_value': 'Stock Value (Investment)',
+    'dashboard.potential_stock_profit': 'Potential Stock Profit',
     'dashboard.total_products': 'Total Products',
     'dashboard.out_of_stock': 'Out of Stock',
     'dashboard.weekly_profit_chart_title': 'Profit Over Period (DZD)',
@@ -420,6 +423,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.range.30d': '30 days',
     'dashboard.range.1y': '1 year',
     'dashboard.range.all': 'All time',
+    'dashboard.total_units': 'Total Units',
     
     // Products Page
     'products.title': 'Product List',
@@ -736,6 +740,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.sales_profit': 'أرباح المبيعات',
     'dashboard.units_sold': 'الوحدات المباعة',
     'dashboard.stock_value': 'قيمة المخزون (استثمار)',
+    'dashboard.potential_stock_profit': 'الربح المحتمل للمخزون',
     'dashboard.total_products': 'إجمالي المنتجات',
     'dashboard.out_of_stock': 'نفد من المخزون',
     'dashboard.weekly_profit_chart_title': 'الربح خلال الفترة (د.ج)',
@@ -761,6 +766,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.range.30d': '30 يومًا',
     'dashboard.range.1y': 'سنة واحدة',
     'dashboard.range.all': 'كل الوقت',
+    'dashboard.total_units': 'إجمالي الوحدات',
 
     // Products Page
     'products.title': 'قائمة المنتجات',
