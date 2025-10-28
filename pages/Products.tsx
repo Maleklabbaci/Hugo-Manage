@@ -15,7 +15,7 @@ const localeDateMap: Record<Language, string> = {
 };
 
 const calculateMargin = (product: Product) => {
-  if (product.sellPrice <= 0) return '0.0';
+  if (product.sellPrice <= 0 || product.sellPrice <= product.buyPrice) return '0.0';
   return (((product.sellPrice - product.buyPrice) / product.sellPrice) * 100).toFixed(1);
 };
 
@@ -30,25 +30,25 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
   return (
     <motion.div 
         layout
-        className={`bg-white dark:bg-white/5 backdrop-blur-lg border rounded-xl overflow-hidden transition-all duration-200 relative ${isSelected ? 'ring-2 ring-cyan-500' : 'ring-1 ring-transparent'} ${lowStock ? 'border-amber-500' : 'border-gray-200 dark:border-white/10'}`}
+        className={`bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border rounded-xl overflow-hidden transition-all duration-200 relative ${isSelected ? 'ring-2 ring-brand' : 'ring-1 ring-transparent'} ${lowStock ? 'border-amber-500' : 'border-slate-200 dark:border-slate-700'}`}
     >
       <div className="flex items-start p-4 space-x-4">
         {product.imageUrl ? (
           <img src={product.imageUrl} alt={product.name} className="w-20 h-20 object-cover rounded-lg" />
         ) : (
-          <div className="w-20 h-20 bg-gray-200 dark:bg-slate-700/50 rounded-lg flex items-center justify-center">
-            <ProductsIcon className="w-10 h-10 text-gray-400" />
+          <div className="w-20 h-20 bg-slate-200 dark:bg-slate-700/50 rounded-lg flex items-center justify-center">
+            <ProductsIcon className="w-10 h-10 text-slate-400" />
           </div>
         )}
         <div className="flex-1">
           <div className="flex justify-between items-start">
               <div>
-                  <h3 className="font-bold text-gray-900 dark:text-white leading-tight">{product.name}</h3>
-                  <p className="text-sm text-gray-600 dark:text-slate-400">{product.category}</p>
+                  <h3 className="font-bold text-slate-900 dark:text-white leading-tight">{product.name}</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">{product.category}</p>
               </div>
               <input 
                   type="checkbox"
-                  className="w-5 h-5 text-cyan-500 bg-gray-100 border-gray-300 rounded-md focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-secondary focus:ring-2 dark:bg-slate-600 dark:border-slate-500 flex-shrink-0"
+                  className="w-5 h-5 text-brand bg-slate-100 border-slate-300 rounded-md focus:ring-brand dark:focus:ring-brand-dark dark:ring-offset-secondary focus:ring-2 dark:bg-slate-600 dark:border-slate-500 flex-shrink-0"
                   checked={isSelected}
                   onChange={() => onSelect(product.id)}
               />
@@ -57,7 +57,7 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
             <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300'}`}>
               {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
             </span>
-            <p className={`text-xs flex items-center ${lowStock ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-gray-500 dark:text-slate-500'}`}>
+            <p className={`text-xs flex items-center ${lowStock ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-slate-500 dark:text-slate-500'}`}>
                 {lowStock && <AlertCircleIcon className="w-4 h-4 me-1" />}
                 Stock: {product.stock}
             </p>
@@ -67,18 +67,18 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
       <div className="px-4 pb-4">
         <div className="flex items-center justify-between">
            <div className="text-left">
-             <div className="text-xs text-gray-600 dark:text-slate-400">{t('products.table.sell_price')}</div>
-             <div className="font-semibold text-lg text-gray-900 dark:text-white">{product.sellPrice.toFixed(2)} DA</div>
+             <div className="text-xs text-slate-600 dark:text-slate-400">{t('products.table.sell_price')}</div>
+             <div className="font-semibold text-lg text-slate-900 dark:text-white">{product.sellPrice.toFixed(2)} DA</div>
            </div>
            <div className="text-right">
-             <div className="text-xs text-gray-600 dark:text-slate-400">{t('products.table.margin')}</div>
+             <div className="text-xs text-slate-600 dark:text-slate-400">{t('products.table.margin')}</div>
              <div className={`font-semibold text-lg ${parseFloat(margin) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{margin}%</div>
            </div>
         </div>
         <div className="mt-4 flex items-center space-x-2">
            <motion.button 
              onClick={() => onSell(product)} 
-             className="flex-1 text-white bg-gradient-to-r from-cyan-500 to-blue-500 disabled:from-slate-400 disabled:to-slate-500 rounded-lg h-10 font-semibold text-sm disabled:opacity-70 flex items-center justify-center" 
+             className="flex-1 text-white bg-gradient-to-r from-brand to-blue-500 disabled:from-slate-400 disabled:to-slate-500 rounded-lg h-10 font-semibold text-sm disabled:opacity-70 flex items-center justify-center" 
              disabled={product.stock === 0}
              whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(34, 211, 238, 0.3), 0 4px 6px -2px rgba(34, 211, 238, 0.2)' }}
              whileTap={{ scale: 0.95 }}
@@ -87,7 +87,7 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
              <ShoppingCartIcon className="w-4 h-4 me-2"/> {t('sell')}
            </motion.button>
            <div className="relative">
-             <button onClick={() => setMenuOpen(!menuOpen)} onBlur={() => setTimeout(() => setMenuOpen(false), 100)} className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-white/20">
+             <button onClick={() => setMenuOpen(!menuOpen)} onBlur={() => setTimeout(() => setMenuOpen(false), 100)} className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20">
                <MoreVerticalIcon className="w-5 h-5"/>
              </button>
              <AnimatePresence>
@@ -96,12 +96,12 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
                   initial={{ opacity: 0, scale: 0.9, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  className="absolute bottom-12 right-0 bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-lg shadow-lg w-48 z-10 overflow-hidden"
+                  className="absolute bottom-12 right-0 bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg w-48 z-10 overflow-hidden"
                 >
-                  <button onClick={() => { onEdit(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><EditIcon className="w-4 h-4 me-2"/> {t('edit')}</button>
-                  <button onClick={() => { onSetDelivery(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><DeliveryIcon className="w-4 h-4 me-2"/> {t('products.actions.set_delivery')}</button>
-                  <button onClick={() => { onDuplicate(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><DuplicateIcon className="w-4 h-4 me-2"/> {t('duplicate')}</button>
-                  <div className="h-px bg-gray-200 dark:bg-white/10 my-1"></div>
+                  <button onClick={() => { onEdit(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"><EditIcon className="w-4 h-4 me-2"/> {t('edit')}</button>
+                  <button onClick={() => { onSetDelivery(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"><DeliveryIcon className="w-4 h-4 me-2"/> {t('products.actions.set_delivery')}</button>
+                  <button onClick={() => { onDuplicate(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"><DuplicateIcon className="w-4 h-4 me-2"/> {t('duplicate')}</button>
+                  <div className="h-px bg-slate-200 dark:bg-slate-700 my-1"></div>
                   <button onClick={() => { onDelete(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-red-500 hover:bg-red-500/10"><DeleteIcon className="w-4 h-4 me-2"/> {t('delete')}</button>
                 </motion.div>
               )}
@@ -136,10 +136,24 @@ const Products: React.FC = () => {
   const [productToDeleteId, setProductToDeleteId] = useState<number | null>(null);
   const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const productsPerPage = 30;
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+        if (openMenuId !== null && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+            setOpenMenuId(null);
+        }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openMenuId]);
   
   const timeAgo = (isoDate: string): string => {
     if (!isoDate) return '-';
@@ -428,7 +442,7 @@ const Products: React.FC = () => {
   const SortableHeader: React.FC<{ sortableKey: SortKey, children: React.ReactNode }> = ({ sortableKey, children }) => (
     <th scope="col" className="px-6 py-3">
         <button 
-            className="flex items-center space-x-1 hover:bg-gray-100 dark:hover:bg-white/10 px-2 py-1 -mx-2 -my-1 rounded-md transition-colors" 
+            className="flex items-center space-x-1 hover:bg-slate-100 dark:hover:bg-slate-800/60 px-2 py-1 -mx-2 -my-1 rounded-md transition-colors" 
             onClick={() => handleSort(sortableKey)}
         >
             <span>{children}</span>
@@ -442,12 +456,12 @@ const Products: React.FC = () => {
   return (
     <div className="pb-16 md:pb-0">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('products.title')}</h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('products.title')}</h2>
         <div className="flex items-center space-x-2">
             <motion.button
                 onClick={handleImportClick}
                 disabled={isImporting}
-                className="flex items-center bg-white dark:bg-white/10 text-gray-700 dark:text-white border border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/20 font-semibold rounded-lg px-4 py-2 disabled:opacity-50"
+                className="flex items-center bg-white dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold rounded-lg px-4 py-2 disabled:opacity-50"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
             >
@@ -456,7 +470,7 @@ const Products: React.FC = () => {
             </motion.button>
             <motion.button
               onClick={() => handleOpenModal()}
-              className="flex items-center text-white bg-gradient-to-r from-cyan-400 to-blue-500 font-semibold rounded-lg px-4 py-2"
+              className="flex items-center text-white bg-gradient-to-r from-brand to-blue-500 font-semibold rounded-lg px-4 py-2"
               whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(34, 211, 238, 0.3), 0 4px 6px -2px rgba(34, 211, 238, 0.2)' }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
@@ -471,14 +485,14 @@ const Products: React.FC = () => {
       <div className="mb-4 flex flex-col md:flex-row md:items-center gap-4">
         <div className="relative flex-grow">
             <div className="absolute inset-y-0 left-0 flex items-center ps-3 pointer-events-none">
-                <SearchIcon className="w-5 h-5 text-gray-400" />
+                <SearchIcon className="w-5 h-5 text-slate-400" />
             </div>
             <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('products.search_placeholder')}
-                className="w-full ps-10 pr-4 py-2 bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                className="w-full ps-10 pr-4 py-2 bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand"
             />
         </div>
         <motion.button
@@ -486,7 +500,7 @@ const Products: React.FC = () => {
             className={`flex items-center font-semibold rounded-lg px-3 py-2 text-sm transition-colors ${
                 showLowStockOnly 
                 ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300 ring-1 ring-amber-500/50' 
-                : 'bg-white dark:bg-white/10 text-gray-700 dark:text-slate-200 border border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/20'
+                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'
             }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -502,30 +516,30 @@ const Products: React.FC = () => {
                     setSortKey(key as SortKey);
                     setSortDirection(dir as 'asc' | 'desc');
                 }}
-                className="w-full md:w-auto bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 p-2 text-sm font-medium"
+                className="w-full md:w-auto bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand p-2 text-sm font-medium"
             >
-                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="createdAt_desc">{t('products.sort.created_at_desc')}</option>
-                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="createdAt_asc">{t('products.sort.created_at_asc')}</option>
-                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="name_asc">{t('products.sort.name_asc')}</option>
-                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="name_desc">{t('products.sort.name_desc')}</option>
-                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="buyPrice_asc">{t('products.sort.buy_price_asc')}</option>
-                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="buyPrice_desc">{t('products.sort.buy_price_desc')}</option>
-                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="sellPrice_asc">{t('products.sort.sell_price_asc')}</option>
-                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="sellPrice_desc">{t('products.sort.sell_price_desc')}</option>
-                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="stock_desc">{t('products.sort.stock_desc')}</option>
-                <option className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white" value="stock_asc">{t('products.sort.stock_asc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white" value="createdAt_desc">{t('products.sort.created_at_desc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white" value="createdAt_asc">{t('products.sort.created_at_asc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white" value="name_asc">{t('products.sort.name_asc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white" value="name_desc">{t('products.sort.name_desc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white" value="buyPrice_asc">{t('products.sort.buy_price_asc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white" value="buyPrice_desc">{t('products.sort.buy_price_desc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white" value="sellPrice_asc">{t('products.sort.sell_price_asc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white" value="sellPrice_desc">{t('products.sort.sell_price_desc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white" value="stock_desc">{t('products.sort.stock_desc')}</option>
+                <option className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white" value="stock_asc">{t('products.sort.stock_asc')}</option>
             </select>
         )}
       </div>
 
 
       {numSelected > 0 && !isMobile && (
-        <div className="bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 p-3 rounded-lg mb-4 flex items-center justify-between shadow-md">
+        <div className="bg-brand/10 dark:bg-brand/20 text-brand-dark dark:text-brand-light p-3 rounded-lg mb-4 flex items-center justify-between shadow-md">
             <span className="font-semibold">{t('products.selected_text', { count: numSelected })}</span>
             <div className="flex items-center space-x-2">
                 <motion.button
                     onClick={() => setIsBulkEditModalOpen(true)}
-                    className="flex items-center bg-white dark:bg-slate-900/40 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-500/50 font-semibold rounded-lg px-3 py-1.5 text-sm"
+                    className="flex items-center bg-white dark:bg-slate-900/40 text-brand-dark dark:text-brand-light border border-brand/50 dark:border-brand/50 font-semibold rounded-lg px-3 py-1.5 text-sm"
                     whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 >
                     <BulkEditIcon className="w-4 h-4 me-2" />
@@ -562,17 +576,17 @@ const Products: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden">
+        <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left rtl:text-right text-gray-600 dark:text-slate-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-slate-900/50 dark:text-slate-300">
+            <table className="w-full text-sm text-left rtl:text-right text-slate-600 dark:text-slate-400">
+              <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-900/50 dark:text-slate-300">
                 <tr>
                   <th scope="col" className="p-4">
                       <div className="flex items-center">
                           <input 
                             id="checkbox-all-search" 
                             type="checkbox" 
-                            className="w-4 h-4 text-cyan-500 bg-gray-100 border-gray-300 rounded focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
+                            className="w-4 h-4 text-brand bg-slate-100 border-slate-300 rounded focus:ring-brand dark:focus:ring-brand-dark dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
                             checked={isAllSelected}
                             onChange={handleSelectAll}
                           />
@@ -593,13 +607,13 @@ const Products: React.FC = () => {
               </thead>
               <tbody>
                 {paginatedProducts.length > 0 ? paginatedProducts.map(product => (
-                  <tr key={product.id} className={`border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 ${selectedProducts.includes(product.id) ? 'bg-cyan-500/10' : ''}`}>
+                  <tr key={product.id} className={`border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 ${selectedProducts.includes(product.id) ? 'bg-brand/10' : ''}`}>
                     <td className="w-4 p-4">
                           <div className="flex items-center">
                               <input 
                                 id={`checkbox-table-search-${product.id}`}
                                 type="checkbox"
-                                className="w-4 h-4 text-cyan-500 bg-gray-100 border-gray-300 rounded focus:ring-cyan-500 dark:focus:ring-cyan-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
+                                className="w-4 h-4 text-brand bg-slate-100 border-slate-300 rounded focus:ring-brand dark:focus:ring-brand-dark dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
                                 checked={selectedProducts.includes(product.id)}
                                 onChange={() => handleSelectOne(product.id)}
                               />
@@ -616,12 +630,12 @@ const Products: React.FC = () => {
                           onMouseLeave={() => setHoveredImage(null)}
                         />
                       ) : (
-                        <div className="w-12 h-12 bg-gray-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center">
-                          <ProductsIcon className="w-6 h-6 text-gray-400" />
+                        <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center">
+                          <ProductsIcon className="w-6 h-6 text-slate-400" />
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">{product.name}</td>
+                    <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{product.name}</td>
                     <td className="px-6 py-4">{product.category}</td>
                     <td className="px-6 py-4">{product.buyPrice.toFixed(2)} DA</td>
                     <td className="px-6 py-4">{product.sellPrice.toFixed(2)} DA</td>
@@ -641,56 +655,39 @@ const Products: React.FC = () => {
                       {formatDate(product.createdAt)}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                          <motion.button 
-                              onClick={() => handleOpenDeliveryConfirm(product)}
-                              className="p-2 rounded-md transition-colors bg-sky-500/10 hover:bg-sky-500/20 text-sky-500"
-                              title={t('products.actions.set_delivery')}
-                              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                      <div className="relative" ref={menuRef}>
+                        <motion.button 
+                            onClick={() => setOpenMenuId(openMenuId === product.id ? null : product.id)}
+                            className="p-2 rounded-full transition-colors hover:bg-slate-200 dark:hover:bg-slate-700"
+                            whileTap={{ scale: 0.9 }}
+                        >
+                          <MoreVerticalIcon className="w-5 h-5" />
+                        </motion.button>
+                        <AnimatePresence>
+                        {openMenuId === product.id && (
+                          <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="absolute top-10 right-0 bg-white dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg w-48 z-10 overflow-hidden"
                           >
-                            <DeliveryIcon className="w-5 h-5" />
-                          </motion.button>
-                          <motion.button 
-                              onClick={() => handleOpenSaleModal(product)} 
-                              className="p-2 rounded-md transition-colors bg-green-500/10 hover:bg-green-500/20 text-green-500 disabled:bg-slate-500/10 disabled:text-slate-500 disabled:cursor-not-allowed"
-                              disabled={product.stock === 0}
-                              title={t('sell')}
-                              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                          >
-                              <ShoppingCartIcon className="w-5 h-5" />
-                          </motion.button>
-                          <motion.button 
-                              onClick={() => handleOpenModal(product)} 
-                              className="p-2 rounded-md transition-colors bg-blue-500/10 hover:bg-blue-500/20 text-blue-500" 
-                              title={t('edit')}
-                               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                          >
-                              <EditIcon className="w-5 h-5" />
-                          </motion.button>
-                          <motion.button 
-                              onClick={() => duplicateProduct(product.id)}
-                              className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500"
-                              title={t('duplicate')}
-                               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                          >
-                              <DuplicateIcon className="w-5 h-5" />
-                          </motion.button>
-                          <motion.button 
-                              onClick={() => handleOpenDeleteConfirm(product.id)} 
-                              className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" 
-                              title={t('delete')}
-                               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                          >
-                              <DeleteIcon className="w-5 h-5" />
-                          </motion.button>
+                            <button onClick={() => { handleOpenSaleModal(product); setOpenMenuId(null); }} disabled={product.stock === 0} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 disabled:opacity-50"><ShoppingCartIcon className="w-4 h-4 me-2"/> {t('sell')}</button>
+                            <button onClick={() => { handleOpenModal(product); setOpenMenuId(null); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"><EditIcon className="w-4 h-4 me-2"/> {t('edit')}</button>
+                            <button onClick={() => { handleOpenDeliveryConfirm(product); setOpenMenuId(null); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"><DeliveryIcon className="w-4 h-4 me-2"/> {t('products.actions.set_delivery')}</button>
+                            <button onClick={() => { duplicateProduct(product.id); setOpenMenuId(null); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"><DuplicateIcon className="w-4 h-4 me-2"/> {t('duplicate')}</button>
+                            <div className="h-px bg-slate-200 dark:bg-slate-700 my-1"></div>
+                            <button onClick={() => { handleOpenDeleteConfirm(product.id); setOpenMenuId(null); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-red-500 hover:bg-red-500/10"><DeleteIcon className="w-4 h-4 me-2"/> {t('delete')}</button>
+                          </motion.div>
+                        )}
+                        </AnimatePresence>
                       </div>
                     </td>
                   </tr>
                 )) : (
                   <tr>
                       <td colSpan={12} className="text-center py-10">
-                          <h3 className="text-lg font-semibold text-gray-700 dark:text-slate-300">{t('products.no_results_title')}</h3>
-                          <p className="text-gray-600 dark:text-slate-400">{t('products.no_results_subtitle')}</p>
+                          <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">{t('products.no_results_title')}</h3>
+                          <p className="text-slate-600 dark:text-slate-400">{t('products.no_results_subtitle')}</p>
                       </td>
                   </tr>
                 )}
@@ -702,12 +699,12 @@ const Products: React.FC = () => {
       
       {totalPages > 1 && (
         <div className="flex justify-center items-center mt-6">
-            <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-gray-100 dark:enabled:hover:bg-white/10">
-                <ChevronLeftIcon className="w-5 h-5 text-gray-600 dark:text-slate-300"/>
+            <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-slate-200 dark:enabled:hover:bg-slate-800/60">
+                <ChevronLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-300"/>
             </button>
-            <span className="mx-4 text-gray-700 dark:text-slate-200">{t('products.pagination', { currentPage, totalPages })}</span>
-            <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-gray-100 dark:enabled:hover:bg-white/10">
-                <ChevronRightIcon className="w-5 h-5 text-gray-600 dark:text-slate-300"/>
+            <span className="mx-4 text-slate-700 dark:text-slate-200">{t('products.pagination', { currentPage, totalPages })}</span>
+            <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-slate-200 dark:enabled:hover:bg-slate-800/60">
+                <ChevronRightIcon className="w-5 h-5 text-slate-600 dark:text-slate-300"/>
             </button>
         </div>
       )}

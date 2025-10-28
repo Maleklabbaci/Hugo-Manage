@@ -6,7 +6,7 @@ import StatCard from '../components/StatCard';
 import { DollarSignIcon, PiggyBankIcon, ShoppingCartIcon, ArchiveIcon, TrendingUpIcon, LoaderIcon } from '../components/Icons';
 import { motion } from 'framer-motion';
 
-const COLORS = ['#22D3EE', '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', '#d0ed57', '#ffc0cb'];
+const COLORS = ['#06b6d4', '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a4de6c', '#d0ed57', '#ffc0cb'];
 const localeMap: Record<Language, string> = {
     fr: 'fr-FR',
     en: 'en-GB',
@@ -128,8 +128,8 @@ const Statistics: React.FC = () => {
     const CustomTooltip = ({ active, payload, label, formatter }: any) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-white/80 dark:bg-slate-900/80 p-2 border border-gray-200 dark:border-white/10 rounded-md shadow-lg">
-                    <p className="label text-gray-700 dark:text-white">{label}</p>
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm p-2 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg">
+                    <p className="label text-slate-700 dark:text-white">{label}</p>
                     <p className="text-cyan-400">{`${payload[0].name}: ${formatter(payload[0].value)}`}</p>
                 </div>
             );
@@ -141,7 +141,7 @@ const Statistics: React.FC = () => {
         <motion.button
             onClick={() => setTimeRange(range)}
             className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors relative ${
-                timeRange === range ? 'text-white' : 'text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-white/10'
+                timeRange === range ? 'text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800/60'
             }`}
             whileTap={{ scale: 0.95 }}
         >
@@ -149,7 +149,7 @@ const Statistics: React.FC = () => {
             {timeRange === range && (
                 <motion.div
                     layoutId="active-range-indicator"
-                    className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg -z-10"
+                    className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg -z-10"
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
             )}
@@ -157,10 +157,10 @@ const Statistics: React.FC = () => {
     );
 
     return (
-        <div className="space-y-8 text-gray-900 dark:text-white">
+        <div className="space-y-8 text-slate-900 dark:text-white">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('sidebar.statistics')}</h2>
-                <div className="flex items-center space-x-1 p-1 bg-gray-100 dark:bg-black/20 rounded-xl">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('sidebar.statistics')}</h2>
+                <div className="flex items-center space-x-1 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-xl">
                     <TimeRangeButton range="7d" label={t('statistics.range.7d')} />
                     <TimeRangeButton range="30d" label={t('statistics.range.30d')} />
                     <TimeRangeButton range="1y" label={t('statistics.range.1y')} />
@@ -177,7 +177,7 @@ const Statistics: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                <div className="lg:col-span-3 bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-6 rounded-2xl">
+                <div className="lg:col-span-3 bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-6 rounded-2xl">
                     <h3 className="text-lg font-semibold mb-4">{t('statistics.revenue_over_time')}</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={revenueOverTimeData}>
@@ -188,11 +188,11 @@ const Statistics: React.FC = () => {
                                 cursor={{ fill: 'rgba(34,211,238,0.1)' }}
                                 content={<CustomTooltip formatter={(value: number) => value.toLocaleString(locale, { style: 'currency', currency: 'DZD' })} />}
                             />
-                            <Bar dataKey="revenue" name={t('statistics.chart.revenue')} fill="#22D3EE" barSize={20} />
+                            <Bar dataKey="revenue" name={t('statistics.chart.revenue')} fill="#06b6d4" barSize={20} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-                <div className="lg:col-span-2 bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-6 rounded-2xl">
+                <div className="lg:col-span-2 bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-6 rounded-2xl">
                     <h3 className="text-lg font-semibold mb-4">{t('statistics.top_selling_products')}</h3>
                     <ResponsiveContainer width="100%" height={300}>
                          <BarChart data={topSellingProductsData} layout="vertical" margin={{ left: 30, right: 20 }}>
@@ -209,7 +209,7 @@ const Statistics: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-6 rounded-2xl">
+            <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-6 rounded-2xl">
                 <h3 className="text-lg font-semibold mb-4">{t('dashboard.stock_by_category_chart_title')}</h3>
                 <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
@@ -218,7 +218,7 @@ const Statistics: React.FC = () => {
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>
-                        <Tooltip formatter={(value: number) => `${value.toLocaleString(locale)} ${t('dashboard.chart.units')}`} contentStyle={{ backgroundColor: theme === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255,255,255,0.8)', border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`}}/>
+                        <Tooltip formatter={(value: number) => `${value.toLocaleString(locale)} ${t('dashboard.chart.units')}`} contentStyle={{ backgroundColor: theme === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255,255,255,0.8)', border: `1px solid ${theme === 'dark' ? '#cbd5e1' : '#e2e8f0'}`}}/>
                         <Legend />
                     </PieChart>
                 </ResponsiveContainer>

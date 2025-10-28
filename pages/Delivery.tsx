@@ -25,24 +25,24 @@ const DeliveryCard: React.FC<{ product: Product, onConfirmSale: (product: Produc
     return (
         <motion.div
             layout
-            className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden"
+            className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden"
         >
             <div className="flex items-start p-4 space-x-4">
                 {product.imageUrl ? (
                     <img src={product.imageUrl} alt={product.name} className="w-20 h-20 object-cover rounded-lg" />
                 ) : (
-                    <div className="w-20 h-20 bg-gray-200 dark:bg-slate-700/50 rounded-lg flex items-center justify-center">
-                        <ProductsIcon className="w-10 h-10 text-gray-400" />
+                    <div className="w-20 h-20 bg-slate-200 dark:bg-slate-700/50 rounded-lg flex items-center justify-center">
+                        <ProductsIcon className="w-10 h-10 text-slate-400" />
                     </div>
                 )}
                 <div className="flex-1">
-                    <h3 className="font-bold text-gray-900 dark:text-white leading-tight">{product.name}</h3>
-                    <p className="text-sm text-gray-600 dark:text-slate-400">{product.category}</p>
+                    <h3 className="font-bold text-slate-900 dark:text-white leading-tight">{product.name}</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{product.category}</p>
                     <div className="flex items-baseline space-x-4 mt-2">
-                        <p className="font-semibold text-lg text-gray-900 dark:text-white">{product.sellPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</p>
-                        <p className="text-sm text-gray-500 dark:text-slate-400">{t('products.table.stock')}: <span className="font-semibold">{product.stock}</span></p>
+                        <p className="font-semibold text-lg text-slate-900 dark:text-white">{product.sellPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{t('products.table.stock')}: <span className="font-semibold">{product.stock}</span></p>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-slate-500 mt-1">{t('delivery.table.delivered_at')}: {formatTimestamp(product.createdAt)}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">{t('delivery.table.delivered_at')}: {formatTimestamp(product.createdAt)}</p>
                 </div>
             </div>
             <div className="px-4 pb-4 flex items-center space-x-2 justify-between">
@@ -59,7 +59,7 @@ const DeliveryCard: React.FC<{ product: Product, onConfirmSale: (product: Produc
                 <div className="flex items-center space-x-2">
                     <motion.button
                         onClick={() => onViewDetails(product)}
-                        className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-slate-300 rounded-lg"
+                        className="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-300 rounded-lg"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         title={t('product_details.view_button')}
@@ -167,16 +167,16 @@ const Delivery: React.FC = () => {
     if (deliveryProducts.length === 0) {
         return (
             <div className="text-center py-10">
-                <DeliveryIcon className="w-16 h-16 mx-auto text-gray-400 dark:text-slate-500 mb-4" />
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('delivery.empty.title')}</h2>
-                <p className="text-gray-600 dark:text-slate-400">{t('delivery.empty.subtitle')}</p>
+                <DeliveryIcon className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4" />
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{t('delivery.empty.title')}</h2>
+                <p className="text-slate-600 dark:text-slate-400">{t('delivery.empty.subtitle')}</p>
             </div>
         )
     }
 
     return (
         <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('delivery.title')} ({deliveryProducts.length})</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">{t('delivery.title')} ({deliveryProducts.length})</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <StatCard icon={DeliveryIcon} title={t('delivery.total_items')} value={deliveryStats.totalItems} />
@@ -190,10 +190,10 @@ const Delivery: React.FC = () => {
                     ))}
                 </div>
             ) : (
-                <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden">
+                <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left rtl:text-right text-gray-600 dark:text-slate-400">
-                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-white/5 dark:text-slate-300">
+                        <table className="w-full text-sm text-left rtl:text-right text-slate-600 dark:text-slate-400">
+                            <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-900/50 dark:text-slate-300">
                                 <tr>
                                     <th scope="col" className="px-6 py-3">{t('products.table.image')}</th>
                                     <th scope="col" className="px-6 py-3">{t('products.table.name')}</th>
@@ -206,7 +206,7 @@ const Delivery: React.FC = () => {
                             </thead>
                             <tbody>
                                 {deliveryProducts.map(product => (
-                                    <tr key={product.id} className="border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5">
+                                    <tr key={product.id} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60">
                                         <td className="px-6 py-4">
                                             {product.imageUrl ? (
                                                 <img 
@@ -217,12 +217,12 @@ const Delivery: React.FC = () => {
                                                     onMouseLeave={() => setHoveredImage(null)}
                                                 />
                                             ) : (
-                                                <div className="w-12 h-12 bg-gray-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center">
-                                                    <ProductsIcon className="w-6 h-6 text-gray-400" />
+                                                <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center">
+                                                    <ProductsIcon className="w-6 h-6 text-slate-400" />
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">{product.name}</td>
+                                        <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{product.name}</td>
                                         <td className="px-6 py-4">{product.category}</td>
                                         <td className="px-6 py-4 font-semibold">{product.sellPrice.toLocaleString(localeMap[language], { style: 'currency', currency: 'DZD' })}</td>
                                         <td className="px-6 py-4 font-semibold">{product.stock}</td>
@@ -241,7 +241,7 @@ const Delivery: React.FC = () => {
                                                 </motion.button>
                                                  <motion.button
                                                     onClick={() => handleViewDetails(product)}
-                                                    className="p-2 rounded-md transition-colors bg-gray-500/10 hover:bg-gray-500/20 text-gray-500"
+                                                    className="p-2 rounded-md transition-colors bg-slate-500/10 hover:bg-slate-500/20 text-slate-500"
                                                     title={t('product_details.view_button')}
                                                     whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                                                     <ViewDetailsIcon className="w-5 h-5" />

@@ -630,6 +630,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     window.location.reload();
   };
   
+  const saveGeminiApiKey = (key: string) => {
+    storage.setGeminiApiKey(key);
+    alert(t('settings.gemini.saved_message'));
+    window.location.reload();
+  };
+
   const findProductByName = (name: string): Product[] => {
       if (!name) return [];
       const lowerCaseName = name.toLowerCase();
@@ -694,7 +700,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     session, user, notifications, setTheme, setLanguage, t, login, logout,
     addProduct, addMultipleProducts, updateProduct, updateMultipleProducts, deleteProduct, deleteMultipleProducts, 
     duplicateProduct, setProductToDelivery, confirmSaleFromDelivery, cancelDelivery, addSale, cancelSale, markNotificationAsRead, markAllNotificationsAsRead,
-    isConfigured, saveSupabaseCredentials, refetchData, findProductByName, findProductsByKeywords, testSupabaseConnection
+    isConfigured, saveSupabaseCredentials, saveGeminiApiKey, refetchData, findProductByName, findProductsByKeywords, testSupabaseConnection
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

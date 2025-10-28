@@ -112,6 +112,7 @@ export interface AppContextType {
   markNotificationAsRead: (productId: number) => void;
   markAllNotificationsAsRead: () => void;
   saveSupabaseCredentials: (url: string, anonKey: string) => void;
+  saveGeminiApiKey: (key: string) => void;
   refetchData: () => Promise<void>;
   findProductByName: (name: string) => Product[];
   findProductsByKeywords: (keywords: string) => Product[];

@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import GlobalSearch from './GlobalSearch';
 import NotificationPanel from './NotificationPanel';
 import ConversationalAssistant from './ConversationalAssistant';
-import VisualSearchModal from './VisualSearchModal';
+// FIX: Changed import to a named import to resolve module resolution error.
+import { VisualSearchModal } from './VisualSearchModal';
 import { useAppContext } from '../context/AppContext';
 import { BotIcon } from './Icons';
 

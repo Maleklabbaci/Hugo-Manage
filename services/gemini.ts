@@ -1,11 +1,15 @@
 // FIX: Import 'Chat' type from '@google/genai'
-import { GoogleGenAI, Type, FunctionDeclaration, GenerateContentResponse, Part, Chat } from "@google/genai";
+// FIX: Aliased 'Chat' to 'GenAIChat' to avoid potential naming conflicts with browser APIs.
+import { GoogleGenAI, Type, FunctionDeclaration, GenerateContentResponse, Part, Chat as GenAIChat } from "@google/genai";
 import { ChatMessage, Product, Sale, AIInsight } from '../types';
+import { storage } from './storage';
 
 let ai: GoogleGenAI | null = null;
+const apiKey = storage.getGeminiApiKey() || process.env.API_KEY;
+
 try {
-    if (process.env.API_KEY) {
-        ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    if (apiKey) {
+        ai = new GoogleGenAI({ apiKey });
     } else {
         console.warn("Google GenAI API key not found. AI features will be disabled.");
     }
@@ -309,7 +313,7 @@ const tools: FunctionDeclaration[] = [
     }
 ];
 
-let chat: Chat | null = null;
+let chat: GenAIChat | null = null;
 const getChat = () => {
     if (!ai) return null;
     if (!chat) {

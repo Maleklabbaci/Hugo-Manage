@@ -5,6 +5,7 @@ const THEME_KEY = 'theme';
 const LANGUAGE_KEY = 'language';
 const SUPABASE_URL_KEY = 'supabaseUrl';
 const SUPABASE_ANON_KEY = 'supabaseAnonKey';
+const GEMINI_API_KEY_KEY = 'geminiApiKey';
 
 export const storage = {
   // Token management
@@ -50,5 +51,13 @@ export const storage = {
   setSupabaseCredentials: (url: string, anonKey: string): void => {
     localStorage.setItem(SUPABASE_URL_KEY, url);
     localStorage.setItem(SUPABASE_ANON_KEY, anonKey);
+  },
+
+  // Gemini API Key
+  getGeminiApiKey: (): string | null => {
+    return localStorage.getItem(GEMINI_API_KEY_KEY);
+  },
+  setGeminiApiKey: (key: string): void => {
+    localStorage.setItem(GEMINI_API_KEY_KEY, key);
   },
 };

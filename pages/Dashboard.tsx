@@ -6,7 +6,7 @@ import type { Language } from '../types';
 import { ShoppingBagIcon, DollarSignIcon, PackageXIcon, ShoppingCartIcon, ArchiveIcon, CreditCardIcon, PiggyBankIcon, DeliveryIcon, TrendingUpIcon } from '../components/Icons';
 import AIInsights from '../components/AIInsights';
 
-const COLORS = ['#22D3EE', '#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
+const COLORS = ['#06b6d4', '#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
 
 const getWeekStart = (date: Date): Date => {
   const d = new Date(date);
@@ -101,9 +101,9 @@ const Dashboard: React.FC = () => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white/80 dark:bg-slate-900/80 p-2 border border-gray-200 dark:border-white/10 rounded-md shadow-lg">
-          <p className="label text-gray-700 dark:text-white">{`${label}`}</p>
-          <p className="text-cyan-400">{`${t('dashboard.chart.profit')}: ${payload[0].value.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`}</p>
+        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm p-2 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg">
+          <p className="label text-slate-700 dark:text-white">{`${label}`}</p>
+          <p className="text-brand">{`${t('dashboard.chart.profit')}: ${payload[0].value.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`}</p>
         </div>
       );
     }
@@ -112,7 +112,7 @@ const Dashboard: React.FC = () => {
 
 
   return (
-    <div className="space-y-8 text-gray-900 dark:text-white">
+    <div className="space-y-8 text-slate-900 dark:text-white">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
         <StatCard icon={CreditCardIcon} title={t('dashboard.sales_revenue')} value={`${stats.salesRevenue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
         <StatCard icon={PiggyBankIcon} title={t('dashboard.sales_profit')} value={`${stats.salesProfit.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
@@ -127,7 +127,7 @@ const Dashboard: React.FC = () => {
       <AIInsights />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-6 rounded-2xl">
+        <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-6 rounded-2xl">
           <h3 className="text-lg font-semibold mb-4">{t('dashboard.weekly_profit_chart_title')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={weeklyProfitData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
@@ -136,12 +136,12 @@ const Dashboard: React.FC = () => {
               <YAxis tick={{ fill: theme === 'dark' ? '#94a3b8' : '#64748b' }} tickFormatter={(value) => `${value.toLocaleString(locale)} DA`} />
               <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(34,211,238,0.1)'}}/>
               <Legend />
-              <Line type="monotone" dataKey="profit" name={t('dashboard.chart.profit')} stroke="#22D3EE" strokeWidth={2} activeDot={{ r: 8 }} />
+              <Line type="monotone" dataKey="profit" name={t('dashboard.chart.profit')} stroke="#06b6d4" strokeWidth={2} activeDot={{ r: 8 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-6 rounded-2xl">
+        <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-6 rounded-2xl">
           <h3 className="text-lg font-semibold mb-4">{t('dashboard.stock_by_category_chart_title')}</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -150,7 +150,7 @@ const Dashboard: React.FC = () => {
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => `${value} ${t('dashboard.chart.units')}`} contentStyle={{ backgroundColor: theme === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255,255,255,0.8)', border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`}}/>
+              <Tooltip formatter={(value) => `${value} ${t('dashboard.chart.units')}`} contentStyle={{ backgroundColor: theme === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255,255,255,0.8)', border: `1px solid ${theme === 'dark' ? '#cbd5e1' : '#e2e8f0'}`}}/>
               <Legend 
                 layout={isMobile ? 'horizontal' : 'vertical'} 
                 verticalAlign={isMobile ? 'bottom' : 'middle'} 

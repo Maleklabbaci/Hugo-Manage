@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { generateProductTitleAndCategory, getBestVisualMatch } from '../services/gemini';
 import { Product } from '../types';
-import { XIcon, CameraIcon, LoaderIcon, ProductsIcon } from './Icons';
+import { XIcon, CameraIcon, LoaderIcon, ProductsIcon, UploadIcon } from './Icons';
 
 interface VisualSearchModalProps {
   isOpen: boolean;
@@ -28,11 +28,12 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
     });
 };
 
-const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }) => {
+export const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }) => {
     const { t, products } = useAppContext();
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [scanState, setScanState] = useState<ScanState>('idle');
     const [foundProducts, setFoundProducts] = useState<Product[]>([]);
     const [errorMsg, setErrorMsg] = useState('');
@@ -46,7 +47,6 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
                 }
-                // Do not set state to idle here. Wait for onCanPlay event on video element.
             } else {
                 setScanState('no-camera');
             }
@@ -70,11 +70,63 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
         } else {
             stopCamera();
             setFoundProducts([]);
-            setScanState('idle'); // Reset state correctly on close
+            setScanState('idle');
         }
         return stopCamera;
     }, [isOpen, startCamera, stopCamera]);
-    
+
+    const analyzeImageBlob = async (blob: Blob) => {
+        try {
+            setScanState('analyzing');
+            
+            const uniqueCategories = [...new Set(products.map(p => p.category))];
+            
+            setAnalysisText(t('visual_search.classifying_object'));
+            const base64Data = await blobToBase64(blob);
+            const classification = await generateProductTitleAndCategory(base64Data, uniqueCategories);
+            
+            if (classification) {
+                const { title, category } = classification;
+                setAnalysisText(t('visual_search.searching_in_category', { category }));
+
+                const keywords = title.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+                const candidates = products
+                    .filter(p => p.category.toLowerCase().includes(category.toLowerCase()))
+                    .map(product => {
+                        let score = 0;
+                        const name = product.name.toLowerCase();
+                        keywords.forEach(keyword => {
+                            if (name.includes(keyword)) score++;
+                        });
+                        return { ...product, score };
+                    })
+                    .filter(p => p.score > 0)
+                    .sort((a, b) => b.score - a.score);
+
+                if (candidates.length > 0) {
+                    setAnalysisText(t('visual_search.comparing_matches'));
+                    const bestMatch = await getBestVisualMatch(base64Data, candidates);
+                    
+                    if (bestMatch) {
+                        setFoundProducts([bestMatch]);
+                    } else {
+                        setFoundProducts(candidates.slice(0, 5));
+                    }
+                } else {
+                    setFoundProducts([]);
+                }
+            } else {
+                setFoundProducts([]);
+            }
+            setScanState('results');
+
+        } catch (err) {
+            console.error("Analysis failed:", err);
+            setErrorMsg(t('visual_search.error.analysis'));
+            setScanState('error');
+        }
+    };
+
     const handleScan = async () => {
         if (!videoRef.current || !canvasRef.current) return;
         setScanState('scanning');
@@ -87,55 +139,7 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
         
         canvas.toBlob(async (blob) => {
             if (blob) {
-                try {
-                    setScanState('analyzing');
-                    
-                    const uniqueCategories = [...new Set(products.map(p => p.category))];
-                    
-                    setAnalysisText(t('visual_search.classifying_object'));
-                    const base64Data = await blobToBase64(blob);
-                    const classification = await generateProductTitleAndCategory(base64Data, uniqueCategories);
-                    
-                    if (classification) {
-                        const { title, category } = classification;
-                        setAnalysisText(t('visual_search.searching_in_category', { category }));
-
-                        const keywords = title.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-                        const candidates = products
-                            .filter(p => p.category.toLowerCase().includes(category.toLowerCase()))
-                            .map(product => {
-                                let score = 0;
-                                const name = product.name.toLowerCase();
-                                keywords.forEach(keyword => {
-                                    if (name.includes(keyword)) score++;
-                                });
-                                return { ...product, score };
-                            })
-                            .filter(p => p.score > 0)
-                            .sort((a, b) => b.score - a.score);
-
-                        if (candidates.length > 0) {
-                            setAnalysisText(t('visual_search.comparing_matches'));
-                            const bestMatch = await getBestVisualMatch(base64Data, candidates);
-                            
-                            if (bestMatch) {
-                                setFoundProducts([bestMatch]);
-                            } else {
-                                setFoundProducts(candidates.slice(0, 5));
-                            }
-                        } else {
-                            setFoundProducts([]);
-                        }
-                    } else {
-                        setFoundProducts([]);
-                    }
-                    setScanState('results');
-
-                } catch (err) {
-                    console.error("Analysis failed:", err);
-                    setErrorMsg(t('visual_search.error.analysis'));
-                    setScanState('error');
-                }
+                await analyzeImageBlob(blob);
             } else {
                 setErrorMsg(t('visual_search.error.capture'));
                 setScanState('error');
@@ -143,10 +147,19 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
         }, 'image/jpeg', 0.9);
     };
 
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            analyzeImageBlob(file);
+        }
+        // Reset file input value to allow selecting the same file again
+        if(event.target) event.target.value = '';
+    };
+
     const handleRetry = () => {
         setFoundProducts([]);
         setScanState('idle');
-    }
+    };
 
     const backdropVariants: Variants = { visible: { opacity: 1 }, hidden: { opacity: 0 } };
     const modalVariants: Variants = {
@@ -180,6 +193,13 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
                                 onCanPlay={() => { if (scanState === 'initializing') { setScanState('idle'); } }}
                             />
                             <canvas ref={canvasRef} className="hidden" />
+                             <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleFileSelect}
+                            />
                             <AnimatePresence>
                             {(scanState === 'initializing' || scanState === 'scanning' || scanState === 'analyzing') && (
                                 <motion.div 
@@ -219,29 +239,58 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
                                         ))}</ul>
                                     </>
                                 ) : (
-                                    <p className="text-center text-gray-600 dark:text-slate-400 py-8">{t('visual_search.no_results')}</p>
+                                    <div className="text-center p-6">
+                                        <p className="font-semibold mb-2">{t('visual_search.no_results')}</p>
+                                        <button onClick={handleRetry} className="text-sm text-cyan-500 font-semibold">{t('visual_search.retry_button')}</button>
+                                    </div>
                                 )}
-                                <button onClick={handleRetry} className="mt-4 w-full bg-gray-200 dark:bg-white/10 text-gray-800 dark:text-white rounded-lg px-4 py-2 font-semibold">{t('visual_search.retry_button')}</button>
+                                {scanState === 'error' && (
+                                     <div className="text-center p-6">
+                                        <p className="font-semibold text-red-500 mb-2">{errorMsg}</p>
+                                        <button onClick={handleRetry} className="text-sm text-cyan-500 font-semibold">{t('visual_search.retry_button')}</button>
+                                    </div>
+                                )}
                             </div>
                         ) : (
-                             <div className="p-4 flex-shrink-0">
-                                <motion.button
+                             <div className="p-4 flex items-center justify-center space-x-4">
+                                <motion.button 
                                     onClick={handleScan}
                                     disabled={scanState !== 'idle'}
-                                    className="w-full h-12 flex items-center justify-center text-white bg-gradient-to-r from-cyan-400 to-blue-500 font-semibold rounded-lg disabled:opacity-50"
+                                    className="flex-1 h-12 flex items-center justify-center text-white bg-gradient-to-r from-cyan-400 to-blue-500 font-semibold rounded-lg disabled:opacity-50"
                                     whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                                 >
-                                    <CameraIcon className="w-6 h-6 me-2" />
+                                    <CameraIcon className="w-5 h-5 me-2" />
                                     {t('visual_search.scan_button')}
                                 </motion.button>
-                             </div>
+                                <motion.button 
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={scanState !== 'idle'}
+                                    className="flex-1 h-12 flex items-center justify-center bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-white font-semibold rounded-lg disabled:opacity-50"
+                                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                                >
+                                    <UploadIcon className="w-5 h-5 me-2" />
+                                    {t('visual_search.upload_button')}
+                                </motion.button>
+                            </div>
                         )}
 
+                        {scanState === 'no-camera' && (
+                            <div className="p-4 text-center">
+                                 <p className="font-semibold text-red-500 mb-2">{t('visual_search.error.no_camera')}</p>
+                                 <p className="text-sm text-gray-600 dark:text-slate-400 mb-4">{t('visual_search.error.camera_permission')}</p>
+                                 <motion.button 
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="h-12 w-full flex items-center justify-center bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-white font-semibold rounded-lg"
+                                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                                >
+                                    <UploadIcon className="w-5 h-5 me-2" />
+                                    {t('visual_search.upload_button')}
+                                </motion.button>
+                            </div>
+                        )}
                     </motion.div>
                 </motion.div>
             )}
         </AnimatePresence>
     );
 };
-
-export default VisualSearchModal;

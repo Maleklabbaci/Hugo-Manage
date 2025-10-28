@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { SunIcon, MoonIcon, LogoutIcon, LanguagesIcon, ServerIcon, AlertCircleIcon, DatabaseIcon, DuplicateIcon, MarkDeliveredIcon, ExternalLinkIcon, RunIcon, LoaderIcon, UserIcon, CodeIcon, SettingsIcon } from '../components/Icons';
+import { SunIcon, MoonIcon, LogoutIcon, LanguagesIcon, ServerIcon, AlertCircleIcon, DatabaseIcon, DuplicateIcon, MarkDeliveredIcon, ExternalLinkIcon, RunIcon, LoaderIcon, UserIcon, CodeIcon, SettingsIcon, SparklesIcon } from '../components/Icons';
 import type { Language, Theme } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { storage } from '../services/storage';
@@ -122,10 +122,11 @@ ON storage.objects FOR DELETE USING (auth.uid() = owner);
 type Tab = 'general' | 'account' | 'developer';
 
 const Settings: React.FC = () => {
-  const { theme, setTheme, language, setLanguage, t, logout, session, saveSupabaseCredentials, testSupabaseConnection } = useAppContext();
+  const { theme, setTheme, language, setLanguage, t, logout, session, saveSupabaseCredentials, saveGeminiApiKey, testSupabaseConnection } = useAppContext();
   const [activeTab, setActiveTab] = useState<Tab>('general');
   const [supabaseUrl, setSupabaseUrl] = useState('');
   const [supabaseAnonKey, setSupabaseAnonKey] = useState('');
+  const [geminiApiKey, setGeminiApiKey] = useState('');
   const [supabaseError, setSupabaseError] = useState('');
   const [scriptCopied, setScriptCopied] = useState(false);
   const [testState, setTestState] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
@@ -135,6 +136,8 @@ const Settings: React.FC = () => {
     const creds = storage.getSupabaseCredentials();
     if (creds.url) setSupabaseUrl(creds.url);
     if (creds.anonKey) setSupabaseAnonKey(creds.anonKey);
+    const geminiKey = storage.getGeminiApiKey();
+    if (geminiKey) setGeminiApiKey(geminiKey);
   }, []);
 
   const handleThemeChange = (newTheme: Theme) => setTheme(newTheme);
@@ -154,6 +157,10 @@ const Settings: React.FC = () => {
     saveSupabaseCredentials(finalUrl, anonKey);
   };
   
+  const handleGeminiApiSave = () => {
+    saveGeminiApiKey(geminiApiKey.trim());
+  };
+
   const handleCopyScript = () => {
     navigator.clipboard.writeText(sqlScript);
     setScriptCopied(true);
@@ -172,21 +179,21 @@ const Settings: React.FC = () => {
       <button
           onClick={() => setActiveTab(tabId)}
           className={`flex items-center space-x-2 px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors relative ${
-              activeTab === tabId ? 'text-cyan-500' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5'
+              activeTab === tabId ? 'text-brand' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/60'
           }`}
       >
           <Icon className="w-5 h-5" />
           <span>{label}</span>
-          {activeTab === tabId && <motion.div layoutId="active-tab-indicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-500" />}
+          {activeTab === tabId && <motion.div layoutId="active-tab-indicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand" />}
       </button>
   );
 
   const Step: React.FC<{ icon: React.ElementType, title: string, description: React.ReactNode }> = ({ icon: Icon, title, description }) => (
     <div className="flex items-start space-x-4">
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-cyan-500/10 text-cyan-500 flex items-center justify-center"><Icon className="w-6 h-6" /></div>
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-brand/10 text-brand-dark dark:text-brand-light flex items-center justify-center"><Icon className="w-6 h-6" /></div>
         <div>
-            <h4 className="font-semibold text-gray-800 dark:text-slate-200">{title}</h4>
-            <p className="text-sm text-gray-600 dark:text-slate-400">{description}</p>
+            <h4 className="font-semibold text-slate-800 dark:text-slate-200">{title}</h4>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{description}</p>
         </div>
     </div>
   );
@@ -199,7 +206,7 @@ const Settings: React.FC = () => {
   
   return (
     <div className="max-w-4xl mx-auto">
-        <div className="flex space-x-1 border-b border-gray-200 dark:border-white/10">
+        <div className="flex space-x-1 border-b border-slate-200 dark:border-slate-700">
             <TabButton tabId="general" label={t('settings.tabs.general')} icon={SettingsIcon} />
             <TabButton tabId="account" label={t('settings.tabs.account')} icon={UserIcon} />
             <TabButton tabId="developer" label={t('settings.tabs.developer')} icon={CodeIcon} />
@@ -209,27 +216,27 @@ const Settings: React.FC = () => {
                 <motion.div key={activeTab} initial="hidden" animate="visible" exit="exit" variants={contentVariants}>
                     {activeTab === 'general' && (
                         <div className="space-y-6">
-                            <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-4 sm:p-6 rounded-xl">
-                                <h3 className="text-lg font-semibold mb-4 border-b pb-2 border-gray-200 dark:border-white/10">{t('settings.theme_title')}</h3>
+                            <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-4 sm:p-6 rounded-xl">
+                                <h3 className="text-lg font-semibold mb-4 border-b pb-2 border-slate-200 dark:border-slate-700">{t('settings.theme_title')}</h3>
                                 <div className="flex items-center justify-between">
-                                <p className="text-gray-700 dark:text-slate-300">{t('settings.theme_select')}</p>
-                                <div className="relative flex w-32 rounded-lg p-1 bg-gray-200 dark:bg-black/20">
-                                    <button onClick={() => handleThemeChange('light')} className={`relative z-10 flex-1 p-2 rounded-md transition-colors text-center ${theme === 'light' ? 'text-white' : 'text-gray-600 dark:text-slate-300'}`}>
+                                <p className="text-slate-700 dark:text-slate-300">{t('settings.theme_select')}</p>
+                                <div className="relative flex w-32 rounded-lg p-1 bg-slate-200 dark:bg-slate-900/50">
+                                    <button onClick={() => handleThemeChange('light')} className={`relative z-10 flex-1 p-2 rounded-md transition-colors text-center ${theme === 'light' ? 'text-white' : 'text-slate-600 dark:text-slate-300'}`}>
                                         <SunIcon className="w-5 h-5 mx-auto"/>
-                                        {theme === 'light' && <motion.div layoutId="active-theme" className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-md shadow-lg -z-10" />}
+                                        {theme === 'light' && <motion.div layoutId="active-theme" className="absolute inset-0 bg-gradient-to-r from-brand to-blue-500 rounded-md shadow-lg -z-10" />}
                                     </button>
-                                    <button onClick={() => handleThemeChange('dark')} className={`relative z-10 flex-1 p-2 rounded-md transition-colors text-center ${theme === 'dark' ? 'text-white' : 'text-gray-600 dark:text-slate-300'}`}>
+                                    <button onClick={() => handleThemeChange('dark')} className={`relative z-10 flex-1 p-2 rounded-md transition-colors text-center ${theme === 'dark' ? 'text-white' : 'text-slate-600 dark:text-slate-300'}`}>
                                         <MoonIcon className="w-5 h-5 mx-auto"/>
-                                        {theme === 'dark' && <motion.div layoutId="active-theme" className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-md shadow-lg -z-10" />}
+                                        {theme === 'dark' && <motion.div layoutId="active-theme" className="absolute inset-0 bg-gradient-to-r from-brand to-blue-500 rounded-md shadow-lg -z-10" />}
                                     </button>
                                 </div>
                                 </div>
                             </div>
-                            <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-4 sm:p-6 rounded-xl">
-                                <h3 className="text-lg font-semibold mb-4 border-b pb-2 border-gray-200 dark:border-white/10 flex items-center"><LanguagesIcon className="w-5 h-5 me-2"/> {t('settings.language_title')}</h3>
+                            <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-4 sm:p-6 rounded-xl">
+                                <h3 className="text-lg font-semibold mb-4 border-b pb-2 border-slate-200 dark:border-slate-700 flex items-center"><LanguagesIcon className="w-5 h-5 me-2"/> {t('settings.language_title')}</h3>
                                 <div className="flex items-center justify-between">
-                                    <p className="text-gray-700 dark:text-slate-300">{t('settings.language_select')}</p>
-                                    <select value={language} onChange={handleLanguageChange} className="bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-cyan-500 focus:border-cyan-500">
+                                    <p className="text-slate-700 dark:text-slate-300">{t('settings.language_select')}</p>
+                                    <select value={language} onChange={handleLanguageChange} className="bg-slate-100 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white focus:ring-brand focus:border-brand">
                                         <option value="fr">Français</option>
                                         <option value="en">English</option>
                                         <option value="ar">العربية</option>
@@ -239,51 +246,62 @@ const Settings: React.FC = () => {
                         </div>
                     )}
                     {activeTab === 'account' && (
-                        <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-4 sm:p-6 rounded-xl">
-                             <h3 className="text-lg font-semibold mb-4 border-b pb-2 border-gray-200 dark:border-white/10">{t('settings.session_title')}</h3>
+                        <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-4 sm:p-6 rounded-xl">
+                             <h3 className="text-lg font-semibold mb-4 border-b pb-2 border-slate-200 dark:border-slate-700">{t('settings.session_title')}</h3>
                              {session ? (
                                 <>
                                 <div className="flex items-center justify-between mb-4">
-                                    <p className="text-gray-700 dark:text-slate-300">{t('settings.tabs.logged_in_as')}</p>
-                                    <p className="font-semibold text-gray-900 dark:text-white">{session.user.email}</p>
+                                    <p className="text-slate-700 dark:text-slate-300">{t('settings.tabs.logged_in_as')}</p>
+                                    <p className="font-semibold text-slate-900 dark:text-white">{session.user.email}</p>
                                 </div>
                                 <motion.button onClick={logout} className="w-full bg-red-500/10 dark:bg-red-500/10 text-red-500 font-semibold rounded-lg px-4 py-2.5 flex items-center justify-center transition-colors hover:bg-red-500/20" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                     <LogoutIcon className="w-5 h-5 me-2"/> {t('settings.logout_button')}
                                 </motion.button>
                                 </>
                              ) : (
-                                <p className="text-gray-600 dark:text-slate-400">{t('settings.tabs.not_logged_in')}</p>
+                                <p className="text-slate-600 dark:text-slate-400">{t('settings.tabs.not_logged_in')}</p>
                              )}
                         </div>
                     )}
                     {activeTab === 'developer' && (
                         <div className="space-y-6">
-                           <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-4 sm:p-6 rounded-xl">
-                                <h3 className="text-lg font-semibold mb-2 border-b pb-2 border-gray-200 dark:border-white/10 flex items-center"><ServerIcon className="w-5 h-5 me-2" /> {t('settings.supabase.title')}</h3>
-                                <p className="text-sm text-gray-600 dark:text-slate-400 mb-4">{t('settings.supabase.description')}</p>
+                           <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-4 sm:p-6 rounded-xl">
+                                <h3 className="text-lg font-semibold mb-2 border-b pb-2 border-slate-200 dark:border-slate-700 flex items-center"><ServerIcon className="w-5 h-5 me-2" /> {t('settings.supabase.title')}</h3>
+                                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{t('settings.supabase.description')}</p>
                                 <div className="space-y-4">
                                 <div>
-                                    <label htmlFor="supabaseUrl" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t('settings.supabase.url_label')}</label>
-                                    <input type="text" id="supabaseUrl" value={supabaseUrl} onChange={(e) => setSupabaseUrl(e.target.value)} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="https://xxxx.supabase.co" />
+                                    <label htmlFor="supabaseUrl" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('settings.supabase.url_label')}</label>
+                                    <input type="text" id="supabaseUrl" value={supabaseUrl} onChange={(e) => setSupabaseUrl(e.target.value)} className="w-full bg-slate-100 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand" placeholder="https://xxxx.supabase.co" />
                                 </div>
                                 <div>
-                                    <label htmlFor="supabaseAnonKey" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t('settings.supabase.anon_key_label')}</label>
-                                    <input type="text" id="supabaseAnonKey" value={supabaseAnonKey} onChange={(e) => setSupabaseAnonKey(e.target.value)} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="ey..." />
+                                    <label htmlFor="supabaseAnonKey" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('settings.supabase.anon_key_label')}</label>
+                                    <input type="text" id="supabaseAnonKey" value={supabaseAnonKey} onChange={(e) => setSupabaseAnonKey(e.target.value)} className="w-full bg-slate-100 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand" placeholder="ey..." />
                                 </div>
                                 </div>
                                 {supabaseError && <motion.div className="flex items-center p-3 mt-4 text-sm text-red-300 bg-red-900/50 rounded-lg" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}><AlertCircleIcon className="w-5 h-5 me-2 flex-shrink-0" /><span>{supabaseError}</span></motion.div>}
-                                <div className="mt-4"><motion.button onClick={handleSupabaseSave} className="w-full bg-cyan-500/10 text-cyan-500 font-semibold rounded-lg px-4 py-2 flex items-center justify-center transition-colors hover:bg-cyan-500/20" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>{t('settings.supabase.save_button')}</motion.button></div>
+                                <div className="mt-4"><motion.button onClick={handleSupabaseSave} className="w-full bg-brand/10 text-brand-dark dark:text-brand-light font-semibold rounded-lg px-4 py-2 flex items-center justify-center transition-colors hover:bg-brand/20" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>{t('settings.supabase.save_button')}</motion.button></div>
                             </div>
-                            <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-4 sm:p-6 rounded-xl">
-                                <h3 className="text-lg font-semibold mb-2 border-b pb-2 border-gray-200 dark:border-white/10 flex items-center"><DatabaseIcon className="w-5 h-5 me-2" /> {t('settings.setup.title')}</h3>
-                                <p className="text-sm text-gray-600 dark:text-slate-400 mb-4">{t('settings.setup.description')}</p>
+                             <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-4 sm:p-6 rounded-xl">
+                                <h3 className="text-lg font-semibold mb-2 border-b pb-2 border-slate-200 dark:border-slate-700 flex items-center"><SparklesIcon className="w-5 h-5 me-2 text-amber-500" /> {t('settings.gemini.title')}</h3>
+                                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{t('settings.gemini.description')}</p>
                                 <div className="space-y-4">
-                                    <Step icon={ExternalLinkIcon} title={t('settings.setup.step1_title')} description={<a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-cyan-500 hover:underline">{t('settings.setup.step1_desc')}</a>} />
+                                    <div>
+                                        <label htmlFor="geminiApiKey" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('settings.gemini.key_label')}</label>
+                                        <input type="password" id="geminiApiKey" value={geminiApiKey} onChange={(e) => setGeminiApiKey(e.target.value)} className="w-full bg-slate-100 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand" placeholder="AIza..." />
+                                    </div>
+                                </div>
+                                <div className="mt-4"><motion.button onClick={handleGeminiApiSave} className="w-full bg-brand/10 text-brand-dark dark:text-brand-light font-semibold rounded-lg px-4 py-2 flex items-center justify-center transition-colors hover:bg-brand/20" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>{t('settings.gemini.save_button')}</motion.button></div>
+                            </div>
+                            <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-4 sm:p-6 rounded-xl">
+                                <h3 className="text-lg font-semibold mb-2 border-b pb-2 border-slate-200 dark:border-slate-700 flex items-center"><DatabaseIcon className="w-5 h-5 me-2" /> {t('settings.setup.title')}</h3>
+                                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{t('settings.setup.description')}</p>
+                                <div className="space-y-4">
+                                    <Step icon={ExternalLinkIcon} title={t('settings.setup.step1_title')} description={<a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-brand hover:underline">{t('settings.setup.step1_desc')}</a>} />
                                     <Step icon={DatabaseIcon} title={t('settings.setup.step2_title')} description={t('settings.setup.step2_desc')} />
-                                    <Step icon={DuplicateIcon} title={t('settings.setup.step3_title')} description={<><p>{t('settings.setup.step3_desc')}</p><motion.button onClick={handleCopyScript} className={`w-full mt-2 font-semibold text-sm rounded-lg px-3 py-1.5 flex items-center justify-center transition-colors ${scriptCopied ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500 hover:bg-gray-500/20'}`}>{scriptCopied ? <MarkDeliveredIcon className="w-4 h-4 me-2" /> : <DuplicateIcon className="w-4 h-4 me-2" />}{scriptCopied ? t('settings.setup.copied_button') : t('settings.setup.copy_button')}</motion.button></>} />
+                                    <Step icon={DuplicateIcon} title={t('settings.setup.step3_title')} description={<><p>{t('settings.setup.step3_desc')}</p><motion.button onClick={handleCopyScript} className={`w-full mt-2 font-semibold text-sm rounded-lg px-3 py-1.5 flex items-center justify-center transition-colors ${scriptCopied ? 'bg-green-500/10 text-green-500' : 'bg-slate-500/10 text-slate-500 hover:bg-slate-500/20'}`}>{scriptCopied ? <MarkDeliveredIcon className="w-4 h-4 me-2" /> : <DuplicateIcon className="w-4 h-4 me-2" />}{scriptCopied ? t('settings.setup.copied_button') : t('settings.setup.copy_button')}</motion.button></>} />
                                     <Step icon={RunIcon} title={t('settings.setup.step4_title')} description={t('settings.setup.step4_desc')} />
                                 </div>
-                                <div className="mt-6 border-t border-gray-200 dark:border-white/10 pt-4">
+                                <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-4">
                                     <motion.button onClick={handleTestConnection} disabled={testState === 'testing'} className="w-full font-semibold rounded-lg px-4 py-2 flex items-center justify-center transition-colors bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 disabled:opacity-60" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                         {testState === 'testing' ? <LoaderIcon className="w-5 h-5 me-2 animate-spin" /> : <RunIcon className="w-5 h-5 me-2" />}
                                         {testState === 'testing' ? t('settings.setup.testing') : t('settings.setup.test_button')}

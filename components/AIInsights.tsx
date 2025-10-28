@@ -43,7 +43,7 @@ const AIInsights: React.FC = () => {
     };
 
     return (
-        <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-4 md:p-6 rounded-2xl">
+        <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 p-4 md:p-6 rounded-2xl">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4">
                 <h3 className="text-lg font-semibold flex items-center">
                     <LightbulbIcon className="w-6 h-6 me-3 text-amber-500" />
@@ -52,7 +52,7 @@ const AIInsights: React.FC = () => {
                 <motion.button
                     onClick={handleGenerate}
                     disabled={isLoading}
-                    className="flex items-center justify-center text-white bg-gradient-to-r from-cyan-400 to-blue-500 font-semibold rounded-lg px-4 py-2 mt-3 sm:mt-0 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center text-white bg-gradient-to-r from-brand to-blue-500 font-semibold rounded-lg px-4 py-2 mt-3 sm:mt-0 disabled:opacity-70 disabled:cursor-not-allowed"
                     whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(34, 211, 238, 0.3), 0 4px 6px -2px rgba(34, 211, 238, 0.2)' }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
@@ -92,7 +92,7 @@ const AIInsights: React.FC = () => {
                         {insights.map((insight, index) => (
                             <motion.div
                                 key={index}
-                                className="bg-gray-50 dark:bg-black/20 p-3 rounded-lg flex items-start space-x-3"
+                                className="bg-slate-100 dark:bg-slate-900/50 p-3 rounded-lg flex items-start space-x-3"
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                             >
@@ -100,8 +100,8 @@ const AIInsights: React.FC = () => {
                                     <InsightIcon type={insight.type} />
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold text-gray-800 dark:text-slate-200">{insight.title}</h4>
-                                    <p className="text-sm text-gray-600 dark:text-slate-400">{insight.description}</p>
+                                    <h4 className="font-semibold text-slate-800 dark:text-slate-200">{insight.title}</h4>
+                                    <p className="text-sm text-slate-600 dark:text-slate-400">{insight.description}</p>
                                 </div>
                             </motion.div>
                         ))}

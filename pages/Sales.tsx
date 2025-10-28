@@ -16,25 +16,25 @@ const localeMap: Record<Language, string> = {
 const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTimestamp: (iso: string) => string, onViewDetails: (p: Product) => void, product: Product | undefined }> = ({ sale, onCancel, formatTimestamp, onViewDetails, product }) => {
     const { t } = useAppContext();
     return (
-        <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden p-4 flex space-x-4 items-start">
+        <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden p-4 flex space-x-4 items-start">
             {product?.imageUrl ? (
                 <img src={product.imageUrl} alt={sale.productName} className="w-20 h-20 object-cover rounded-lg flex-shrink-0" />
             ) : (
-                <div className="w-20 h-20 bg-gray-200 dark:bg-slate-700/50 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <ShoppingCartIcon className="w-10 h-10 text-gray-400" />
+                <div className="w-20 h-20 bg-slate-200 dark:bg-slate-700/50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <ShoppingCartIcon className="w-10 h-10 text-slate-400" />
                 </div>
             )}
             <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start">
                     <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-900 dark:text-white leading-tight truncate">{sale.productName}</h3>
-                        <p className="text-sm text-gray-600 dark:text-slate-400">{formatTimestamp(sale.createdAt)}</p>
+                        <h3 className="font-bold text-slate-900 dark:text-white leading-tight truncate">{sale.productName}</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">{formatTimestamp(sale.createdAt)}</p>
                     </div>
                     <div className="flex items-center space-x-1 flex-shrink-0 -mt-1 -me-2">
                         {product && (
                              <motion.button 
                                 onClick={() => onViewDetails(product)} 
-                                className="p-2 rounded-full transition-colors bg-gray-500/10 hover:bg-gray-500/20 text-gray-500" 
+                                className="p-2 rounded-full transition-colors bg-slate-500/10 hover:bg-slate-500/20 text-slate-500" 
                                 title={t('product_details.view_button')}
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
@@ -54,16 +54,16 @@ const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTim
                     </div>
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                    <div className="bg-gray-100 dark:bg-black/20 p-2 rounded-lg">
-                        <div className="text-xs text-gray-600 dark:text-slate-400">{t('sales.table.quantity')}</div>
-                        <div className="font-semibold text-gray-900 dark:text-white flex items-center justify-center space-x-1"><ArchiveIcon className="w-4 h-4"/><span>{sale.quantity}</span></div>
+                    <div className="bg-slate-100 dark:bg-slate-900/50 p-2 rounded-lg">
+                        <div className="text-xs text-slate-600 dark:text-slate-400">{t('sales.table.quantity')}</div>
+                        <div className="font-semibold text-slate-900 dark:text-white flex items-center justify-center space-x-1"><ArchiveIcon className="w-4 h-4"/><span>{sale.quantity}</span></div>
                     </div>
-                     <div className="bg-gray-100 dark:bg-black/20 p-2 rounded-lg">
-                        <div className="text-xs text-gray-600 dark:text-slate-400">{t('sales.table.total_price')}</div>
-                        <div className="font-semibold text-gray-900 dark:text-white flex items-center justify-center space-x-1"><DollarSignIcon className="w-4 h-4"/><span>{sale.totalPrice.toFixed(0)}</span></div>
+                     <div className="bg-slate-100 dark:bg-slate-900/50 p-2 rounded-lg">
+                        <div className="text-xs text-slate-600 dark:text-slate-400">{t('sales.table.total_price')}</div>
+                        <div className="font-semibold text-slate-900 dark:text-white flex items-center justify-center space-x-1"><DollarSignIcon className="w-4 h-4"/><span>{sale.totalPrice.toFixed(0)}</span></div>
                     </div>
-                     <div className="bg-gray-100 dark:bg-black/20 p-2 rounded-lg">
-                        <div className="text-xs text-gray-600 dark:text-slate-400">{t('sales.table.margin')}</div>
+                     <div className="bg-slate-100 dark:bg-slate-900/50 p-2 rounded-lg">
+                        <div className="text-xs text-slate-600 dark:text-slate-400">{t('sales.table.margin')}</div>
                         <div className="font-semibold text-green-600 dark:text-green-400 flex items-center justify-center space-x-1"><TrendingUpIcon className="w-4 h-4"/><span>{(sale.totalMargin ?? 0).toFixed(0)}</span></div>
                     </div>
                 </div>
@@ -120,9 +120,9 @@ const Sales: React.FC = () => {
     if (sales.length === 0) {
         return (
             <div className="text-center py-10">
-                <ShoppingCartIcon className="w-16 h-16 mx-auto text-gray-400 dark:text-slate-500 mb-4" />
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('sales.empty.title')}</h2>
-                <p className="text-gray-600 dark:text-slate-400">{t('sales.empty.subtitle')}</p>
+                <ShoppingCartIcon className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4" />
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{t('sales.empty.title')}</h2>
+                <p className="text-slate-600 dark:text-slate-400">{t('sales.empty.subtitle')}</p>
             </div>
         )
     }
@@ -131,7 +131,7 @@ const Sales: React.FC = () => {
 
     return (
         <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('sales.title')}</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">{t('sales.title')}</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <StatCard icon={DollarSignIcon} title={t('dashboard.sales_revenue')} value={`${salesStats.totalRevenue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
@@ -147,10 +147,10 @@ const Sales: React.FC = () => {
                     })}
                 </div>
             ) : (
-                <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden">
+                <div className="bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left rtl:text-right text-gray-600 dark:text-slate-400">
-                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-white/5 dark:text-slate-300">
+                        <table className="w-full text-sm text-left rtl:text-right text-slate-600 dark:text-slate-400">
+                            <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-900/50 dark:text-slate-300">
                                 <tr>
                                     {tableHeaders.map(header => (
                                         <th key={header} scope="col" className="px-6 py-3">{t(`sales.table.${header}`)}</th>
@@ -161,7 +161,7 @@ const Sales: React.FC = () => {
                                 {sales.map(sale => {
                                     const product = products.find(p => p.id === sale.productId);
                                     return (
-                                        <tr key={sale.id} className="border-b border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5">
+                                        <tr key={sale.id} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60">
                                             <td className="px-6 py-4">
                                                 {product?.imageUrl ? (
                                                     <img
@@ -172,12 +172,12 @@ const Sales: React.FC = () => {
                                                         onMouseLeave={() => setHoveredImage(null)}
                                                     />
                                                 ) : (
-                                                    <div className="w-12 h-12 bg-gray-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center">
-                                                        <ShoppingCartIcon className="w-6 h-6 text-gray-400" />
+                                                    <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700/50 rounded-md flex items-center justify-center">
+                                                        <ShoppingCartIcon className="w-6 h-6 text-slate-400" />
                                                     </div>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">{sale.productName}</td>
+                                            <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">{sale.productName}</td>
                                             <td className="px-6 py-4">{sale.quantity}</td>
                                             <td className="px-6 py-4">{sale.sellPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>
                                             <td className="px-6 py-4 font-semibold">{sale.totalPrice.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}</td>
@@ -190,7 +190,7 @@ const Sales: React.FC = () => {
                                                     {product && (
                                                         <motion.button 
                                                             onClick={() => handleViewDetails(product)} 
-                                                            className="p-2 rounded-md transition-colors bg-gray-500/10 hover:bg-gray-500/20 text-gray-500" 
+                                                            className="p-2 rounded-md transition-colors bg-slate-500/10 hover:bg-slate-500/20 text-slate-500" 
                                                             title={t('product_details.view_button')}
                                                             whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                                                             <ViewDetailsIcon className="w-5 h-5" />

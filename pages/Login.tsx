@@ -32,9 +32,9 @@ const Login: React.FC = () => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
+    <div className="flex items-center justify-center min-h-screen p-4 text-white">
       <motion.div 
-        className="w-full max-w-md p-8 space-y-6 bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl"
+        className="w-full max-w-md p-8 space-y-6 bg-slate-800/60 backdrop-blur-xl border border-slate-700 rounded-2xl shadow-2xl"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -72,7 +72,7 @@ const Login: React.FC = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none block w-full px-4 py-3 border border-white/20 bg-white/10 placeholder-slate-400 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                className="appearance-none block w-full px-4 py-3 border border-slate-600 bg-slate-900/70 placeholder-slate-400 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand sm:text-sm"
                 placeholder="vous@exemple.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
@@ -86,7 +86,7 @@ const Login: React.FC = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none block w-full px-4 py-3 border border-white/20 bg-white/10 placeholder-slate-400 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm"
+                className="appearance-none block w-full px-4 py-3 border border-slate-600 bg-slate-900/70 placeholder-slate-400 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand sm:text-sm"
                 placeholder="********"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
@@ -109,7 +109,7 @@ const Login: React.FC = () => {
             <motion.button
               type="submit"
               disabled={loading || !isConfigured}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-cyan-400 to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-brand to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(34, 211, 238, 0.3), 0 4px 6px -2px rgba(34, 211, 238, 0.2)' }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
