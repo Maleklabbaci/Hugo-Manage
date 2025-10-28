@@ -115,4 +115,5 @@ export interface AppContextType {
   refetchData: () => Promise<void>;
   findProductByName: (name: string) => Product[];
   findProductsByKeywords: (keywords: string) => Product[];
+  testStorageConnection: () => Promise<{ success: boolean; error?: string }>;
 }

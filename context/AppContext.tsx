@@ -654,12 +654,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return scoredProducts.filter(p => p.score > 0).sort((a, b) => b.score - a.score);
   };
 
+  const testStorageConnection = async (): Promise<{ success: boolean; error?: string }> => {
+    if (!supabaseClient) return { success: false, error: 'Supabase client not initialized' };
+    
+    // This is a lightweight operation to check if the bucket exists and is readable.
+    const { data, error } = await supabaseClient.storage
+        .from('product-images')
+        .list('', { limit: 1, offset: 0 });
+
+    if (error) {
+        console.error('Storage test failed:', error.message);
+        if (error.message.toLowerCase().includes('bucket not found')) {
+            return { success: false, error: 'Bucket not found' };
+        }
+        return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  };
+
   const value = {
     products, sales, activityLog, theme, language, isLoading,
     session, user, notifications, setTheme, setLanguage, t, login, logout,
     addProduct, addMultipleProducts, updateProduct, updateMultipleProducts, deleteProduct, deleteMultipleProducts, 
     duplicateProduct, setProductToDelivery, confirmSaleFromDelivery, cancelDelivery, addSale, cancelSale, markNotificationAsRead, markAllNotificationsAsRead,
-    isConfigured, saveSupabaseCredentials, refetchData, findProductByName, findProductsByKeywords,
+    isConfigured, saveSupabaseCredentials, refetchData, findProductByName, findProductsByKeywords, testStorageConnection
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

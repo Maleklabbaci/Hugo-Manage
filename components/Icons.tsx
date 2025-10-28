@@ -49,6 +49,8 @@ import {
   Sparkles,
   Lightbulb,
   Camera,
+  ExternalLink,
+  PlayCircle,
 } from 'lucide-react';
 
 export const ChezHugoLogo: React.FC<{ className?: string }> = ({ className }) => {
@@ -115,4 +117,6 @@ export {
   Sparkles as SparklesIcon,
   Lightbulb as LightbulbIcon,
   Camera as CameraIcon,
+  ExternalLink as ExternalLinkIcon,
+  PlayCircle as RunIcon,
 };

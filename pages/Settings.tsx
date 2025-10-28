@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-// FIX: Imported 'MarkDeliveredIcon' and aliased it as 'CheckCircle2' to match its usage within the component and fix the module export error.
-import { SunIcon, MoonIcon, LogoutIcon, LanguagesIcon, ServerIcon, AlertCircleIcon, DatabaseIcon, DuplicateIcon, MarkDeliveredIcon as CheckCircle2 } from '../components/Icons';
+import { SunIcon, MoonIcon, LogoutIcon, LanguagesIcon, ServerIcon, AlertCircleIcon, DatabaseIcon, DuplicateIcon, MarkDeliveredIcon, ExternalLinkIcon, RunIcon, LoaderIcon } from '../components/Icons';
 import type { Language, Theme } from '../types';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { storage } from '../services/storage';
 
 const sqlScript = `-- This script sets up the necessary storage bucket and policies for product images.
@@ -49,11 +48,14 @@ ON storage.objects FOR DELETE
 USING (auth.uid() = owner);`;
 
 const Settings: React.FC = () => {
-  const { theme, setTheme, language, setLanguage, t, logout, session, saveSupabaseCredentials } = useAppContext();
+  const { theme, setTheme, language, setLanguage, t, logout, session, saveSupabaseCredentials, testStorageConnection } = useAppContext();
   const [supabaseUrl, setSupabaseUrl] = useState('');
   const [supabaseAnonKey, setSupabaseAnonKey] = useState('');
   const [supabaseError, setSupabaseError] = useState('');
   const [scriptCopied, setScriptCopied] = useState(false);
+  const [testState, setTestState] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [testError, setTestError] = useState('');
+
 
   useEffect(() => {
     const creds = storage.getSupabaseCredentials();
@@ -99,6 +101,34 @@ const Settings: React.FC = () => {
     setTimeout(() => setScriptCopied(false), 2000);
   };
   
+  const handleTestConnection = async () => {
+      setTestState('testing');
+      setTestError('');
+      const result = await testStorageConnection();
+      if (result.success) {
+          setTestState('success');
+      } else {
+          setTestState('error');
+          if (result.error === 'Bucket not found') {
+              setTestError(t('settings.storage.test_error_bucket'));
+          } else {
+              setTestError(t('settings.storage.test_error_generic', { error: result.error || 'Unknown error' }));
+          }
+      }
+  };
+
+  const Step: React.FC<{ icon: React.ElementType, title: string, description: React.ReactNode }> = ({ icon: Icon, title, description }) => (
+    <div className="flex items-start space-x-4">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
+            <Icon className="w-6 h-6" />
+        </div>
+        <div>
+            <h4 className="font-semibold text-gray-800 dark:text-slate-200">{title}</h4>
+            <p className="text-sm text-gray-600 dark:text-slate-400">{description}</p>
+        </div>
+    </div>
+  );
+  
   return (
     <div className="max-w-2xl mx-auto space-y-6 text-gray-900 dark:text-white">
 
@@ -141,22 +171,67 @@ const Settings: React.FC = () => {
           <DatabaseIcon className="w-5 h-5 me-2" /> {t('settings.storage.title')}
         </h3>
         <p className="text-sm text-gray-600 dark:text-slate-400 mb-4">{t('settings.storage.description')}</p>
-        <pre className="bg-gray-100 dark:bg-black/20 p-4 rounded-lg text-xs overflow-x-auto text-gray-800 dark:text-slate-200">
-            <code>
-                {sqlScript}
-            </code>
-        </pre>
-        <div className="mt-4">
-            <motion.button 
-                onClick={handleCopyScript} 
-                className={`w-full font-semibold rounded-lg px-4 py-2 flex items-center justify-center transition-colors ${scriptCopied ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500 hover:bg-gray-500/20'}`}
+        
+        <div className="space-y-4">
+          <Step icon={ExternalLinkIcon} title={t('settings.storage.step1_title')} description={
+              <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-cyan-500 hover:underline">
+                  {t('settings.storage.step1_desc')}
+              </a>
+          } />
+          <Step icon={DatabaseIcon} title={t('settings.storage.step2_title')} description={t('settings.storage.step2_desc')} />
+          <Step icon={DuplicateIcon} title={t('settings.storage.step3_title')} description={
+            <>
+              {t('settings.storage.step3_desc')}
+              <pre className="bg-gray-100 dark:bg-black/20 p-2 mt-2 rounded-lg text-xs overflow-x-auto text-gray-800 dark:text-slate-200"><code>{sqlScript}</code></pre>
+              <motion.button 
+                  onClick={handleCopyScript} 
+                  className={`w-full mt-2 font-semibold text-sm rounded-lg px-3 py-1.5 flex items-center justify-center transition-colors ${scriptCopied ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500 hover:bg-gray-500/20'}`}
+              >
+                  {scriptCopied ? <MarkDeliveredIcon className="w-4 h-4 me-2" /> : <DuplicateIcon className="w-4 h-4 me-2" />}
+                  {scriptCopied ? t('settings.storage.copied_button') : t('settings.storage.copy_button')}
+              </motion.button>
+            </>
+          } />
+          <Step icon={RunIcon} title={t('settings.storage.step4_title')} description={t('settings.storage.step4_desc')} />
+        </div>
+
+        <div className="mt-6 border-t border-gray-200 dark:border-white/10 pt-4">
+             <motion.button 
+                onClick={handleTestConnection}
+                disabled={testState === 'testing'}
+                className="w-full font-semibold rounded-lg px-4 py-2 flex items-center justify-center transition-colors bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 disabled:opacity-60"
                 whileHover={{ scale: 1.02 }} 
                 whileTap={{ scale: 0.98 }}
             >
-                {scriptCopied ? <CheckCircle2 className="w-5 h-5 me-2" /> : <DuplicateIcon className="w-5 h-5 me-2" />}
-                {scriptCopied ? t('settings.storage.copied_button') : t('settings.storage.copy_button')}
+                {testState === 'testing' ? (
+                    <LoaderIcon className="w-5 h-5 me-2 animate-spin" />
+                ) : (
+                    <RunIcon className="w-5 h-5 me-2" />
+                )}
+                {testState === 'testing' ? t('settings.storage.testing') : t('settings.storage.test_button')}
             </motion.button>
         </div>
+
+        <AnimatePresence>
+            {testState === 'success' && (
+                <motion.div
+                    className="mt-4 p-3 bg-green-500/10 text-green-700 dark:text-green-300 rounded-lg flex items-center text-sm"
+                    initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                >
+                    <MarkDeliveredIcon className="w-5 h-5 me-2" />
+                    {t('settings.storage.test_success')}
+                </motion.div>
+            )}
+            {testState === 'error' && testError && (
+                <motion.div
+                    className="mt-4 p-3 bg-red-500/10 text-red-700 dark:text-red-300 rounded-lg flex items-start text-sm"
+                    initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                >
+                    <AlertCircleIcon className="w-5 h-5 me-2 flex-shrink-0 mt-0.5" />
+                    <span>{testError}</span>
+                </motion.div>
+            )}
+        </AnimatePresence>
       </div>
 
       <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-4 sm:p-6 rounded-xl">
