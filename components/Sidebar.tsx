@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { DashboardIcon, ProductsIcon, SettingsIcon, ShoppingCartIcon, ChezHugoLogo, DeliveryIcon } from './Icons';
 import { useAppContext } from '../context/AppContext';
+import { motion } from 'framer-motion';
 
 // Reusable NavItem for both sidebar and bottom nav
 const NavItem: React.FC<{ to: string; icon: React.ElementType; label: string; count?: number; isMobile?: boolean }> = ({ to, icon: Icon, label, count, isMobile }) => {
@@ -39,7 +40,7 @@ const NavItem: React.FC<{ to: string; icon: React.ElementType; label: string; co
                 isActive ? 'font-semibold text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
             }`}
         >
-            {({isActive}) => isActive && <div className="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-full" />}
+            {({isActive}) => isActive && <motion.div layoutId="sidebar-active-indicator" className="absolute left-0 top-2 bottom-2 w-1 bg-brand rounded-r-full" transition={{ type: 'spring', stiffness: 300, damping: 25 }} />}
             <Icon className="w-5 h-5 me-4 transition-transform duration-200 group-hover:scale-110" />
             <span className="flex-1 text-sm">{label}</span>
             {typeof count !== 'undefined' && count > 0 && (

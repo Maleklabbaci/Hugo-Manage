@@ -133,7 +133,7 @@ const Dashboard: React.FC = () => {
     >
         {label}
         {timeRange === range && (
-            <motion.div layoutId="active-range-indicator" className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg -z-10" />
+            <motion.div layoutId="active-range-indicator" className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg -z-10" transition={{ type: 'spring', stiffness: 500, damping: 30 }} />
         )}
     </motion.button>
   );

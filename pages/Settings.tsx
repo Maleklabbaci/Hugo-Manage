@@ -184,7 +184,7 @@ const Settings: React.FC = () => {
       >
           <Icon className="w-5 h-5" />
           <span>{label}</span>
-          {activeTab === tabId && <motion.div layoutId="active-tab-indicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand" />}
+          {activeTab === tabId && <motion.div layoutId="active-tab-indicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand" transition={{ type: 'spring', stiffness: 500, damping: 30 }} />}
       </button>
   );
 

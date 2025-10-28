@@ -30,7 +30,8 @@ const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, 
   return (
     <motion.div 
         layout
-        className={`bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border rounded-xl overflow-hidden transition-all duration-200 relative ${isSelected ? 'ring-2 ring-brand' : 'ring-1 ring-transparent'} ${lowStock ? 'border-amber-500' : 'border-slate-200 dark:border-slate-700'}`}
+        className={`bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border rounded-xl overflow-hidden relative ${isSelected ? 'ring-2 ring-brand' : 'ring-1 ring-transparent'} ${lowStock ? 'border-amber-500' : 'border-slate-200 dark:border-slate-700'}`}
+        whileHover={{ y: -4, boxShadow: '0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.07)' }}
     >
       <div className="flex items-start p-4 space-x-4">
         {product.imageUrl ? (
@@ -718,13 +719,13 @@ const Products: React.FC = () => {
       
       {totalPages > 1 && (
         <div className="flex justify-center items-center mt-6">
-            <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-slate-200 dark:enabled:hover:bg-slate-800/60">
+            <motion.button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-slate-200 dark:enabled:hover:bg-slate-800/60" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                 <ChevronLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-300"/>
-            </button>
+            </motion.button>
             <span className="mx-4 text-slate-700 dark:text-slate-200">{t('products.pagination', { currentPage, totalPages })}</span>
-            <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-slate-200 dark:enabled:hover:bg-slate-800/60">
+            <motion.button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-md disabled:opacity-50 enabled:hover:bg-slate-200 dark:enabled:hover:bg-slate-800/60" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                 <ChevronRightIcon className="w-5 h-5 text-slate-600 dark:text-slate-300"/>
-            </button>
+            </motion.button>
         </div>
       )}
 

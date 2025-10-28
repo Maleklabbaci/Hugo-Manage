@@ -31,6 +31,19 @@ const Login: React.FC = () => {
     const isMobile = window.innerWidth < 768;
     return <Navigate to={isMobile ? "/mobile-hub" : "/dashboard"} />;
   }
+  
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 100 } }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4 text-white">
@@ -63,9 +76,15 @@ const Login: React.FC = () => {
             </motion.div>
         )}
         
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <motion.form 
+          className="mt-8 space-y-6" 
+          onSubmit={handleSubmit}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           <div className="space-y-4">
-            <div>
+            <motion.div variants={itemVariants}>
               <label htmlFor="email-address" className="block text-sm font-medium text-slate-300 mb-1">{t('login.email_placeholder')}</label>
               <input
                 id="email-address"
@@ -78,8 +97,8 @@ const Login: React.FC = () => {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
               />
-            </div>
-            <div>
+            </motion.div>
+            <motion.div variants={itemVariants}>
               <label htmlFor="password"  className="block text-sm font-medium text-slate-300 mb-1">{t('login.password_placeholder')}</label>
               <input
                 id="password"
@@ -92,7 +111,7 @@ const Login: React.FC = () => {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
               />
-            </div>
+            </motion.div>
           </div>
 
           {error && (
@@ -106,7 +125,7 @@ const Login: React.FC = () => {
             </motion.div>
           )}
 
-          <div>
+          <motion.div variants={itemVariants}>
             <motion.button
               type="submit"
               disabled={loading || !isConfigured}
@@ -118,8 +137,8 @@ const Login: React.FC = () => {
                 {loading && <LoaderIcon className="animate-spin w-5 h-5 me-3" />}
               {t('login.submit_button')}
             </motion.button>
-          </div>
-        </form>
+          </motion.div>
+        </motion.form>
       </motion.div>
     </div>
   );

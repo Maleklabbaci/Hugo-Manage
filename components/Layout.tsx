@@ -45,10 +45,10 @@ const Layout: React.FC = () => {
             <AnimatePresence mode="wait">
                 <motion.div
                     key={location.pathname}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 25 }}
                 >
                     <Outlet />
                 </motion.div>
