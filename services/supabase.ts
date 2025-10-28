@@ -6,41 +6,49 @@ import { storage } from './storage';
 -- SCRIPT SQL POUR LE STOCKAGE SUPABASE - À EXÉCUTER
 -- =================================================================
 --
--- Pour que le stockage des images fonctionne, exécutez ce script
--- dans votre éditeur SQL Supabase.
---
--- Cela crée un "bucket" public pour les images de produits et
--- configure les permissions de sécurité.
+-- Ce script configure le stockage des images de produits.
+-- Exécutez-le dans votre éditeur SQL Supabase pour activer l'upload d'images.
 --
 -- =================================================================
 
--- 1. Créer un bucket public pour les images de produits
+-- Supprime les anciennes politiques pour éviter les conflits
+DROP POLICY IF EXISTS "Public read access for product images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can manage their own product images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload their own product images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update their own product images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete their own product images" ON storage.objects;
+DROP POLICY IF EXISTS "Allow authenticated users to upload images" ON storage.objects;
+DROP POLICY IF EXISTS "Allow users to update their own images" ON storage.objects;
+DROP POLICY IF EXISTS "Allow users to delete their own images" ON storage.objects;
+
+-- 1. Créer un bucket public pour les images de produits.
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('product-images', 'product-images', true)
 ON CONFLICT (id) DO NOTHING;
 
--- 2. Configurer les politiques de sécurité (RLS) pour le bucket
--- Supprime les anciennes politiques pour éviter les conflits
-DROP POLICY IF EXISTS "Public read access for product images" ON storage.objects;
-DROP POLICY IF EXISTS "Users can manage their own product images" ON storage.objects;
-DROP POLICY IF EXISTS "Users can update their own product images" ON storage.objects;
-DROP POLICY IF EXISTS "Users can delete their own product images" ON storage.objects;
+-- 2. Configurer les politiques de sécurité (RLS) pour le bucket.
 
--- 2.1 Autoriser l'accès public en lecture aux images
-CREATE POLICY "Public read access for product images" ON storage.objects
-FOR SELECT USING (bucket_id = 'product-images');
+-- 2.1. Autoriser l'accès public en lecture à toutes les images.
+CREATE POLICY "Public read access for product images"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'product-images');
 
--- 2.2 Autoriser les utilisateurs connectés à envoyer des images
-CREATE POLICY "Users can manage their own product images" ON storage.objects
-FOR INSERT WITH CHECK (auth.uid() = owner_id);
+-- 2.2. Autoriser les utilisateurs authentifiés à envoyer de nouvelles images.
+CREATE POLICY "Allow authenticated users to upload images"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'product-images');
 
--- 2.3 Autoriser les utilisateurs à mettre à jour leurs propres images
-CREATE POLICY "Users can update their own product images" ON storage.objects
-FOR UPDATE USING (auth.uid() = owner_id);
+-- 2.3. Autoriser les utilisateurs à mettre à jour leurs propres images.
+CREATE POLICY "Allow users to update their own images"
+ON storage.objects FOR UPDATE
+USING (auth.uid() = owner)
+WITH CHECK (bucket_id = 'product-images');
 
--- 2.4 Autoriser les utilisateurs à supprimer leurs propres images
-CREATE POLICY "Users can delete their own product images" ON storage.objects
-FOR DELETE USING (auth.uid() = owner_id);
+-- 2.4. Autoriser les utilisateurs à supprimer leurs propres images.
+CREATE POLICY "Allow users to delete their own images"
+ON storage.objects FOR DELETE
+USING (auth.uid() = owner);
 
 */
 

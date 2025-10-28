@@ -193,6 +193,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }, ...prev]);
     }
   }, [user]);
+
+  const handleStorageError = (error: Error): void => {
+      const errorMessage = error.message;
+      if (errorMessage.toLowerCase().includes('bucket not found')) {
+          alert(t('error.bucket_not_found'));
+      } else {
+          alert(t('product_form.error_add', { error: errorMessage }));
+      }
+  };
   
   const addProduct = async (productData: ProductFormData): Promise<Product | null> => {
     if (!supabaseClient || !user) return null;
@@ -222,7 +231,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await logActivity('created', createdProduct);
       return createdProduct;
     } catch (error) {
-      alert(t('product_form.error_add', { error: (error as Error).message }));
+      handleStorageError(error as Error);
       return null;
     }
   };
@@ -299,7 +308,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       return updatedProduct;
     } catch (error) {
-      alert(t('product_form.error_update', { error: (error as Error).message }));
+      handleStorageError(error as Error);
       return null;
     }
   };

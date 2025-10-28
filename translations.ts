@@ -251,6 +251,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.unconfigured_prefix': "La base de données n'est pas configurée.",
     'settings.supabase.unconfigured_link': "Allez dans les paramètres pour vous connecter.",
     'settings.supabase.unconfigured_link_short': "Configurez ici.",
+    'settings.storage.title': "Configuration du Stockage (Requis)",
+    'settings.storage.description': "Pour que l'upload d'images fonctionne, exécutez ce script SQL dans votre éditeur SQL Supabase.",
+    'settings.storage.copy_button': "Copier le script",
+    'settings.storage.copied_button': "Copié !",
 
     // AI Assistant
     'ai_assistant.title': 'Assistant IA',
@@ -306,6 +310,7 @@ export const translations: Record<Language, Record<string, string>> = {
     // Error handling
     'error.fetch_data': "Erreur lors de la récupération des données : {error}",
     'error.rls_permission_denied': "Permission refusée. Assurez-vous d'avoir exécuté le script de sécurité SQL (RLS) dans votre base de données Supabase.",
+    'error.bucket_not_found': "Erreur de stockage : 'Bucket' introuvable. Veuillez exécuter le script de configuration du stockage depuis la page Paramètres pour activer l'upload d'images.",
   },
   en: {
     'save': 'Save',
@@ -545,6 +550,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.unconfigured_prefix': "Database is not configured.",
     'settings.supabase.unconfigured_link': "Go to settings to connect.",
     'settings.supabase.unconfigured_link_short': 'Configure here.',
+    'settings.storage.title': "Storage Setup (Required)",
+    'settings.storage.description': "For image uploads to work, run this SQL script in your Supabase SQL Editor.",
+    'settings.storage.copy_button': "Copy Script",
+    'settings.storage.copied_button': "Copied!",
 
     // AI Assistant
     'ai_assistant.title': 'AI Assistant',
@@ -598,6 +607,7 @@ export const translations: Record<Language, Record<string, string>> = {
     
     'error.fetch_data': 'Error fetching data: {error}',
     'error.rls_permission_denied': 'Permission denied. Make sure you have run the SQL security (RLS) script in your Supabase database.',
+    'error.bucket_not_found': "Storage Error: Bucket not found. Please run the storage setup script from the Settings page to enable image uploads.",
   },
   ar: {
     'save': 'حفظ',
@@ -837,6 +847,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.unconfigured_prefix': 'قاعدة البيانات غير مهيأة.',
     'settings.supabase.unconfigured_link': 'اذهب إلى الإعدادات للاتصال.',
     'settings.supabase.unconfigured_link_short': 'الإعدادات هنا.',
+    'settings.storage.title': "إعداد التخزين (مطلوب)",
+    'settings.storage.description': "لكي تعمل عمليات تحميل الصور، قم بتشغيل برنامج SQL النصي هذا في محرر SQL الخاص بك في Supabase.",
+    'settings.storage.copy_button': "نسخ البرنامج النصي",
+    'settings.storage.copied_button': "تم النسخ!",
     
     // AI Assistant
     'ai_assistant.title': 'المساعد الذكي',
@@ -891,5 +905,6 @@ export const translations: Record<Language, Record<string, string>> = {
     // Error handling
     'error.fetch_data': 'خطأ في جلب البيانات: {error}',
     'error.rls_permission_denied': 'تم رفض الإذن. تأكد من أنك قمت بتشغيل برنامج الأمان SQL (RLS) في قاعدة بيانات Supabase الخاصة بك.',
+    'error.bucket_not_found': "خطأ في التخزين: 'Bucket' غير موجود. يرجى تشغيل برنامج إعداد التخزين من صفحة الإعدادات لتمكين تحميل الصور.",
   },
 };

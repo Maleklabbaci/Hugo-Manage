@@ -1,15 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { SunIcon, MoonIcon, LogoutIcon, LanguagesIcon, ServerIcon, AlertCircleIcon } from '../components/Icons';
+// FIX: Imported 'MarkDeliveredIcon' and aliased it as 'CheckCircle2' to match its usage within the component and fix the module export error.
+import { SunIcon, MoonIcon, LogoutIcon, LanguagesIcon, ServerIcon, AlertCircleIcon, DatabaseIcon, DuplicateIcon, MarkDeliveredIcon as CheckCircle2 } from '../components/Icons';
 import type { Language, Theme } from '../types';
 import { motion } from 'framer-motion';
 import { storage } from '../services/storage';
+
+const sqlScript = `-- This script sets up the necessary storage bucket and policies for product images.
+-- Run this in your Supabase SQL Editor to enable image uploads.
+
+-- Clean up old policies first to avoid conflicts
+DROP POLICY IF EXISTS "Public read access for product images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can manage their own product images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload their own product images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update their own product images" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete their own product images" ON storage.objects;
+DROP POLICY IF EXISTS "Allow authenticated users to upload images" ON storage.objects;
+DROP POLICY IF EXISTS "Allow users to update their own images" ON storage.objects;
+DROP POLICY IF EXISTS "Allow users to delete their own images" ON storage.objects;
+
+-- 1. Create a public bucket for product images.
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('product-images', 'product-images', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 2. Set up Row Level Security (RLS) policies for the bucket.
+
+-- 2.1. Allow public read access to all images.
+CREATE POLICY "Public read access for product images"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'product-images');
+
+-- 2.2. Allow authenticated users to upload images.
+CREATE POLICY "Allow authenticated users to upload images"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'product-images');
+
+-- 2.3. Allow users to update their own images.
+CREATE POLICY "Allow users to update their own images"
+ON storage.objects FOR UPDATE
+USING (auth.uid() = owner)
+WITH CHECK (bucket_id = 'product-images');
+
+-- 2.4. Allow users to delete their own images.
+CREATE POLICY "Allow users to delete their own images"
+ON storage.objects FOR DELETE
+USING (auth.uid() = owner);`;
 
 const Settings: React.FC = () => {
   const { theme, setTheme, language, setLanguage, t, logout, session, saveSupabaseCredentials } = useAppContext();
   const [supabaseUrl, setSupabaseUrl] = useState('');
   const [supabaseAnonKey, setSupabaseAnonKey] = useState('');
   const [supabaseError, setSupabaseError] = useState('');
+  const [scriptCopied, setScriptCopied] = useState(false);
 
   useEffect(() => {
     const creds = storage.getSupabaseCredentials();
@@ -35,12 +79,10 @@ const Settings: React.FC = () => {
         return;
     }
 
-    // Automatically prepend https:// if no protocol is specified.
     if (!/^https?:\/\//i.test(finalUrl)) {
         finalUrl = 'https://' + finalUrl;
     }
     
-    // Now, validate the final URL.
     try {
         new URL(finalUrl);
     } catch(e) {
@@ -49,6 +91,12 @@ const Settings: React.FC = () => {
     }
 
     saveSupabaseCredentials(finalUrl, anonKey);
+  };
+  
+  const handleCopyScript = () => {
+    navigator.clipboard.writeText(sqlScript);
+    setScriptCopied(true);
+    setTimeout(() => setScriptCopied(false), 2000);
   };
   
   return (
@@ -62,7 +110,7 @@ const Settings: React.FC = () => {
         <div className="space-y-4">
           <div>
             <label htmlFor="supabaseUrl" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t('settings.supabase.url_label')}</label>
-            <input type="text" id="supabaseUrl" value={supabaseUrl} onChange={(e) => setSupabaseUrl(e.target.value)} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="xxxx.supabase.co" />
+            <input type="text" id="supabaseUrl" value={supabaseUrl} onChange={(e) => setSupabaseUrl(e.target.value)} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg p-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="https://xxxx.supabase.co" />
           </div>
           <div>
             <label htmlFor="supabaseAnonKey" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t('settings.supabase.anon_key_label')}</label>
@@ -85,6 +133,29 @@ const Settings: React.FC = () => {
           <motion.button onClick={handleSupabaseSave} className="w-full bg-cyan-500/10 text-cyan-500 font-semibold rounded-lg px-4 py-2 flex items-center justify-center transition-colors hover:bg-cyan-500/20" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             {t('settings.supabase.save_button')}
           </motion.button>
+        </div>
+      </div>
+      
+       <div className="bg-white dark:bg-white/5 backdrop-blur-lg border border-gray-200 dark:border-white/10 p-4 sm:p-6 rounded-xl">
+        <h3 className="text-lg font-semibold mb-2 border-b pb-2 border-gray-200 dark:border-white/10 flex items-center">
+          <DatabaseIcon className="w-5 h-5 me-2" /> {t('settings.storage.title')}
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-slate-400 mb-4">{t('settings.storage.description')}</p>
+        <pre className="bg-gray-100 dark:bg-black/20 p-4 rounded-lg text-xs overflow-x-auto text-gray-800 dark:text-slate-200">
+            <code>
+                {sqlScript}
+            </code>
+        </pre>
+        <div className="mt-4">
+            <motion.button 
+                onClick={handleCopyScript} 
+                className={`w-full font-semibold rounded-lg px-4 py-2 flex items-center justify-center transition-colors ${scriptCopied ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-500 hover:bg-gray-500/20'}`}
+                whileHover={{ scale: 1.02 }} 
+                whileTap={{ scale: 0.98 }}
+            >
+                {scriptCopied ? <CheckCircle2 className="w-5 h-5 me-2" /> : <DuplicateIcon className="w-5 h-5 me-2" />}
+                {scriptCopied ? t('settings.storage.copied_button') : t('settings.storage.copy_button')}
+            </motion.button>
         </div>
       </div>
 
