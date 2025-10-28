@@ -234,6 +234,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'delivery.total_value': 'Valeur en livraison',
 
     // Settings Page
+    'settings.tabs.general': 'Général',
+    'settings.tabs.account': 'Compte',
+    'settings.tabs.developer': 'Développeur',
+    'settings.tabs.logged_in_as': 'Connecté en tant que :',
+    'settings.tabs.not_logged_in': 'Vous n\'êtes pas connecté.',
     'settings.theme_title': 'Thème',
     'settings.theme_select': "Choisir le thème de l'application :",
     'settings.language_title': 'Langue',
@@ -547,6 +552,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'delivery.total_items': 'Items in Delivery',
     'delivery.total_value': 'Value in Delivery',
 
+    'settings.tabs.general': 'General',
+    'settings.tabs.account': 'Account',
+    'settings.tabs.developer': 'Developer',
+    'settings.tabs.logged_in_as': 'Logged in as:',
+    'settings.tabs.not_logged_in': 'You are not logged in.',
     'settings.theme_title': 'Theme',
     'settings.theme_select': 'Choose the application theme:',
     'settings.language_title': 'Language',
@@ -858,6 +868,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'delivery.total_items': 'عناصر قيد التوصيل',
     'delivery.total_value': 'القيمة قيد التوصيل',
     
+    'settings.tabs.general': 'عام',
+    'settings.tabs.account': 'الحساب',
+    'settings.tabs.developer': 'المطور',
+    'settings.tabs.logged_in_as': 'مسجل الدخول كـ:',
+    'settings.tabs.not_logged_in': 'أنت غير مسجل الدخول.',
     'settings.theme_title': 'المظهر',
     'settings.theme_select': 'اختر مظهر التطبيق:',
     'settings.language_title': 'اللغة',

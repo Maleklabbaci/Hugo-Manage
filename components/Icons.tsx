@@ -51,6 +51,8 @@ import {
   Camera,
   ExternalLink,
   PlayCircle,
+  User,
+  Code,
 } from 'lucide-react';
 
 export const ChezHugoLogo: React.FC<{ className?: string }> = ({ className }) => {
@@ -119,4 +121,6 @@ export {
   Camera as CameraIcon,
   ExternalLink as ExternalLinkIcon,
   PlayCircle as RunIcon,
+  User as UserIcon,
+  Code as CodeIcon,
 };
