@@ -18,7 +18,7 @@ const DetailItem: React.FC<{ label: string; value: string | number | React.React
 );
 
 const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ isOpen, onClose, product }) => {
-    const { t, deliveries } = useAppContext();
+    const { t } = useAppContext();
 
     const backdropVariants: Variants = {
         visible: { opacity: 1 },
@@ -32,22 +32,10 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ isOpen, onClo
 
     if (!product) return null;
 
-    const isDelivery = deliveries.some(d => d.productId === product.id);
-
-    let statusText: string;
-    let statusColor: string;
-
-    if (isDelivery) {
-        statusText = t('products.status.delivery');
-        statusColor = 'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300';
-    } else {
-        const statusKey = product.status;
-        statusText = t(`products.status.${statusKey}`);
-        statusColor = product.status === 'actif'
-            ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300'
-            : 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300';
-    }
-
+    const statusText = t(`products.status.${product.status === 'actif' ? 'active' : (product.status === 'rupture' ? 'out_of_stock' : 'delivery')}`);
+    const statusColor = product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300' :
+                        product.status === 'rupture' ? 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300' :
+                        'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300';
 
     return (
         <AnimatePresence>

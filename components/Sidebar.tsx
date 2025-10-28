@@ -51,13 +51,13 @@ const NavItem: React.FC<{ to: string; icon: React.ElementType; label: string; co
 
 
 const Sidebar: React.FC = () => {
-  const { t, language, products, sales, deliveries } = useAppContext();
+  const { t, language, products, sales } = useAppContext();
   const isRtl = language === 'ar';
   
   const navLinks = [
     { to: "/dashboard", icon: DashboardIcon, label: t('sidebar.dashboard') },
-    { to: "/products", icon: ProductsIcon, label: t('sidebar.products'), count: products.length },
-    { to: "/delivery", icon: DeliveryIcon, label: t('sidebar.delivery'), count: deliveries.length },
+    { to: "/products", icon: ProductsIcon, label: t('sidebar.products'), count: products.filter(p => p.status !== 'en livraison').length },
+    { to: "/delivery", icon: DeliveryIcon, label: t('sidebar.delivery'), count: products.filter(p => p.status === 'en livraison').length },
     { to: "/sales", icon: ShoppingCartIcon, label: t('sidebar.sales'), count: sales.length },
     { to: "/statistics", icon: StatsIcon, label: t('sidebar.statistics') },
     { to: "/history", icon: HistoryIcon, label: t('sidebar.history') },

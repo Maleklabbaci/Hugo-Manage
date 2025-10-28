@@ -24,7 +24,7 @@ const localeMap: Record<Language, string> = {
 };
 
 const Dashboard: React.FC = () => {
-  const { products, sales, deliveries, t, language, theme } = useAppContext();
+  const { products, sales, t, language, theme } = useAppContext();
   const locale = localeMap[language];
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -46,10 +46,10 @@ const Dashboard: React.FC = () => {
     const unitsSold = sales.reduce((acc, s) => acc + s.quantity, 0);
     const salesProfit = sales.reduce((acc, s) => acc + (s.totalMargin || 0), 0);
     
-    const unitsInDelivery = deliveries.reduce((acc, d) => acc + d.quantity, 0);
+    const unitsInDelivery = products.filter(p => p.status === 'en livraison').length;
 
     return { totalProducts, stockValue, totalProfit, outOfStock, salesRevenue, unitsSold, salesProfit, unitsInDelivery };
-  }, [products, sales, deliveries]);
+  }, [products, sales]);
 
   const weeklyProfitData = useMemo(() => {
     const profitByWeek: { [key: string]: number } = {};

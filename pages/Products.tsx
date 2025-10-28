@@ -19,39 +19,12 @@ const calculateMargin = (product: Product) => {
   return (((product.sellPrice - product.buyPrice) / product.sellPrice) * 100).toFixed(1);
 };
 
-const ProductCard: React.FC<{ 
-    product: Product, 
-    onSelect: (id: number) => void, 
-    isSelected: boolean, 
-    onEdit: (p: Product) => void, 
-    onSell: (p: Product) => void, 
-    onDuplicate: (id: number) => void, 
-    onDelete: (id: number) => void, 
-    onSetDelivery: (p: Product) => void,
-}> = ({ product, onSelect, isSelected, onEdit, onSell, onDuplicate, onDelete, onSetDelivery }) => {
-  const { t, deliveries } = useAppContext();
+const ProductCard: React.FC<{ product: Product, onSelect: (id: number) => void, isSelected: boolean, onEdit: (p: Product) => void, onSell: (p: Product) => void, onDuplicate: (id: number) => void, onDelete: (id: number) => void, onSetDelivery: (p: Product) => void }> = 
+({ product, onSelect, isSelected, onEdit, onSell, onDuplicate, onDelete, onSetDelivery }) => {
+  const { t } = useAppContext();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const margin = useMemo(() => calculateMargin(product), [product]);
-  
-  const statusInfo = useMemo(() => {
-    const isDelivery = deliveries.some(d => d.productId === product.id);
-
-    if (isDelivery) {
-        return {
-            text: t('products.status.delivery'),
-            className: 'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300'
-        };
-    }
-    
-    const statusKey = product.status;
-    const colorClass = statusKey === 'actif'
-        ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300'
-        : 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300';
-
-    return { text: t(`products.status.${statusKey}`), className: colorClass };
-  }, [product.status, deliveries, t]);
-
 
   return (
     <motion.div 
@@ -80,8 +53,8 @@ const ProductCard: React.FC<{
               />
           </div>
           <div className="mt-2 flex items-center space-x-2">
-            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusInfo.className}`}>
-              {statusInfo.text}
+            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300'}`}>
+              {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
             </span>
             <p className="text-xs text-gray-500 dark:text-slate-500">Stock: {product.stock}</p>
           </div>
@@ -99,16 +72,16 @@ const ProductCard: React.FC<{
            </div>
         </div>
         <div className="mt-4 flex items-center space-x-2">
-            <motion.button 
-                onClick={() => onSell(product)} 
-                className="flex-1 text-white bg-gradient-to-r from-cyan-500 to-blue-500 disabled:from-slate-400 disabled:to-slate-500 rounded-lg h-10 font-semibold text-sm disabled:opacity-70 flex items-center justify-center" 
-                disabled={product.stock === 0}
-                whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(34, 211, 238, 0.3), 0 4px 6px -2px rgba(34, 211, 238, 0.2)' }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-            >
-                <ShoppingCartIcon className="w-4 h-4 me-2"/> {t('sell')}
-            </motion.button>
+           <motion.button 
+             onClick={() => onSell(product)} 
+             className="flex-1 text-white bg-gradient-to-r from-cyan-500 to-blue-500 disabled:from-slate-400 disabled:to-slate-500 rounded-lg h-10 font-semibold text-sm disabled:opacity-70 flex items-center justify-center" 
+             disabled={product.stock === 0}
+             whileHover={{ scale: 1.05, y: -2, boxShadow: '0 10px 15px -3px rgba(34, 211, 238, 0.3), 0 4px 6px -2px rgba(34, 211, 238, 0.2)' }}
+             whileTap={{ scale: 0.95 }}
+             transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+           >
+             <ShoppingCartIcon className="w-4 h-4 me-2"/> {t('sell')}
+           </motion.button>
            <div className="relative">
              <button onClick={() => setMenuOpen(!menuOpen)} onBlur={() => setTimeout(() => setMenuOpen(false), 100)} className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-white/20">
                <MoreVerticalIcon className="w-5 h-5"/>
@@ -121,11 +94,11 @@ const ProductCard: React.FC<{
                   exit={{ opacity: 0, scale: 0.9 }}
                   className="absolute bottom-12 right-0 bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-lg shadow-lg w-48 z-10 overflow-hidden"
                 >
-                    <button onClick={() => { onEdit(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><EditIcon className="w-4 h-4 me-2"/> {t('edit')}</button>
-                    <button onClick={() => { onSetDelivery(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50 disabled:opacity-50 disabled:cursor-not-allowed" disabled={product.stock === 0}><DeliveryIcon className="w-4 h-4 me-2"/> {t('products.actions.set_delivery')}</button>
-                    <button onClick={() => { onDuplicate(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><DuplicateIcon className="w-4 h-4 me-2"/> {t('duplicate')}</button>
-                    <div className="h-px bg-gray-200 dark:bg-white/10 my-1"></div>
-                    <button onClick={() => { onDelete(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-red-500 hover:bg-red-500/10"><DeleteIcon className="w-4 h-4 me-2"/> {t('delete')}</button>
+                  <button onClick={() => { onEdit(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><EditIcon className="w-4 h-4 me-2"/> {t('edit')}</button>
+                  <button onClick={() => { onSetDelivery(product); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><DeliveryIcon className="w-4 h-4 me-2"/> {t('products.actions.set_delivery')}</button>
+                  <button onClick={() => { onDuplicate(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700/50"><DuplicateIcon className="w-4 h-4 me-2"/> {t('duplicate')}</button>
+                  <div className="h-px bg-gray-200 dark:bg-white/10 my-1"></div>
+                  <button onClick={() => { onDelete(product.id); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm flex items-center text-red-500 hover:bg-red-500/10"><DeleteIcon className="w-4 h-4 me-2"/> {t('delete')}</button>
                 </motion.div>
               )}
              </AnimatePresence>
@@ -139,13 +112,12 @@ const ProductCard: React.FC<{
 const Products: React.FC = () => {
   type SortKey = 'name' | 'buyPrice' | 'sellPrice' | 'stock' | 'createdAt';
   
-  const { products, deliveries, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts, updateMultipleProducts, setProductToDelivery, language } = useAppContext();
+  const { products, addProduct, updateProduct, deleteProduct, deleteMultipleProducts, duplicateProduct, addSale, t, addMultipleProducts, updateMultipleProducts, setProductToDelivery, language } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [isSaleModalOpen, setIsSaleModalOpen] = useState(false);
-  const [isSetDeliveryModalOpen, setIsSetDeliveryModalOpen] = useState(false);
-  const [productToProcess, setProductToProcess] = useState<Product | null>(null);
   const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
+  const [productToSell, setProductToSell] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -154,11 +126,12 @@ const Products: React.FC = () => {
   const [sortKey, setSortKey] = useState<SortKey>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
+  const [isDeliveryConfirmOpen, setIsDeliveryConfirmOpen] = useState(false);
+  const [productToSetDelivery, setProductToSetDelivery] = useState<Product | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [productToDeleteId, setProductToDeleteId] = useState<number | null>(null);
   const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
-
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -216,8 +189,10 @@ const Products: React.FC = () => {
     return sortable;
   }, [products, sortKey, sortDirection]);
 
+  const availableProducts = useMemo(() => sortedProducts.filter(p => p.status !== 'en livraison'), [sortedProducts]);
+
   const filteredProducts = useMemo(() => {
-    let intermediateResults = sortedProducts;
+    let intermediateResults = availableProducts;
 
     if (showLowStockOnly) {
         intermediateResults = intermediateResults.filter(product => product.stock > 0 && product.stock <= 5);
@@ -232,7 +207,7 @@ const Products: React.FC = () => {
         product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.supplier.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [sortedProducts, searchQuery, showLowStockOnly]);
+  }, [availableProducts, searchQuery, showLowStockOnly]);
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * productsPerPage;
@@ -293,31 +268,19 @@ const Products: React.FC = () => {
   };
 
   const handleOpenSaleModal = (product: Product) => {
-    setProductToProcess(product);
+    setProductToSell(product);
     setIsSaleModalOpen(true);
   };
-  
-  const handleOpenSetDeliveryModal = (product: Product) => {
-    setProductToProcess(product);
-    setIsSetDeliveryModalOpen(true);
-  };
 
-  const handleCloseProcessModals = () => {
+  const handleCloseSaleModal = () => {
       setIsSaleModalOpen(false);
-      setIsSetDeliveryModalOpen(false);
-      setProductToProcess(null);
+      setProductToSell(null);
   };
 
   const handleConfirmSale = (productId: number, quantity: number) => {
       addSale(productId, quantity);
-      handleCloseProcessModals();
+      handleCloseSaleModal();
   };
-
-  const handleConfirmSetToDelivery = (productId: number, quantity: number) => {
-      setProductToDelivery(productId, quantity);
-      handleCloseProcessModals();
-  };
-
 
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
@@ -443,27 +406,15 @@ const Products: React.FC = () => {
     }
   };
 
-  const getStatusBadge = (product: Product) => {
-    const isDelivery = deliveries.some(d => d.productId === product.id);
+  const handleOpenDeliveryConfirm = (product: Product) => {
+    setProductToSetDelivery(product);
+    setIsDeliveryConfirmOpen(true);
+  };
 
-    if (isDelivery) {
-        return (
-            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300">
-                {t('products.status.delivery')}
-            </span>
-        );
-    }
-
-    const statusKey = product.status;
-    const colorClass = statusKey === 'actif'
-        ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300'
-        : 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300';
-    
-    return (
-        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${colorClass}`}>
-            {t(`products.status.${statusKey}`)}
-        </span>
-    );
+  const handleConfirmSetToDelivery = async () => {
+      if (productToSetDelivery) {
+          await setProductToDelivery(productToSetDelivery.id);
+      }
   };
 
   const numSelected = selectedProducts.length;
@@ -602,7 +553,7 @@ const Products: React.FC = () => {
               onSell={handleOpenSaleModal}
               onDuplicate={duplicateProduct}
               onDelete={handleOpenDeleteConfirm}
-              onSetDelivery={handleOpenSetDeliveryModal}
+              onSetDelivery={handleOpenDeliveryConfirm}
             />
           ))}
         </div>
@@ -673,7 +624,9 @@ const Products: React.FC = () => {
                     <td className="px-6 py-4">{product.stock}</td>
                     <td className={`px-6 py-4 font-semibold ${parseFloat(calculateMargin(product)) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{calculateMargin(product)}%</td>
                     <td className="px-6 py-4">
-                      {getStatusBadge(product)}
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${product.status === 'actif' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300'}`}>
+                        {t(`products.status.${product.status === 'actif' ? 'active' : 'out_of_stock'}`)}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-xs whitespace-nowrap" title={timeAgo(product.createdAt)}>
                       {formatDate(product.createdAt)}
@@ -681,9 +634,8 @@ const Products: React.FC = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
                           <motion.button 
-                              onClick={() => handleOpenSetDeliveryModal(product)}
-                              className="p-2 rounded-md transition-colors bg-sky-500/10 hover:bg-sky-500/20 text-sky-500 disabled:bg-slate-500/10 disabled:text-slate-500 disabled:cursor-not-allowed"
-                              disabled={product.stock === 0}
+                              onClick={() => handleOpenDeliveryConfirm(product)}
+                              className="p-2 rounded-md transition-colors bg-sky-500/10 hover:bg-sky-500/20 text-sky-500"
                               title={t('products.actions.set_delivery')}
                               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                           >
@@ -702,7 +654,7 @@ const Products: React.FC = () => {
                               onClick={() => handleOpenModal(product)} 
                               className="p-2 rounded-md transition-colors bg-blue-500/10 hover:bg-blue-500/20 text-blue-500" 
                               title={t('edit')}
-                                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                           >
                               <EditIcon className="w-5 h-5" />
                           </motion.button>
@@ -710,7 +662,7 @@ const Products: React.FC = () => {
                               onClick={() => duplicateProduct(product.id)}
                               className="p-2 rounded-md transition-colors bg-amber-500/10 hover:bg-amber-500/20 text-amber-500"
                               title={t('duplicate')}
-                                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                           >
                               <DuplicateIcon className="w-5 h-5" />
                           </motion.button>
@@ -718,7 +670,7 @@ const Products: React.FC = () => {
                               onClick={() => handleOpenDeleteConfirm(product.id)} 
                               className="p-2 rounded-md transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500" 
                               title={t('delete')}
-                                whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                               whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                           >
                               <DeleteIcon className="w-5 h-5" />
                           </motion.button>
@@ -781,29 +733,18 @@ const Products: React.FC = () => {
       </AnimatePresence>
 
       <ProductForm isOpen={isModalOpen} onClose={handleCloseModal} onSave={handleSaveProduct} productToEdit={productToEdit} />
-      
-      <SaleModal 
-        isOpen={isSaleModalOpen} 
-        onClose={handleCloseProcessModals} 
-        onConfirm={handleConfirmSale} 
-        product={productToProcess}
-        title={t('sale_modal.title')}
-        confirmText={t('sale_modal.confirm_button')}
-        quantityLabel={t('sale_modal.quantity_label')}
-      />
-
-      <SaleModal 
-        isOpen={isSetDeliveryModalOpen} 
-        onClose={handleCloseProcessModals} 
-        onConfirm={handleConfirmSetToDelivery} 
-        product={productToProcess}
-        title={t('delivery.set_quantity_title')}
-        confirmText={t('delivery.set_button')}
-        quantityLabel={t('delivery.set_quantity_label')}
-      />
-
+      <SaleModal isOpen={isSaleModalOpen} onClose={handleCloseSaleModal} onConfirm={handleConfirmSale} product={productToSell} />
       <BulkEditForm isOpen={isBulkEditModalOpen} onClose={() => setIsBulkEditModalOpen(false)} onSave={handleSaveBulkEdit} productCount={selectedProducts.length} />
-
+      <ConfirmationModal 
+        isOpen={isDeliveryConfirmOpen}
+        onClose={() => {
+            setIsDeliveryConfirmOpen(false);
+            setProductToSetDelivery(null);
+        }}
+        onConfirm={handleConfirmSetToDelivery}
+        title={t('products.actions.set_delivery_confirm_title')}
+        message={productToSetDelivery ? t('products.actions.set_delivery_confirm_message_with_quantity', { productName: productToSetDelivery.name, quantity: 1 }) : ''}
+      />
       <ConfirmationModal 
         isOpen={isDeleteConfirmOpen}
         onClose={() => setIsDeleteConfirmOpen(false)}
