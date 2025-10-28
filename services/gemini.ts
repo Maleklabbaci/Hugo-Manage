@@ -1,4 +1,5 @@
-import { GoogleGenAI, Type, FunctionDeclaration, GenerateContentRequest, Chat, GenerateContentResponse, Part } from "@google/genai";
+// FIX: Import 'Chat' type from '@google/genai'
+import { GoogleGenAI, Type, FunctionDeclaration, GenerateContentResponse, Part, Chat } from "@google/genai";
 import { ChatMessage, Product, Sale, AIInsight } from '../types';
 
 let ai: GoogleGenAI | null = null;
@@ -119,7 +120,7 @@ Respond with a JSON array where each object has "type" ('positive', 'negative', 
     }
 };
 
-export const findProductByImage = async (base64ImageData: string): Promise<string | null> => {
+export const generateDescriptionForImage = async (base64ImageData: string): Promise<string | null> => {
     if (!ai) return null;
 
     const imagePart = {
@@ -129,7 +130,7 @@ export const findProductByImage = async (base64ImageData: string): Promise<strin
         },
     };
     const textPart = {
-        text: "Décris brièvement et précisément l'objet principal dans cette image en quelques mots-clés. Par exemple : 'montre chronographe noire bracelet cuir'.",
+        text: "Génère une description riche et détaillée pour l'objet principal dans cette image. Inclus des informations sur le type d'objet, les couleurs, les matériaux, le style et toute caractéristique distinctive. La description doit être une chaîne de mots-clés pour une recherche efficace.",
     };
 
     try {
@@ -139,7 +140,87 @@ export const findProductByImage = async (base64ImageData: string): Promise<strin
         });
         return response.text;
     } catch (error) {
-        console.error("Error finding product by image:", error);
+        console.error("Error generating image description:", error);
+        return null;
+    }
+};
+
+const imageUrlToBase64 = async (url: string): Promise<string | null> => {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) return null;
+        const blob = await response.blob();
+        const reader = new FileReader();
+        return new Promise<string>((resolve, reject) => {
+            reader.onloadend = () => {
+                if (typeof reader.result === 'string') {
+                    resolve(reader.result.split(',')[1]);
+                } else {
+                    reject('Failed to convert blob to base64');
+                }
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch (e) {
+        console.error("Failed to fetch image for visual matching:", url, e);
+        return null;
+    }
+};
+
+export const getBestVisualMatch = async (userImageBase64: string, candidateProducts: Product[]): Promise<Product | null> => {
+    if (!ai) return null;
+
+    const candidatesWithImages = candidateProducts.filter(p => p.imageUrl).slice(0, 4);
+    if (candidatesWithImages.length === 0) return null;
+
+    try {
+        const userImagePart: Part = { inlineData: { mimeType: 'image/jpeg', data: userImageBase64 } };
+        const candidateImageParts: Part[] = [];
+        const candidateIds: number[] = [];
+
+        const imagePromises = candidatesWithImages.map(async (p) => {
+            const b64 = await imageUrlToBase64(p.imageUrl!);
+            if (b64) {
+                candidateImageParts.push({ inlineData: { mimeType: 'image/jpeg', data: b64 } });
+                candidateIds.push(p.id);
+            }
+        });
+        
+        await Promise.all(imagePromises);
+
+        if (candidateImageParts.length === 0) return null;
+
+        const prompt = `La première image est l'image de l'utilisateur. Les images suivantes sont des produits candidats. 
+Les ID de produit pour les images candidates sont, dans l'ordre : [${candidateIds.join(', ')}].
+Identifie le produit qui correspond le mieux à l'image de l'utilisateur et réponds avec son ID dans un objet JSON. 
+Format de réponse : {"matchId": ID_DU_PRODUIT}`;
+        const textPart: Part = { text: prompt };
+
+        const allParts: Part[] = [textPart, userImagePart, ...candidateImageParts];
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: [{ parts: allParts }],
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        matchId: { type: Type.NUMBER },
+                    },
+                    required: ['matchId'],
+                }
+            }
+        });
+        
+        const jsonText = response.text.trim();
+        const result = JSON.parse(jsonText);
+        
+        const matchedProduct = candidateProducts.find(p => p.id === result.matchId);
+        return matchedProduct || null;
+    } catch (error) {
+        console.error("Error getting best visual match:", error);
         return null;
     }
 };

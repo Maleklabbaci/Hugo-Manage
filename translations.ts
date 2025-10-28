@@ -296,12 +296,18 @@ export const translations: Record<Language, Record<string, string>> = {
 
     // Visual Search
     'visual_search.title': 'Recherche par image',
+    'visual_search.starting_camera': 'Démarrage de la caméra...',
     'visual_search.scan_button': 'Scanner le produit',
     'visual_search.scanning': 'Scan en cours...',
     'visual_search.analyzing': "Analyse par l'IA...",
     'visual_search.retry_button': 'Réessayer',
     'visual_search.no_results': 'Aucun produit correspondant trouvé',
     'visual_search.results_found': '{count} produit(s) trouvé(s)',
+    'visual_search.analyzing_description': "Analyse de l'image...",
+    'visual_search.finding_candidates': "Recherche de produits similaires...",
+    'visual_search.comparing_matches': "Comparaison visuelle par l'IA...",
+    'visual_search.error.analysis': "L'analyse par l'IA a échoué. Veuillez réessayer.",
+    'visual_search.error.capture': "La capture de l'image a échoué.",
 
     // Notifications
     'notifications.title': 'Notifications',
@@ -614,12 +620,18 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Visual Search
     'visual_search.title': 'Visual Search',
+    'visual_search.starting_camera': 'Starting camera...',
     'visual_search.scan_button': 'Scan Product',
     'visual_search.scanning': 'Scanning...',
     'visual_search.analyzing': 'Analyzing with AI...',
     'visual_search.retry_button': 'Try Again',
     'visual_search.no_results': 'No matching products found',
     'visual_search.results_found': '{count} product(s) found',
+    'visual_search.analyzing_description': "Analyzing image...",
+    'visual_search.finding_candidates': "Finding similar products...",
+    'visual_search.comparing_matches': "Visual comparison by AI...",
+    'visual_search.error.analysis': "AI analysis failed. Please try again.",
+    'visual_search.error.capture': "Failed to capture image.",
 
     // Notifications
     'notifications.title': 'Notifications',
@@ -930,12 +942,18 @@ export const translations: Record<Language, Record<string, string>> = {
 
     // Visual Search
     'visual_search.title': 'البحث بالصورة',
+    'visual_search.starting_camera': 'جاري تشغيل الكاميرا...',
     'visual_search.scan_button': 'مسح المنتج',
     'visual_search.scanning': 'جاري المسح...',
     'visual_search.analyzing': 'تحليل بواسطة الذكاء الاصطناعي...',
     'visual_search.retry_button': 'إعادة المحاولة',
     'visual_search.no_results': 'لم يتم العثور على منتجات مطابقة',
     'visual_search.results_found': 'تم العثور على {count} منتج (منتجات)',
+    'visual_search.analyzing_description': "جاري تحليل الصورة...",
+    'visual_search.finding_candidates': "البحث عن منتجات مشابهة...",
+    'visual_search.comparing_matches': "مقارنة بصرية بواسطة الذكاء الاصطناعي...",
+    'visual_search.error.analysis': "فشل التحليل بواسطة الذكاء الاصطناعي. يرجى المحاولة مرة أخرى.",
+    'visual_search.error.capture': "فشل التقاط الصورة.",
     
     // Notifications
     'notifications.title': 'الإشعارات',

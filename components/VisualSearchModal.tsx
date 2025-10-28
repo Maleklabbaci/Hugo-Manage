@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { findProductByImage } from '../services/gemini';
+import { generateDescriptionForImage, getBestVisualMatch } from '../services/gemini';
 import { Product } from '../types';
 import { XIcon, CameraIcon, LoaderIcon, ProductsIcon } from './Icons';
 
@@ -11,7 +11,7 @@ interface VisualSearchModalProps {
   onClose: () => void;
 }
 
-type ScanState = 'idle' | 'scanning' | 'analyzing' | 'results' | 'error' | 'no-camera';
+type ScanState = 'initializing' | 'idle' | 'scanning' | 'analyzing' | 'results' | 'error' | 'no-camera';
 
 const blobToBase64 = (blob: Blob): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -36,6 +36,7 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
     const [scanState, setScanState] = useState<ScanState>('idle');
     const [foundProducts, setFoundProducts] = useState<Product[]>([]);
     const [errorMsg, setErrorMsg] = useState('');
+    const [analysisText, setAnalysisText] = useState('');
 
     const startCamera = useCallback(async () => {
         try {
@@ -64,6 +65,7 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
 
     useEffect(() => {
         if (isOpen) {
+            setScanState('initializing');
             startCamera();
         } else {
             stopCamera();
@@ -87,12 +89,27 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
             if (blob) {
                 try {
                     setScanState('analyzing');
+                    
+                    setAnalysisText(t('visual_search.analyzing_description'));
                     const base64Data = await blobToBase64(blob);
-                    const description = await findProductByImage(base64Data);
+                    const description = await generateDescriptionForImage(base64Data);
                     
                     if (description) {
-                        const results = findProductsByKeywords(description);
-                        setFoundProducts(results);
+                        setAnalysisText(t('visual_search.finding_candidates'));
+                        const candidates = findProductsByKeywords(description);
+                        
+                        if (candidates.length > 0) {
+                            setAnalysisText(t('visual_search.comparing_matches'));
+                            const bestMatch = await getBestVisualMatch(base64Data, candidates);
+                            
+                            if (bestMatch) {
+                                setFoundProducts([bestMatch]);
+                            } else {
+                                setFoundProducts(candidates.slice(0, 5));
+                            }
+                        } else {
+                            setFoundProducts([]);
+                        }
                     } else {
                         setFoundProducts([]);
                     }
@@ -100,11 +117,11 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
 
                 } catch (err) {
                     console.error("Analysis failed:", err);
-                    setErrorMsg('Analysis failed. Please try again.');
+                    setErrorMsg(t('visual_search.error.analysis'));
                     setScanState('error');
                 }
             } else {
-                setErrorMsg('Failed to capture image.');
+                setErrorMsg(t('visual_search.error.capture'));
                 setScanState('error');
             }
         }, 'image/jpeg', 0.9);
@@ -141,13 +158,17 @@ const VisualSearchModal: React.FC<VisualSearchModalProps> = ({ isOpen, onClose }
                             <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
                             <canvas ref={canvasRef} className="hidden" />
                             <AnimatePresence>
-                            {(scanState === 'scanning' || scanState === 'analyzing') && (
+                            {(scanState === 'initializing' || scanState === 'scanning' || scanState === 'analyzing') && (
                                 <motion.div 
                                     className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white"
                                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                 >
                                     <LoaderIcon className="w-10 h-10 animate-spin mb-4" />
-                                    <p>{scanState === 'scanning' ? t('visual_search.scanning') : t('visual_search.analyzing')}</p>
+                                    <p className="font-semibold">
+                                        {scanState === 'initializing' ? t('visual_search.starting_camera') :
+                                         scanState === 'scanning' ? t('visual_search.scanning') :
+                                         analysisText}
+                                    </p>
                                 </motion.div>
                             )}
                             </AnimatePresence>
