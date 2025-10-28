@@ -252,7 +252,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.unconfigured_link': "Allez dans les paramètres pour vous connecter.",
     'settings.supabase.unconfigured_link_short': "Configurez ici.",
     'settings.storage.title': "Configuration du Stockage (Requis)",
-    'settings.storage.description': "Pour que l'upload d'images fonctionne, exécutez ce script SQL dans votre éditeur SQL Supabase.",
+    'settings.storage.description': "Pour que l'upload d'images fonctionne, exécutez ce script SQL dans l'Éditeur SQL de votre projet Supabase (trouvable sous 'Database' -> 'SQL Editor').",
     'settings.storage.copy_button': "Copier le script",
     'settings.storage.copied_button': "Copié !",
 
@@ -310,7 +310,7 @@ export const translations: Record<Language, Record<string, string>> = {
     // Error handling
     'error.fetch_data': "Erreur lors de la récupération des données : {error}",
     'error.rls_permission_denied': "Permission refusée. Assurez-vous d'avoir exécuté le script de sécurité SQL (RLS) dans votre base de données Supabase.",
-    'error.bucket_not_found': "Erreur de stockage : 'Bucket' introuvable. Veuillez exécuter le script de configuration du stockage depuis la page Paramètres pour activer l'upload d'images.",
+    'error.bucket_not_found': "Erreur de stockage : 'Bucket' introuvable. Le script de configuration du stockage n'a probablement pas été exécuté. Veuillez vous rendre sur la page Paramètres, copier le script SQL et l'exécuter dans votre éditeur SQL Supabase pour activer l'upload d'images.",
   },
   en: {
     'save': 'Save',
@@ -551,7 +551,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.unconfigured_link': "Go to settings to connect.",
     'settings.supabase.unconfigured_link_short': 'Configure here.',
     'settings.storage.title': "Storage Setup (Required)",
-    'settings.storage.description': "For image uploads to work, run this SQL script in your Supabase SQL Editor.",
+    'settings.storage.description': "For image uploads to work, run this SQL script in your Supabase project's SQL Editor (found under 'Database' -> 'SQL Editor').",
     'settings.storage.copy_button': "Copy Script",
     'settings.storage.copied_button': "Copied!",
 
@@ -607,7 +607,7 @@ export const translations: Record<Language, Record<string, string>> = {
     
     'error.fetch_data': 'Error fetching data: {error}',
     'error.rls_permission_denied': 'Permission denied. Make sure you have run the SQL security (RLS) script in your Supabase database.',
-    'error.bucket_not_found': "Storage Error: Bucket not found. Please run the storage setup script from the Settings page to enable image uploads.",
+    'error.bucket_not_found': "Storage Error: Bucket not found. The storage setup script has likely not been run. Please go to the Settings page, copy the SQL script, and run it in your Supabase SQL Editor to enable image uploads.",
   },
   ar: {
     'save': 'حفظ',
@@ -848,7 +848,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.supabase.unconfigured_link': 'اذهب إلى الإعدادات للاتصال.',
     'settings.supabase.unconfigured_link_short': 'الإعدادات هنا.',
     'settings.storage.title': "إعداد التخزين (مطلوب)",
-    'settings.storage.description': "لكي تعمل عمليات تحميل الصور، قم بتشغيل برنامج SQL النصي هذا في محرر SQL الخاص بك في Supabase.",
+    'settings.storage.description': "لكي تعمل عمليات تحميل الصور، قم بتشغيل برنامج SQL النصي هذا في محرر SQL الخاص بك في Supabase (الموجود تحت 'Database' -> 'SQL Editor').",
     'settings.storage.copy_button': "نسخ البرنامج النصي",
     'settings.storage.copied_button': "تم النسخ!",
     
@@ -905,6 +905,6 @@ export const translations: Record<Language, Record<string, string>> = {
     // Error handling
     'error.fetch_data': 'خطأ في جلب البيانات: {error}',
     'error.rls_permission_denied': 'تم رفض الإذن. تأكد من أنك قمت بتشغيل برنامج الأمان SQL (RLS) في قاعدة بيانات Supabase الخاصة بك.',
-    'error.bucket_not_found': "خطأ في التخزين: 'Bucket' غير موجود. يرجى تشغيل برنامج إعداد التخزين من صفحة الإعدادات لتمكين تحميل الصور.",
+    'error.bucket_not_found': "خطأ في التخزين: 'Bucket' غير موجود. من المحتمل أنه لم يتم تشغيل برنامج إعداد التخزين. يرجى الانتقال إلى صفحة الإعدادات، ونسخ برنامج SQL النصي، وتشغيله في محرر SQL الخاص بـ Supabase لتمكين تحميل الصور.",
   },
 };
