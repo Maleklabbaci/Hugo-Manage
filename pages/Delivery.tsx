@@ -13,6 +13,8 @@ const localeMap: Record<Language, string> = {
     ar: 'ar-SA',
 };
 
+type TimeRange = 'today' | '7d' | '30d' | '1y' | 'all';
+
 const DeliveryCard: React.FC<{ product: Product, onConfirmSale: (product: Product) => void, onCancel: (id: number) => void, onViewDetails: (product: Product) => void }> = ({ product, onConfirmSale, onCancel, onViewDetails }) => {
     const { t, language } = useAppContext();
     const locale = localeMap[language];
@@ -92,9 +94,10 @@ const Delivery: React.FC = () => {
     const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
     const [deliveryToCancelId, setDeliveryToCancelId] = useState<number | null>(null);
     const [hoveredImage, setHoveredImage] = useState<string | null>(null);
+    const [timeRange, setTimeRange] = useState<TimeRange>('30d');
     const locale = localeMap[language];
 
-    const deliveryProducts = useMemo(() => {
+    const allDeliveryProducts = useMemo(() => {
         const filtered = products.filter(p => p.status === 'en livraison');
         return filtered.sort((a, b) => {
             const timeA = new Date(a.createdAt).getTime();
@@ -107,12 +110,43 @@ const Delivery: React.FC = () => {
             return timeB - timeA; // Sort descending
         });
     }, [products]);
+    
+    const filteredDeliveryProducts = useMemo(() => {
+        const now = new Date();
+        const validProducts = allDeliveryProducts.filter(p => p.createdAt && !isNaN(new Date(p.createdAt).getTime()));
+
+        if (timeRange === 'all') {
+            return validProducts;
+        }
+
+        let startDate = new Date();
+        
+        switch (timeRange) {
+            case 'today':
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case '7d':
+                startDate.setDate(now.getDate() - 7);
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case '30d':
+                startDate.setDate(now.getDate() - 30);
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case '1y':
+                startDate.setFullYear(now.getFullYear() - 1);
+                startDate.setHours(0, 0, 0, 0);
+                break;
+        }
+        
+        return validProducts.filter(p => new Date(p.createdAt) >= startDate);
+    }, [allDeliveryProducts, timeRange]);
 
     const deliveryStats = useMemo(() => {
-        const totalItems = deliveryProducts.reduce((acc, p) => acc + p.stock, 0);
-        const totalValue = deliveryProducts.reduce((acc, p) => acc + (p.stock * p.sellPrice), 0);
+        const totalItems = filteredDeliveryProducts.reduce((acc, p) => acc + p.stock, 0);
+        const totalValue = filteredDeliveryProducts.reduce((acc, p) => acc + (p.stock * p.sellPrice), 0);
         return { totalItems, totalValue };
-    }, [deliveryProducts]);
+    }, [filteredDeliveryProducts]);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -163,8 +197,27 @@ const Delivery: React.FC = () => {
       if (!isoDate) return '-';
       return new Date(isoDate).toLocaleDateString(localeMap[language], { day: '2-digit', month: '2-digit', year: 'numeric' });
     };
+    
+    const TimeRangeButton: React.FC<{ range: TimeRange, label: string }> = ({ range, label }) => (
+        <motion.button
+            onClick={() => setTimeRange(range)}
+            className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors relative ${
+                timeRange === range ? 'text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800/60'
+            }`}
+            whileTap={{ scale: 0.95 }}
+        >
+            {label}
+            {timeRange === range && (
+                <motion.div
+                    layoutId="active-delivery-range-indicator"
+                    className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg -z-10"
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                />
+            )}
+        </motion.button>
+    );
 
-    if (deliveryProducts.length === 0) {
+    if (allDeliveryProducts.length === 0) {
         return (
             <div className="text-center py-10">
                 <DeliveryIcon className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500 mb-4" />
@@ -176,16 +229,30 @@ const Delivery: React.FC = () => {
 
     return (
         <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">{t('delivery.title')} ({deliveryProducts.length})</h2>
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('delivery.title')} ({allDeliveryProducts.length})</h2>
+                 <div className="flex items-center space-x-1 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-xl">
+                    <TimeRangeButton range="today" label={t('dashboard.range.today')} />
+                    <TimeRangeButton range="7d" label={t('dashboard.range.7d')} />
+                    <TimeRangeButton range="30d" label={t('dashboard.range.30d')} />
+                    <TimeRangeButton range="1y" label={t('dashboard.range.1y')} />
+                    <TimeRangeButton range="all" label={t('dashboard.range.all')} />
+                </div>
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <StatCard icon={DeliveryIcon} title={t('delivery.total_items')} value={deliveryStats.totalItems} />
                 <StatCard icon={DollarSignIcon} title={t('delivery.total_value')} value={`${deliveryStats.totalValue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
             </div>
 
-            {isMobile ? (
+            {filteredDeliveryProducts.length === 0 ? (
+                 <div className="text-center py-10 bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 rounded-2xl">
+                    <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">{t('delivery.no_results_for_period.title')}</h3>
+                    <p className="text-slate-600 dark:text-slate-400">{t('delivery.no_results_for_period.subtitle')}</p>
+                </div>
+            ) : isMobile ? (
                 <div className="grid grid-cols-1 gap-4">
-                    {deliveryProducts.map(p => (
+                    {filteredDeliveryProducts.map(p => (
                         <DeliveryCard key={p.id} product={p} onConfirmSale={handleOpenConfirmSale} onCancel={handleOpenCancelConfirm} onViewDetails={handleViewDetails} />
                     ))}
                 </div>
@@ -205,7 +272,7 @@ const Delivery: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {deliveryProducts.map(product => (
+                                {filteredDeliveryProducts.map(product => (
                                     <tr key={product.id} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60">
                                         <td className="px-6 py-4">
                                             {product.imageUrl ? (

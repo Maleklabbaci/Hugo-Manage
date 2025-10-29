@@ -47,7 +47,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSave, prod
       setImagePreview(productToEdit.imageUrl || null);
     } else if (initialData) {
         const { imageBlob, ...formDataFromAI } = initialData;
-        setFormData(formDataFromAI);
+        // FIX: Ensure the object passed to setFormData matches the state shape and types.
+        setFormData({
+            name: formDataFromAI.name,
+            description: formDataFromAI.description || '',
+            category: formDataFromAI.category,
+            supplier: formDataFromAI.supplier,
+            buyPrice: formDataFromAI.buyPrice,
+            sellPrice: formDataFromAI.sellPrice,
+            stock: formDataFromAI.stock,
+        });
         if (imageBlob) {
             const file = new File([imageBlob], "scanned-product.jpg", { type: imageBlob.type });
             setImageFile(file);

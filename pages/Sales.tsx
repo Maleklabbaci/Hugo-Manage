@@ -13,6 +13,8 @@ const localeMap: Record<Language, string> = {
     ar: 'ar-SA-u-nu-latn',
 };
 
+type TimeRange = 'today' | '7d' | '30d' | '1y' | 'all';
+
 const SaleCard: React.FC<{ sale: Sale, onCancel: (id: number) => void, formatTimestamp: (iso: string) => string, onViewDetails: (p: Product) => void, product: Product | undefined }> = ({ sale, onCancel, formatTimestamp, onViewDetails, product }) => {
     const { t } = useAppContext();
     return (
@@ -80,15 +82,46 @@ const Sales: React.FC = () => {
     const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
     const [saleToCancelId, setSaleToCancelId] = useState<number | null>(null);
     const [hoveredImage, setHoveredImage] = useState<string | null>(null);
-
+    const [timeRange, setTimeRange] = useState<TimeRange>('30d');
     const locale = localeMap[language];
 
+    const filteredSales = useMemo(() => {
+        const now = new Date();
+        const validSales = sales.filter(s => s.createdAt && !isNaN(new Date(s.createdAt).getTime()));
+
+        if (timeRange === 'all') {
+            return validSales;
+        }
+
+        let startDate = new Date();
+        
+        switch (timeRange) {
+            case 'today':
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case '7d':
+                startDate.setDate(now.getDate() - 7);
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case '30d':
+                startDate.setDate(now.getDate() - 30);
+                startDate.setHours(0, 0, 0, 0);
+                break;
+            case '1y':
+                startDate.setFullYear(now.getFullYear() - 1);
+                startDate.setHours(0, 0, 0, 0);
+                break;
+        }
+        
+        return validSales.filter(s => new Date(s.createdAt) >= startDate);
+    }, [sales, timeRange]);
+
     const salesStats = useMemo(() => {
-        const totalRevenue = sales.reduce((acc, s) => acc + s.totalPrice, 0);
-        const totalProfit = sales.reduce((acc, s) => acc + (s.totalMargin || 0), 0);
-        const unitsSold = sales.reduce((acc, s) => acc + s.quantity, 0);
+        const totalRevenue = filteredSales.reduce((acc, s) => acc + s.totalPrice, 0);
+        const totalProfit = filteredSales.reduce((acc, s) => acc + (s.totalMargin || 0), 0);
+        const unitsSold = filteredSales.reduce((acc, s) => acc + s.quantity, 0);
         return { totalRevenue, totalProfit, unitsSold };
-    }, [sales]);
+    }, [filteredSales]);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -117,6 +150,25 @@ const Sales: React.FC = () => {
         }
     };
 
+    const TimeRangeButton: React.FC<{ range: TimeRange, label: string }> = ({ range, label }) => (
+        <motion.button
+            onClick={() => setTimeRange(range)}
+            className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors relative ${
+                timeRange === range ? 'text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800/60'
+            }`}
+            whileTap={{ scale: 0.95 }}
+        >
+            {label}
+            {timeRange === range && (
+                <motion.div
+                    layoutId="active-sales-range-indicator"
+                    className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg -z-10"
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                />
+            )}
+        </motion.button>
+    );
+
     if (sales.length === 0) {
         return (
             <div className="text-center py-10">
@@ -131,7 +183,16 @@ const Sales: React.FC = () => {
 
     return (
         <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">{t('sales.title')}</h2>
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t('sales.title')}</h2>
+                <div className="flex items-center space-x-1 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-xl">
+                    <TimeRangeButton range="today" label={t('dashboard.range.today')} />
+                    <TimeRangeButton range="7d" label={t('dashboard.range.7d')} />
+                    <TimeRangeButton range="30d" label={t('dashboard.range.30d')} />
+                    <TimeRangeButton range="1y" label={t('dashboard.range.1y')} />
+                    <TimeRangeButton range="all" label={t('dashboard.range.all')} />
+                </div>
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <StatCard icon={DollarSignIcon} title={t('dashboard.sales_revenue')} value={`${salesStats.totalRevenue.toLocaleString(locale, { style: 'currency', currency: 'DZD' })}`} />
@@ -139,9 +200,14 @@ const Sales: React.FC = () => {
                 <StatCard icon={ShoppingCartIcon} title={t('dashboard.units_sold')} value={salesStats.unitsSold} />
             </div>
 
-            {isMobile ? (
+            {filteredSales.length === 0 ? (
+                <div className="text-center py-10 bg-white/70 dark:bg-slate-800/50 backdrop-blur-lg border border-slate-200 dark:border-slate-700 rounded-2xl">
+                    <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">{t('sales.no_results_for_period.title')}</h3>
+                    <p className="text-slate-600 dark:text-slate-400">{t('sales.no_results_for_period.subtitle')}</p>
+                </div>
+            ) : isMobile ? (
                 <div className="grid grid-cols-1 gap-4">
-                    {sales.map(sale => {
+                    {filteredSales.map(sale => {
                         const product = products.find(p => p.id === sale.productId);
                         return <SaleCard key={sale.id} sale={sale} onCancel={handleOpenCancelConfirm} formatTimestamp={formatTimestamp} onViewDetails={handleViewDetails} product={product} />
                     })}
@@ -158,7 +224,7 @@ const Sales: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {sales.map(sale => {
+                                {filteredSales.map(sale => {
                                     const product = products.find(p => p.id === sale.productId);
                                     return (
                                         <tr key={sale.id} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60">

@@ -74,6 +74,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.avg_order_value': 'Panier moyen',
     'dashboard.top_selling_products': 'Top 5 Produits Vendus',
     'dashboard.chart.revenue': 'Revenu',
+    'dashboard.range.today': 'Aujourd\'hui',
     'dashboard.range.7d': '7 jours',
     'dashboard.range.30d': '30 jours',
     'dashboard.range.1y': '1 an',
@@ -189,6 +190,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'sales.table.actions': 'Actions',
     'sales.empty.title': 'Aucune vente enregistrée',
     'sales.empty.subtitle': 'Lorsqu\'une vente est effectuée, elle apparaîtra ici.',
+    'sales.no_results_for_period.title': 'Aucune vente pour cette période',
+    'sales.no_results_for_period.subtitle': 'Essayez de sélectionner une autre plage de dates.',
 
     // History Page
     'history.title': "Journal d'activité",
@@ -229,6 +232,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'delivery.confirm_cancel': 'Voulez-vous annuler cette livraison et réintégrer le produit au stock principal ?',
     'delivery.empty.title': 'Aucun produit en livraison',
     'delivery.empty.subtitle': "Utilisez l'option 'Mettre en livraison' sur un produit pour le voir ici.",
+    'delivery.no_results_for_period.title': 'Aucune livraison pour cette période',
+    'delivery.no_results_for_period.subtitle': 'Essayez de sélectionner une autre plage de dates.',
 
     // Settings Page
     'settings.theme_title': 'Thème',
@@ -419,6 +424,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.avg_order_value': 'Avg. Order Value',
     'dashboard.top_selling_products': 'Top 5 Selling Products',
     'dashboard.chart.revenue': 'Revenue',
+    'dashboard.range.today': 'Today',
     'dashboard.range.7d': '7 days',
     'dashboard.range.30d': '30 days',
     'dashboard.range.1y': '1 year',
@@ -533,6 +539,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'sales.table.actions': 'Actions',
     'sales.empty.title': 'No Sales Recorded',
     'sales.empty.subtitle': 'When a sale is made, it will appear here.',
+    'sales.no_results_for_period.title': 'No sales for this period',
+    'sales.no_results_for_period.subtitle': 'Try selecting another date range.',
     
     // History Page
     'history.title': 'Activity Log',
@@ -573,6 +581,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'delivery.confirm_cancel': 'Do you want to cancel this delivery and return the product to the main stock?',
     'delivery.empty.title': 'No Products in Delivery',
     'delivery.empty.subtitle': "Use the 'Set to Delivery' option on a product to see it here.",
+    'delivery.no_results_for_period.title': 'No deliveries for this period',
+    'delivery.no_results_for_period.subtitle': 'Try selecting another date range.',
 
     // Settings Page
     'settings.theme_title': 'Theme',
@@ -762,6 +772,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dashboard.avg_order_value': 'متوسط قيمة الطلب',
     'dashboard.top_selling_products': 'أفضل 5 منتجات مبيعًا',
     'dashboard.chart.revenue': 'الإيرادات',
+    'dashboard.range.today': 'اليوم',
     'dashboard.range.7d': '7 أيام',
     'dashboard.range.30d': '30 يومًا',
     'dashboard.range.1y': 'سنة واحدة',
@@ -876,6 +887,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'sales.table.actions': 'الإجراءات',
     'sales.empty.title': 'لا توجد مبيعات مسجلة',
     'sales.empty.subtitle': 'عندما تتم عملية بيع، ستظهر هنا.',
+    'sales.no_results_for_period.title': 'لا توجد مبيعات لهذه الفترة',
+    'sales.no_results_for_period.subtitle': 'حاول تحديد نطاق زمني آخر.',
 
     // History Page
     'history.title': 'سجل النشاط',
@@ -916,6 +929,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'delivery.confirm_cancel': 'هل تريد إلغاء هذا التوصيل وإعادة المنتج إلى المخزون الرئيسي؟',
     'delivery.empty.title': 'لا توجد منتجات قيد التوصيل',
     'delivery.empty.subtitle': "استخدم خيار 'إرسال للتوصيل' على منتج لرؤيته هنا.",
+    'delivery.no_results_for_period.title': 'لا توجد توصيلات لهذه الفترة',
+    'delivery.no_results_for_period.subtitle': 'حاول تحديد نطاق زمني آخر.',
 
     // Settings Page
     'settings.theme_title': 'المظهر',

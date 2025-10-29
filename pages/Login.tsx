@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+// FIX: Import 'Variants' type from framer-motion to resolve typing errors.
+import { motion, Variants } from 'framer-motion';
 import { AlertCircleIcon, LoaderIcon, ChezHugoLogo } from '../components/Icons';
 import { useAppContext } from '../context/AppContext';
 
@@ -32,7 +33,8 @@ const Login: React.FC = () => {
     return <Navigate to={isMobile ? "/mobile-hub" : "/dashboard"} />;
   }
   
-  const containerVariants = {
+  // FIX: Explicitly type the variants object with 'Variants' to prevent type inference issues.
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -40,7 +42,8 @@ const Login: React.FC = () => {
     }
   };
 
-  const itemVariants = {
+  // FIX: Explicitly type the variants object with 'Variants' to prevent type inference issues.
+  const itemVariants: Variants = {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 100 } }
   };
